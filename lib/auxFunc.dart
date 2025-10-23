@@ -13,3 +13,10 @@ bool isTablet(BuildContext context) {
 
   return false;
 }
+
+void navegar(Widget nuevo, BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute<void>(builder: (context) => nuevo),
+  );
+}

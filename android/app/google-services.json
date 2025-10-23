@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "933384322793",
+    "project_id": "tato-matematico",
+    "storage_bucket": "tato-matematico.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933384322793:android:6c8db878af981abb44ba78",
+        "android_client_info": {
+          "package_name": "com.example.tato_matematico"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkjqPd3tVQRWPtalMzLBH74K6KTHeKbhI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,39 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/login/alumnLogIn.dart';
+import 'package:tato_matematico/auxFunc.dart';
 
-class GamesMenu extends StatefulWidget {
-  final Alumno alumno;
-  const GamesMenu({super.key
-  , required this.alumno});
+class ProfesorLogIn extends StatefulWidget {
+  const ProfesorLogIn({super.key});
   @override
-  State<GamesMenu> createState() => _GamesMenuState();
+  State<ProfesorLogIn> createState() => _ProfesorLogInState();
 }
 
-class _GamesMenuState extends State<GamesMenu> {
-  late final Alumno alumno;
-
+class _ProfesorLogInState extends State<ProfesorLogIn> {
   int selectedTab = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    alumno = widget.alumno;
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: Navigator.canPop(context) ? InkWell(child: const Icon(Icons.arrow_back), onTap: () => {Navigator.pop(context)}) : const Icon(Icons.menu),
-        title: const Text('Label', style: TextStyle(fontSize: 20)),
+        title: const Text('Inicio de sesion del profesor', style: TextStyle(fontSize: 20)),
         centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: Colors.grey.shade200,
-              child: Icon(Icons.access_time_filled, color: Colors.grey.shade400),
-            ),
           ),
         ],
         backgroundColor: Colors.white,
@@ -41,7 +30,7 @@ class _GamesMenuState extends State<GamesMenu> {
       ),
       body: SafeArea(child: Column(
         children: [
-          Center(child: Text('Menú de Juegos para ${alumno.nombre}', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+          Center(child: Text('Log In del profesor', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
           // Aquí puedes agregar más widgets para el menú de juegos
         ],
       )),
