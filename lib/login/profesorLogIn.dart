@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:tato_matematico/alumno.dart';
-import 'package:tato_matematico/login/alumnLogIn.dart';
-import 'package:tato_matematico/auxFunc.dart';
 
 class ProfesorLogIn extends StatefulWidget {
   const ProfesorLogIn({super.key});
