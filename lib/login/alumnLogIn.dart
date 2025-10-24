@@ -5,25 +5,26 @@ import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
 
 class AlumnLogIn extends StatefulWidget {
-  late final List<Alumno> listaAlumnos;
-
-  AlumnLogIn({super.key});
+  late final List<Alumno> alumnos;
+  AlumnLogIn({super.key, required this.alumnos});
 
   @override
   State<AlumnLogIn> createState() => _AlumnLogInState();
 }
 
 class _AlumnLogInState extends State<AlumnLogIn> {
-  List<Alumno> listaAlumnos = List.generate(
-    32,
-    (index) => Alumno(
-      id: index,
-      nombre: 'Alumno $index',
-      imagen: 'assets/user${(index % 3) + 1}.png',
-    ),
-  );
+  late List<Alumno> alumnos;
   int paginaActual = 0;
   final int itemsPorPagina = 8;
+
+
+  @override
+  void initState() {
+    super.initState();
+    alumnos = widget.alumnos;
+    print("Alumnos: $alumnos");
+
+  }
 
   VoidCallback? retroceder() {
     return paginaActual > 0
@@ -43,7 +44,7 @@ class _AlumnLogInState extends State<AlumnLogIn> {
 
   @override
   Widget build(BuildContext context) {
-    int totalPaginas = (listaAlumnos.length / itemsPorPagina).ceil();
+    int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
     final isTabletVar = isTablet(context);
     final int columnas = isTabletVar ? 4 : 3; // hasta 3 por fila
     final double spacing = 8;
@@ -74,18 +75,23 @@ class _AlumnLogInState extends State<AlumnLogIn> {
                             (constraints.maxHeight -
                                 (spacing * (rowCount - 1))) /
                             rowCount;
-                        return Expanded(
-                          child: GridAlumnos(
-                            listaAlumnos: listaAlumnos,
-                            paginaActual: paginaActual,
-                            totalPaginas: totalPaginas,
-                            itemsPorPagina: itemsPorPagina,
-                            crossAxisCount: columnas,
-                            itemWidth: itemWidth,
-                            itemHeight: itemHeight,
-                            spacing: spacing,
-                            totalItems: listaAlumnos.length,
-                          ),
+                        return Flex(
+                          direction: Axis.vertical,
+                          children: [
+                            Expanded(
+                              child: GridAlumnos(
+                                listaAlumnos: alumnos,
+                                paginaActual: paginaActual,
+                                totalPaginas: totalPaginas,
+                                itemsPorPagina: itemsPorPagina,
+                                crossAxisCount: columnas,
+                                itemWidth: itemWidth,
+                                itemHeight: itemHeight,
+                                spacing: spacing,
+                                totalItems: alumnos.length,
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -156,7 +162,7 @@ class GridAlumnos extends StatelessWidget {
           context,
           alumnosPagina,
           index,
-          () => navegar(GamesMenu(alumno: listaAlumnos[index],), context),
+          () => navegar(GamesMenu(alumno: listaAlumnos[index]), context),
         );
       },
     );
@@ -175,7 +181,6 @@ class BotonesInferiores extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final ButtonStyle bigButtonStyle = ElevatedButton.styleFrom(
       minimumSize: const Size(0, 72), // altura grande
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -216,7 +221,7 @@ class BotonesInferiores extends StatelessWidget {
               ElevatedButton(
                 onPressed: onNext,
                 style: bigButtonStyle,
-                child: Text('siguiente'),
+                 child: Text('siguiente'),
               ),
             ],
           ),

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "933384322793",
+    "firebase_url": "https://tato-matematico-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "tato-matematico",
     "storage_bucket": "tato-matematico.firebasestorage.app"
   },

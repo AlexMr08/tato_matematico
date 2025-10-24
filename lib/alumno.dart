@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Alumno{
-  int id;
+  String id;
   String nombre;
   String imagen;
 
@@ -9,9 +9,20 @@ class Alumno{
 
   @override
   String toString() {
-    return 'Alumno{nombre: $nombre, imagen: $imagen}';
+    return 'Alumno{id: $id,nombre: $nombre, imagen: $imagen}';
   }
+
+  factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
+    return Alumno(
+      id: id,
+      nombre: data['nombre'] ?? 'Sin nombre',
+      imagen: data['imagen'] ?? '',
+    );
+  }
+
 }
+
+
 
 Widget widgetAlumno(BuildContext context, List<Alumno> alumnosPagina, int index, VoidCallback navegar) {
   return InkWell(

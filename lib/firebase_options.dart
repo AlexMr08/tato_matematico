@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '933384322793',
     projectId: 'tato-matematico',
     authDomain: 'tato-matematico.firebaseapp.com',
+    databaseURL: 'https://tato-matematico-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'tato-matematico.firebasestorage.app',
     measurementId: 'G-HM67MQZPL4',
   );
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     appId: '1:933384322793:android:6c8db878af981abb44ba78',
     messagingSenderId: '933384322793',
     projectId: 'tato-matematico',
+    databaseURL: 'https://tato-matematico-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'tato-matematico.firebasestorage.app',
   );
 
@@ -63,6 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:933384322793:ios:79427cac0ed5c27244ba78',
     messagingSenderId: '933384322793',
     projectId: 'tato-matematico',
+    databaseURL: 'https://tato-matematico-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'tato-matematico.firebasestorage.app',
     iosBundleId: 'com.example.tatoMatematico',
   );
@@ -72,6 +75,7 @@ class DefaultFirebaseOptions {
     appId: '1:933384322793:ios:79427cac0ed5c27244ba78',
     messagingSenderId: '933384322793',
     projectId: 'tato-matematico',
+    databaseURL: 'https://tato-matematico-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'tato-matematico.firebasestorage.app',
     iosBundleId: 'com.example.tatoMatematico',
   );
@@ -82,7 +86,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '933384322793',
     projectId: 'tato-matematico',
     authDomain: 'tato-matematico.firebaseapp.com',
+    databaseURL: 'https://tato-matematico-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'tato-matematico.firebasestorage.app',
     measurementId: 'G-97KDXQ53P1',
   );
+
 }
