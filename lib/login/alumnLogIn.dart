@@ -3,27 +3,28 @@ import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:path_provider/path_provider.dart';
+
 
 class AlumnLogIn extends StatefulWidget {
-  late final List<Alumno> alumnos;
-  AlumnLogIn({super.key, required this.alumnos});
+  const AlumnLogIn({super.key});
 
   @override
   State<AlumnLogIn> createState() => _AlumnLogInState();
 }
 
 class _AlumnLogInState extends State<AlumnLogIn> {
-  late List<Alumno> alumnos;
+  List<Alumno> alumnos = [];
   int paginaActual = 0;
-  final int itemsPorPagina = 8;
-
+  final int itemsPorPagina = 12;
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  Future<List<Alumno>>? _futureAlumnos;
 
   @override
-  void initState() {
+  initState() {
     super.initState();
-    alumnos = widget.alumnos;
-    print("Alumnos: $alumnos");
-
+    _futureAlumnos = _loadAlumnos();
   }
 
   VoidCallback? retroceder() {
@@ -42,28 +43,57 @@ class _AlumnLogInState extends State<AlumnLogIn> {
         : null;
   }
 
+  Future<List<Alumno>> _loadAlumnos() async {
+    final snapshot = await _dbRef.child("tato").child("alumnos").get();
+    if (!snapshot.exists) return [];
+
+    final data = Map<String, dynamic>.from(snapshot.value as Map);
+    final tempDir = await getTemporaryDirectory();
+
+    final List<Alumno> alumnos = [];
+    for (final entry in data.entries) {
+      final alumnoData = Map<dynamic, dynamic>.from(entry.value);
+      final alumno = Alumno.fromMap(entry.key, alumnoData);
+      await alumno.descargarImagen(tempDir);
+      alumnos.add(alumno);
+    }
+    return alumnos;
+  }
+
   @override
   Widget build(BuildContext context) {
-    int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
+    final double spacing = 8;
     final isTabletVar = isTablet(context);
     final int columnas = isTabletVar ? 4 : 3; // hasta 3 por fila
-    final double spacing = 8;
 
     return Scaffold(
       appBar: AppBar(
         leading: const Icon(Icons.menu),
         title: const Text('Seleccion alumno', style: TextStyle(fontSize: 20)),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.greenAccent,
         elevation: 0,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Column(
-                children: [
-                  Expanded(
+      body: FutureBuilder<List<Alumno>>(
+        future: _futureAlumnos,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No hay alumnos'));
+          }
+
+          final alumnos = snapshot.data!;
+          final int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
+
+          return SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final double itemWidth =
@@ -75,36 +105,30 @@ class _AlumnLogInState extends State<AlumnLogIn> {
                             (constraints.maxHeight -
                                 (spacing * (rowCount - 1))) /
                             rowCount;
-                        return Flex(
-                          direction: Axis.vertical,
-                          children: [
-                            Expanded(
-                              child: GridAlumnos(
-                                listaAlumnos: alumnos,
-                                paginaActual: paginaActual,
-                                totalPaginas: totalPaginas,
-                                itemsPorPagina: itemsPorPagina,
-                                crossAxisCount: columnas,
-                                itemWidth: itemWidth,
-                                itemHeight: itemHeight,
-                                spacing: spacing,
-                                totalItems: alumnos.length,
-                              ),
-                            ),
-                          ],
+
+                        return GridAlumnos(
+                          listaAlumnos: alumnos,
+                          paginaActual: paginaActual,
+                          totalPaginas: totalPaginas,
+                          itemsPorPagina: itemsPorPagina,
+                          crossAxisCount: columnas,
+                          itemWidth: itemWidth,
+                          itemHeight: itemHeight,
+                          spacing: spacing,
+                          totalItems: alumnos.length,
                         );
                       },
                     ),
                   ),
-                  BotonesInferiores(
-                    onPrevious: retroceder(),
-                    onNext: avanzar(totalPaginas),
-                  ),
-                ],
-              ),
+                ),
+                BotonesInferiores(
+                  onPrevious: retroceder(),
+                  onNext: avanzar(totalPaginas),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -120,7 +144,6 @@ class GridAlumnos extends StatelessWidget {
   final double itemHeight;
   final double spacing;
   final int totalItems;
-
   const GridAlumnos({
     super.key,
     required this.listaAlumnos,
@@ -147,7 +170,7 @@ class GridAlumnos extends StatelessWidget {
         : listaAlumnos.length;
     List<Alumno> alumnosPagina = listaAlumnos.sublist(inicio, fin);
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -158,12 +181,9 @@ class GridAlumnos extends StatelessWidget {
       ),
       itemCount: currentPageItems,
       itemBuilder: (context, index) {
-        return widgetAlumno(
-          context,
-          alumnosPagina,
-          index,
-          () => navegar(GamesMenu(alumno: listaAlumnos[index]), context),
-        );
+        return alumnosPagina[index].widgetAlumno(context, () {
+          navegar(GamesMenu(alumno: alumnosPagina[index]), context);
+        });
       },
     );
   }
@@ -172,30 +192,56 @@ class GridAlumnos extends StatelessWidget {
 class BotonesInferiores extends StatelessWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
-
   const BotonesInferiores({
     super.key,
     required this.onPrevious,
     required this.onNext,
   });
-
   @override
   Widget build(BuildContext context) {
     final ButtonStyle bigButtonStyle = ElevatedButton.styleFrom(
-      minimumSize: const Size(0, 72), // altura grande
+      minimumSize: const Size(0, 72),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Column(
         children: [
+          SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Iniciar sesion como '),
+              ElevatedButton(
+                onPressed: onPrevious,
+                style: bigButtonStyle,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back, size: 64),
+                    Text("Anterior")
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: onNext,
+                style: bigButtonStyle,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_forward, size: 64),
+                    Text("Siguiente")
+                  ],
+                ),
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Iniciar sesion como ', style: TextStyle(fontSize: 16)),
               TextButton(
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
@@ -204,24 +250,7 @@ class BotonesInferiores extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                 ),
                 onPressed: () => navegar(ProfesorLogIn(), context),
-                child: Text("profesor"),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: onPrevious,
-                style: bigButtonStyle,
-                child: Text('anterior'),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: onNext,
-                style: bigButtonStyle,
-                 child: Text('siguiente'),
+                child: Text("profesor", style: TextStyle(fontSize: 16, decoration: TextDecoration.underline)),
               ),
             ],
           ),
