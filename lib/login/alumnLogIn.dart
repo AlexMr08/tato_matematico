@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
@@ -182,7 +183,8 @@ class GridAlumnos extends StatelessWidget {
       itemCount: currentPageItems,
       itemBuilder: (context, index) {
         return alumnosPagina[index].widgetAlumno(context, () {
-          navegar(GamesMenu(alumno: alumnosPagina[index]), context);
+          context.read<Alumno>().setAlumno(alumnosPagina[index]);
+          navegar(GamesMenu(), context);
         });
       },
     );
@@ -249,7 +251,7 @@ class BotonesInferiores extends StatelessWidget {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   alignment: Alignment.centerLeft,
                 ),
-                onPressed: () => navegar(ProfesorLogIn(), context),
+                onPressed: () {navegar(ProfesorLogIn(), context);},
                 child: Text("profesor", style: TextStyle(fontSize: 16, decoration: TextDecoration.underline)),
               ),
             ],

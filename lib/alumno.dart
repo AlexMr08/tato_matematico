@@ -3,24 +3,42 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
-class Alumno {
+class Alumno with ChangeNotifier{
   String id;
   String nombre;
   String? imagen;
   String imagenLocal = '';
+  Color _colorFondo = Colors.white;
 
-  Alumno({required this.id, required this.nombre, required this.imagen});
+  Alumno({required this.id, required this.nombre, required this.imagen, Color? colorFondo}) {;
+    if (colorFondo != null) {
+      this._colorFondo = colorFondo;
+    }
+  }
+
+  Color get colorFondo => _colorFondo;
+
+  void setColorFondo(Color color) {
+    _colorFondo = color;
+    notifyListeners();
+  }
 
   @override
   String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, imagen: $imagen}';
+    return 'Alumno{id: $id,nombre: $nombre, color : $colorFondo, imagen: $imagen}';
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
+    Color color = Colors.white;
+    if (data['colorFondo'] != null){
+      int hex = int.parse(data['colorFondo']!, radix: 16);
+      color = Color(hex);
+    }
     return Alumno(
       id: id,
       nombre: data['nombre'] ?? 'Sin nombre',
       imagen: data['imagen'] ?? '',
+      colorFondo: color,
     );
   }
 
@@ -100,5 +118,14 @@ class Alumno {
         },
       ),
     );
+  }
+
+  void setAlumno(Alumno alumnosPagina) {
+    this.id = alumnosPagina.id;
+    this.nombre = alumnosPagina.nombre;
+    this.imagen = alumnosPagina.imagen;
+    this.imagenLocal = alumnosPagina.imagenLocal;
+    this._colorFondo = alumnosPagina._colorFondo;
+    notifyListeners();
   }
 }

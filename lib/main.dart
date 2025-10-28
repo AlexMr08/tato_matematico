@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:tato_matematico/login/alumnLogIn.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'alumno.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,8 +14,12 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-
-  runApp(const MyApp());
+  runApp(
+      ChangeNotifierProvider(
+    create: (_) => Alumno(nombre: "", id: "", imagen: ""),
+    child: const MyApp(),
+  ),
+  );
 }
 
 

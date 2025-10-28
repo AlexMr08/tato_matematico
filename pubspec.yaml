@@ -38,6 +38,8 @@ dependencies:
   firebase_database: ^12.0.3
   firebase_storage: ^13.0.3
   path_provider: ^2.0.0
+  flutter_colorpicker: ^1.1.0
+  provider: ^6.0.0
 
 dev_dependencies:
   flutter_test:

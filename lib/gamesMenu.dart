@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
 
 import 'auxFunc.dart';
 import 'juego.dart';
+import 'colorPicker.dart';
 
 class GamesMenu extends StatefulWidget {
-  final Alumno alumno;
-  const GamesMenu({super.key, required this.alumno});
+
+  GamesMenu({super.key});
   @override
   State<GamesMenu> createState() => _GamesMenuState();
 }
 
 class _GamesMenuState extends State<GamesMenu> {
-  late final Alumno alumno;
+  late Alumno alumno;
   final List<Juego> listaJuegos = [
     Juego(id: 'juego1', actividad: Placeholder(), nombre: 'Juego 1', color: Color.fromARGB(255, 255, 105, 97)),
     Juego(id: 'juego2', actividad: Placeholder(), nombre: 'Juego 2', color: Color.fromARGB(255, 119, 221, 119)),
@@ -26,12 +28,14 @@ class _GamesMenuState extends State<GamesMenu> {
   @override
   void initState() {
     super.initState();
-    alumno = widget.alumno;
   }
 
   @override
   Widget build(BuildContext context) {
+    alumno = context.watch<Alumno>();
+    print("Alumno en GamesMenu: $alumno");
     return Scaffold(
+      backgroundColor: alumno.colorFondo,
       appBar: AppBar(
         leading: Navigator.canPop(context)
             ? InkWell(
@@ -95,7 +99,7 @@ class _GamesMenuState extends State<GamesMenu> {
                   children: [
                     Expanded(
                       child: listaJuegos[4].widgetJuego(context, () {
-                        navegar(listaJuegos[4].actividad, context);
+                        navegar(ColorPickerExample(), context);
                       }),
                     ),
                   ],
