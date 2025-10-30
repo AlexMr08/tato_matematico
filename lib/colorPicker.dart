@@ -2,12 +2,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/auxFunc.dart';
 
 import 'alumno.dart';
 
-
 class ColorPickerExample extends StatefulWidget {
-
   @override
   _ColorPickerExampleState createState() => _ColorPickerExampleState();
 
@@ -21,27 +20,49 @@ class _ColorPickerExampleState extends State<ColorPickerExample> {
     super.initState();
   }
 
-  void _showColorPicker() {
+  void _showColorPicker(String ref, String cadena, Color color) {
+    Color pickerColor = color;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Pick a color!'),
-        content: SingleChildScrollView(
-          child: ColorPicker(
-            pickerColor: alumno.colorFondo,
-            onColorChanged: (color) {
-              var dbref = FirebaseDatabase.instance.ref();
-              dbref.child("tato").child("alumnos").child(alumno.id).update({
-                'colorFondo': color.value.toRadixString(16),
-              });
-              setState(() => alumno.setColorFondo(color));
-            },
-          ),
+        title: Text(cadena),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: ColorPicker(
+                pickerColor: pickerColor,
+                onColorChanged: (color) {
+                  setState(() => pickerColor = color);
+                },
+                showLabel: true,
+                pickerAreaHeightPercent: 0.8,
+              ),
+            );
+          },
         ),
         actions: [
           ElevatedButton(
             child: const Text('Select'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              var dbref = FirebaseDatabase.instance.ref();
+              dbref.child("tato").child("alumnos").child(alumno.id).update({
+                ref: pickerColor.toHex(leadingHashSign: false),
+              });
+              setState(() {
+                switch (ref) {
+                  case "colorFondo":
+                    alumno.colorFondo = pickerColor;
+                    break;
+                  case "colorPrincipal":
+                    alumno.colorPrincipal = pickerColor;
+                    break;
+                  default:
+                    break;
+                }
+                ;
+              });
+              Navigator.of(context).pop();
+            },
           ),
         ],
       ),
@@ -52,11 +73,21 @@ class _ColorPickerExampleState extends State<ColorPickerExample> {
   Widget build(BuildContext context) {
     alumno = context.read<Alumno>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Color Picker')),
+      appBar: AppBar(title: const Text('Ajustes comunes de color')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: _showColorPicker,
-          child: const Text('Open Color Picker'),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () =>
+                  _showColorPicker("colorFondo", "Elige el color de fondo", alumno.colorFondo != null ? alumno.colorFondo! : Colors.white),
+              child: const Text('Open Background Color Picker'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  _showColorPicker("colorPrincipal", "Elige el color principal", alumno.colorPrincipal != null ? alumno.colorPrincipal! : Colors.white),
+              child: const Text('Open Main Color Picker'),
+            ),
+          ],
         ),
       ),
     );

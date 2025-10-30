@@ -69,10 +69,10 @@ class _AlumnLogInState extends State<AlumnLogIn> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.menu),
-        title: const Text('Seleccion alumno', style: TextStyle(fontSize: 20)),
+        leading: Icon(Icons.menu, color: Theme.of(context).colorScheme.onPrimary,),
+        title: Text('Seleccion alumno', style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w500)),
         centerTitle: true,
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
       ),
       body: FutureBuilder<List<Alumno>>(

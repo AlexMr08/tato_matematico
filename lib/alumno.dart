@@ -8,37 +8,57 @@ class Alumno with ChangeNotifier{
   String nombre;
   String? imagen;
   String imagenLocal = '';
-  Color _colorFondo = Colors.white;
+  Color? _colorFondo;
+  Color? _colorPrincipal ;
 
-  Alumno({required this.id, required this.nombre, required this.imagen, Color? colorFondo}) {;
+  Alumno({required this.id, required this.nombre, required this.imagen, Color? colorFondo, Color? colorPrincipal}) {
     if (colorFondo != null) {
-      this._colorFondo = colorFondo;
+      _colorFondo = colorFondo;
     }
+  if (colorPrincipal != null) {
+    _colorPrincipal = colorPrincipal;
+  }
   }
 
-  Color get colorFondo => _colorFondo;
+  Color? get colorFondo => _colorFondo;
 
-  void setColorFondo(Color color) {
+  set colorFondo(Color color) {
     _colorFondo = color;
+    notifyListeners();
+  }
+
+
+  Color? get colorPrincipal => _colorPrincipal;
+
+  set colorPrincipal(Color value) {
+    _colorPrincipal = value;
     notifyListeners();
   }
 
   @override
   String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, color : $colorFondo, imagen: $imagen}';
+    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorPrincipal: $colorPrincipal, imagen: $imagen}';
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
-    Color color = Colors.white;
+    Color? colorFondo;
+    Color? colorPrincipalLoc;
     if (data['colorFondo'] != null){
       int hex = int.parse(data['colorFondo']!, radix: 16);
-      color = Color(hex);
+      colorFondo = Color(hex);
     }
+    if (data['colorPrincipal'] != null){
+      int hex = int.parse(data['colorPrincipal']!, radix: 16);
+      colorPrincipalLoc = Color(hex);
+    }
+
     return Alumno(
       id: id,
       nombre: data['nombre'] ?? 'Sin nombre',
       imagen: data['imagen'] ?? '',
-      colorFondo: color,
+      colorFondo: colorFondo,
+      colorPrincipal : colorPrincipalLoc
+
     );
   }
 
@@ -126,6 +146,7 @@ class Alumno with ChangeNotifier{
     this.imagen = alumnosPagina.imagen;
     this.imagenLocal = alumnosPagina.imagenLocal;
     this._colorFondo = alumnosPagina._colorFondo;
+    this._colorPrincipal = alumnosPagina._colorPrincipal;
     notifyListeners();
   }
 }
