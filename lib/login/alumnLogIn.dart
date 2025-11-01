@@ -7,7 +7,6 @@ import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:path_provider/path_provider.dart';
 
-
 class AlumnLogIn extends StatefulWidget {
   const AlumnLogIn({super.key});
 
@@ -69,8 +68,23 @@ class _AlumnLogInState extends State<AlumnLogIn> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(Icons.menu, color: Theme.of(context).colorScheme.onPrimary,),
-        title: Text('Seleccion alumno', style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w500)),
+        leading: InkWell(
+          child: Icon(
+            Icons.school,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+          onTap: () {
+            navegar(ProfesorLogIn(), context);
+          },
+        ),
+        title: Text(
+          'Seleccion alumno',
+          style: TextStyle(
+            fontSize: 20,
+            color: Theme.of(context).colorScheme.onPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
@@ -92,6 +106,25 @@ class _AlumnLogInState extends State<AlumnLogIn> {
           return SafeArea(
             child: Column(
               children: [
+                SizedBox(height: 8),
+                /*
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Iniciar sesion como ', style: TextStyle(fontSize: 16)),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        alignment: Alignment.centerLeft,
+                      ),
+                      onPressed: () {navegar(ProfesorLogIn(), context);},
+                      child: Text("profesor", style: TextStyle(fontSize: 16, decoration: TextDecoration.underline)),
+                    ),
+                  ],
+                ),
+                 */
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(4.0),
@@ -222,11 +255,11 @@ class BotonesInferiores extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.arrow_back, size: 64),
-                    Text("Anterior")
+                    Text("Anterior"),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 32),
               ElevatedButton(
                 onPressed: onNext,
                 style: bigButtonStyle,
@@ -234,25 +267,9 @@ class BotonesInferiores extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.arrow_forward, size: 64),
-                    Text("Siguiente")
+                    Text("Siguiente"),
                   ],
                 ),
-              )
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Iniciar sesion como ', style: TextStyle(fontSize: 16)),
-              TextButton(
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  alignment: Alignment.centerLeft,
-                ),
-                onPressed: () {navegar(ProfesorLogIn(), context);},
-                child: Text("profesor", style: TextStyle(fontSize: 16, decoration: TextDecoration.underline)),
               ),
             ],
           ),

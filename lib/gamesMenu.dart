@@ -15,36 +15,47 @@ class GamesMenu extends StatefulWidget {
 
 class _GamesMenuState extends State<GamesMenu> {
   late Alumno alumno;
-  final List<Juego> listaJuegos = [
+  late final List<Juego> listaJuegos = [
     Juego(
       id: 'juego1',
       actividad: Placeholder(),
       nombre: 'Juego 1',
-      color: Color.fromARGB(255, 255, 105, 97),
+      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'juego2',
       actividad: Placeholder(),
       nombre: 'Juego 2',
-      color: Color.fromARGB(255, 119, 221, 119),
+      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'juego3',
       actividad: Placeholder(),
       nombre: 'Juego 3',
-      color: Color.fromARGB(255, 132, 182, 244),
+      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'juego4',
       actividad: Placeholder(),
       nombre: 'Juego 4',
-      color: Color.fromARGB(255, 253, 202, 225),
+      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'estadisticas',
       actividad: Placeholder(),
       nombre: 'estadisticas',
-      color: Color.fromARGB(255, 253, 253, 150),
+      color: Theme.of(context).colorScheme.primaryContainer,
+    ),
+    Juego(
+      id: 'volver',
+      actividad: Placeholder(),
+      nombre: 'volver',
+      color: Theme.of(context).colorScheme.primaryContainer,
+      icono: Icon(
+        Icons.arrow_back,
+        size: 64,
+        color: Color.fromARGB(255, 50, 50, 60),
+      ),
     ),
   ];
 
@@ -136,6 +147,14 @@ class _GamesMenuState extends State<GamesMenu> {
                     Expanded(
                       child: listaJuegos[4].widgetJuego(context, () {
                         navegar(ColorPickerExample(), context);
+                      }),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: listaJuegos[5].widgetJuego(context, () {
+                        Navigator.canPop(context)
+                            ? Navigator.pop(context)
+                            : navegar(ColorPickerExample(), context);
                       }),
                     ),
                   ],

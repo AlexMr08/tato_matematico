@@ -10,8 +10,12 @@ class Alumno with ChangeNotifier{
   String imagenLocal = '';
   Color? _colorFondo;
   Color? _colorPrincipal ;
+  bool _volverDerecha = false;
 
-  Alumno({required this.id, required this.nombre, required this.imagen, Color? colorFondo, Color? colorPrincipal}) {
+  Alumno({required this.id, required this.nombre, required this.imagen, Color? colorFondo, Color? colorPrincipal, volverDerecha}) {
+    if (volverDerecha != null) {
+      _volverDerecha = volverDerecha;
+    }
     if (colorFondo != null) {
       _colorFondo = colorFondo;
     }
@@ -27,6 +31,12 @@ class Alumno with ChangeNotifier{
     notifyListeners();
   }
 
+
+  bool get volverDerecha => _volverDerecha;
+
+  set volverDerecha(bool value) {
+    _volverDerecha = value;
+  }
 
   Color? get colorPrincipal => _colorPrincipal;
 
