@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
@@ -216,7 +217,7 @@ class GridAlumnos extends StatelessWidget {
       itemCount: currentPageItems,
       itemBuilder: (context, index) {
         return alumnosPagina[index].widgetAlumno(context, () {
-          context.read<Alumno>().setAlumno(alumnosPagina[index]);
+          context.read<AlumnoHolder>().setAlumno(alumnosPagina[index]);
           navegar(GamesMenu(), context);
         });
       },

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
-
+import 'alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'juego.dart';
 import 'colorPicker.dart';
@@ -68,7 +68,10 @@ class _GamesMenuState extends State<GamesMenu> {
 
   @override
   Widget build(BuildContext context) {
-    alumno = context.watch<Alumno>();
+    if(!context.watch<AlumnoHolder>().hasAlumno){
+      Navigator.pop(context);
+    }
+    alumno = context.watch<AlumnoHolder>().alumno!;
     if (kDebugMode) {
       print(alumno);
     }

@@ -2,9 +2,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-
-import 'alumno.dart';
 
 class ColorPickerExample extends StatefulWidget {
   @override
@@ -14,7 +13,7 @@ class ColorPickerExample extends StatefulWidget {
 }
 
 class _ColorPickerExampleState extends State<ColorPickerExample> {
-  late Alumno alumno;
+  late AlumnoHolder alumnoHolder;
   @override
   void initState() {
     super.initState();
@@ -45,21 +44,20 @@ class _ColorPickerExampleState extends State<ColorPickerExample> {
             child: const Text('Select'),
             onPressed: () {
               var dbref = FirebaseDatabase.instance.ref();
-              dbref.child("tato").child("alumnos").child(alumno.id).update({
+              dbref.child("tato").child("alumnos").child(alumnoHolder.alumno!.id).update({
                 ref: pickerColor.toHex(leadingHashSign: false),
               });
               setState(() {
                 switch (ref) {
                   case "colorFondo":
-                    alumno.colorFondo = pickerColor;
+                    alumnoHolder.setColorFondo(pickerColor);
                     break;
                   case "colorPrincipal":
-                    alumno.colorPrincipal = pickerColor;
+                    alumnoHolder.setColorPrincipal(pickerColor);
                     break;
                   default:
                     break;
                 }
-                ;
               });
               Navigator.of(context).pop();
             },
@@ -71,7 +69,7 @@ class _ColorPickerExampleState extends State<ColorPickerExample> {
 
   @override
   Widget build(BuildContext context) {
-    alumno = context.read<Alumno>();
+    alumnoHolder = context.read<AlumnoHolder>();
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes comunes de color')),
       body: Center(
@@ -79,12 +77,12 @@ class _ColorPickerExampleState extends State<ColorPickerExample> {
           children: [
             ElevatedButton(
               onPressed: () =>
-                  _showColorPicker("colorFondo", "Elige el color de fondo", alumno.colorFondo != null ? alumno.colorFondo! : Colors.white),
+                  _showColorPicker("colorFondo", "Elige el color de fondo", alumnoHolder.alumno!.colorFondo != null ? alumnoHolder.alumno!.colorFondo! : Colors.white),
               child: const Text('Open Background Color Picker'),
             ),
             ElevatedButton(
               onPressed: () =>
-                  _showColorPicker("colorPrincipal", "Elige el color principal", alumno.colorPrincipal != null ? alumno.colorPrincipal! : Colors.white),
+                  _showColorPicker("colorPrincipal", "Elige el color principal", alumnoHolder.alumno!.colorPrincipal != null ? alumnoHolder.alumno!.colorPrincipal! : Colors.white),
               child: const Text('Open Main Color Picker'),
             ),
           ],

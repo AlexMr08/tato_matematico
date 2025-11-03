@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
-class Alumno with ChangeNotifier{
+class Alumno{
   String id;
   String nombre;
   String? imagen;
@@ -28,7 +28,6 @@ class Alumno with ChangeNotifier{
 
   set colorFondo(Color color) {
     _colorFondo = color;
-    notifyListeners();
   }
 
 
@@ -42,7 +41,6 @@ class Alumno with ChangeNotifier{
 
   set colorPrincipal(Color value) {
     _colorPrincipal = value;
-    notifyListeners();
   }
 
   @override
@@ -91,7 +89,7 @@ class Alumno with ChangeNotifier{
         return;
       }
 
-      final file = File('${tempDir.path}/${this.id}_avatar.jpg');
+      final file = File('${tempDir.path}/${id}_avatar.jpg');
       await file.writeAsBytes(bytes, flush: true);
       imagenLocal = file.path;
       //return await ref.getDownloadURL();
@@ -150,13 +148,4 @@ class Alumno with ChangeNotifier{
     );
   }
 
-  void setAlumno(Alumno alumnosPagina) {
-    this.id = alumnosPagina.id;
-    this.nombre = alumnosPagina.nombre;
-    this.imagen = alumnosPagina.imagen;
-    this.imagenLocal = alumnosPagina.imagenLocal;
-    this._colorFondo = alumnosPagina._colorFondo;
-    this._colorPrincipal = alumnosPagina._colorPrincipal;
-    notifyListeners();
-  }
 }
