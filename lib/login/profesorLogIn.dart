@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tato_matematico/agregarProfesor.dart';
 
 class ProfesorLogIn extends StatefulWidget {
   const ProfesorLogIn({super.key});
@@ -53,6 +54,14 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
           backgroundColor: Colors.green,
         ),
       );
+      if (profesorData["director"]) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AgregarProfesor(),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(
         context,
