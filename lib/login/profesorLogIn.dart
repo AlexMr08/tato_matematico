@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/agregarProfesor.dart';
+import 'package:tato_matematico/pruebaProfe.dart';
 
 class ProfesorLogIn extends StatefulWidget {
   const ProfesorLogIn({super.key});
@@ -58,7 +59,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const AgregarProfesor(),
+            builder: (context) => const PruebaProfe(),
           ),
         );
       }

@@ -125,6 +125,7 @@ class Alumno {
 
   Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
     ImageProvider? imageProvider;
+
     if (imagenLocal.isNotEmpty) {
       imageProvider = FileImage(File(imagenLocal));
       // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
@@ -168,6 +169,42 @@ class Alumno {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget widgetProfesor(BuildContext context, VoidCallback navegar) {
+    ImageProvider? imageProvider;
+    if (imagenLocal.isNotEmpty) {
+      imageProvider = FileImage(File(imagenLocal));
+      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
+      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
+    }
+
+    var ori = MediaQuery.of(context).orientation;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          radius: 28,
+          backgroundImage: imageProvider,
+          child: imageProvider == null
+              ? Text(
+                  nombre.isNotEmpty ? nombre[0] : '?',
+                  style: const TextStyle(fontSize: 20),
+                )
+              : null,
+        ),
+        title: Text(
+          nombre,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: IconButton(icon: Icon(Icons.edit), onPressed: navegar),
+        onTap: null,
       ),
     );
   }
