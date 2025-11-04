@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'alumno.dart';
+import '../alumno.dart';
 
 class AlumnoHolder extends ChangeNotifier {
   Alumno? alumno;

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
 import 'package:tato_matematico/agregarProfesor.dart';
+import 'package:tato_matematico/holders/profesorHolder.dart';
 import 'package:tato_matematico/pruebaProfe.dart';
+
+import '../profesor.dart';
 
 class ProfesorLogIn extends StatefulWidget {
   const ProfesorLogIn({super.key});
@@ -51,18 +55,21 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
       print("Ha iniciado sesion correctamente");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(profesorData["director"] ?  "Ha iniciado sesion correctamente, rol: Director" : "Ha iniciado sesion correctamente, rol: Profesor"),
+          content: Text(
+            profesorData["director"]
+                ? "Ha iniciado sesion correctamente, rol: Director"
+                : "Ha iniciado sesion correctamente, rol: Profesor",
+          ),
           backgroundColor: Colors.green,
         ),
       );
-      if (profesorData["director"]) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PruebaProfe(),
-          ),
-        );
-      }
+      context.read<ProfesorHolder>().setProfesor(
+        Profesor.fromMap(profesorId, Map<dynamic, dynamic>.from(profesorData)),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PruebaProfe()),
+      );
     } else {
       ScaffoldMessenger.of(
         context,

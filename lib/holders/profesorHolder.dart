@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/profesor.dart';
-import 'alumno.dart';
+import '../alumno.dart';
 
 class ProfesorHolder extends ChangeNotifier {
   Profesor? profesor;

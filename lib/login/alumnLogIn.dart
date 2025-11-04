@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
-import 'package:tato_matematico/alumnoHolder.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
