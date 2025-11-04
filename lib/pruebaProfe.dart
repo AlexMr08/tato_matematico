@@ -82,7 +82,7 @@ class _PruebaProfeState extends State<PruebaProfe> {
           });
         },
         fab: Visibility(
-          visible: esDirector && currentPageIndex != 2,
+          visible: profesor.director && currentPageIndex != 2,
           child: M3FabMenu(
             actions: [
               M3FabAction(
@@ -108,7 +108,7 @@ class _PruebaProfeState extends State<PruebaProfe> {
           },
           indicatorColor: Colors.amber,
           selectedIndex: currentPageIndex,
-          destinations: esDirector
+          destinations: profesor.director
               ? <Widget>[
                   const NavigationDestination(
                     selectedIcon: Icon(Icons.home),
