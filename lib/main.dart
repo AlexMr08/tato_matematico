@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tato_matematico/login/alumnLogIn.dart';
+import 'package:tato_matematico/login/seleccionAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tato_matematico/theme.dart';
@@ -82,6 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AlumnLogIn();
+    return SeleccionAlumno();
   }
 }

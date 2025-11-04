@@ -9,15 +9,16 @@ import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tato_matematico/login/alumnoLogIn.dart';
 
-class AlumnLogIn extends StatefulWidget {
-  const AlumnLogIn({super.key});
+class SeleccionAlumno extends StatefulWidget {
+  const SeleccionAlumno({super.key});
 
   @override
-  State<AlumnLogIn> createState() => _AlumnLogInState();
+  State<SeleccionAlumno> createState() => _SeleccionAlumnoState();
 }
 
-class _AlumnLogInState extends State<AlumnLogIn> {
+class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   List<Alumno> alumnos = [];
   int paginaActual = 0;
   final int itemsPorPagina = 12;
@@ -263,7 +264,7 @@ class GridAlumnos extends StatelessWidget {
       itemBuilder: (context, index) {
         return alumnosPagina[index].widgetAlumno(context, () {
           context.read<AlumnoHolder>().setAlumno(alumnosPagina[index]);
-          navegar(GamesMenu(), context);
+          navegar(AlumnoLogIn(), context);
         });
       },
     );
