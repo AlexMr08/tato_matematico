@@ -56,6 +56,7 @@ class _AlumnLogInState extends State<AlumnLogIn> {
       final alumnoData = Map<dynamic, dynamic>.from(entry.value);
       final alumno = Alumno.fromMap(entry.key, alumnoData);
       await alumno.descargarImagen(tempDir);
+      print('Alumno cargado: $alumno');
       alumnos.add(alumno);
     }
     return alumnos;

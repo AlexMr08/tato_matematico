@@ -49,13 +49,9 @@ class _GamesMenuState extends State<GamesMenu> {
     Juego(
       id: 'volver',
       actividad: Placeholder(),
-      nombre: 'volver',
+      nombre: 'Salir',
       color: Theme.of(context).colorScheme.primaryContainer,
-      icono: Icon(
-        Icons.arrow_back,
-        size: 64,
-        color: Color.fromARGB(255, 50, 50, 60),
-      ),
+      icono: Icons.exit_to_app,
     ),
   ];
 
@@ -68,105 +64,188 @@ class _GamesMenuState extends State<GamesMenu> {
 
   @override
   Widget build(BuildContext context) {
-    if(!context.watch<AlumnoHolder>().hasAlumno){
-      Navigator.pop(context);
+    final alumnoHolder = context.watch<AlumnoHolder>();
+    final navigator = Navigator.of(context);
+
+
+    //Seccion hecha con chatgpt
+    if (alumnoHolder.alumno == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (navigator.canPop()) navigator.pop();
+      });
+      return const SizedBox.shrink();
     }
-    alumno = context.watch<AlumnoHolder>().alumno!;
+    //Fin seccion hecha con chatgpt
+    alumno = alumnoHolder.alumno!;
+
     if (kDebugMode) {
       print(alumno);
     }
-    Color colorTextoSup = alumno.colorPrincipal != null
-        ? alumno.colorPrincipal!.computeLuminance() > 0.5
+    Color colorTextoSup = alumno.colorBarraNav != null
+        ? alumno.colorBarraNav!.computeLuminance() > 0.5
               ? Colors.black
               : Colors.white
         : Theme.of(context).colorScheme.onPrimary;
-    return Scaffold(
-      backgroundColor: alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        leading: Navigator.canPop(context)
-            ? InkWell(
-                child: Icon(Icons.arrow_back, color: colorTextoSup),
-                onTap: () => {Navigator.pop(context)},
-              )
-            : Icon(Icons.menu, color: colorTextoSup),
-        title: Column(
-          children: [
-            Text(
-              'Seleccion de juego',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-            ),
-            Text(alumno.nombre, style: TextStyle(fontSize: 16)),
-          ],
-        ),
-        centerTitle: true,
-        backgroundColor: alumno.colorPrincipal ?? Theme.of(context).colorScheme.primary,
-        titleTextStyle: TextStyle(color: colorTextoSup),
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    //PopScope hecho con chatgpt, el resto no
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) return; // Ya se hizo pop automáticamente, no hacemos nada
+
+        // Mostrar el diálogo de confirmación
+        mostrarDialogoCerrarSesion(context).then((confirmed) {
+          salirFunc(confirmed, alumnoHolder, navigator);
+        });
+      },
+      child: Scaffold(
+        backgroundColor:
+            alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Column(
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: listaJuegos[0].widgetJuego(context, () {
-                        navegar(listaJuegos[0].actividad, context);
-                      }),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: listaJuegos[1].widgetJuego(context, () {
-                        navegar(listaJuegos[1].actividad, context);
-                      }),
-                    ),
-                  ],
-                ),
+              Text(
+                'Seleccion de juego',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 16),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: listaJuegos[2].widgetJuego(context, () {
-                        navegar(listaJuegos[2].actividad, context);
-                      }),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: listaJuegos[3].widgetJuego(context, () {
-                        navegar(listaJuegos[3].actividad, context);
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: listaJuegos[4].widgetJuego(context, () {
-                        navegar(ColorPickerExample(), context);
-                      }),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: listaJuegos[5].widgetJuego(context, () {
-                        Navigator.canPop(context)
-                            ? Navigator.pop(context)
-                            : navegar(ColorPickerExample(), context);
-                      }),
-                    ),
-                  ],
-                ),
-              ),
+              Text(alumno.nombre, style: TextStyle(fontSize: 16)),
             ],
+          ),
+          centerTitle: true,
+          backgroundColor:
+              alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary,
+          titleTextStyle: TextStyle(color: colorTextoSup),
+          elevation: 0,
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: listaJuegos[0].widgetJuego(context, () {
+                          navegar(listaJuegos[0].actividad, context);
+                        }, alumno.colorBotones),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: listaJuegos[1].widgetJuego(context, () {
+                          navegar(listaJuegos[1].actividad, context);
+                        }, alumno.colorBotones),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: listaJuegos[2].widgetJuego(context, () {
+                          navegar(listaJuegos[2].actividad, context);
+                        }, alumno.colorBotones),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: listaJuegos[3].widgetJuego(context, () {
+                          navegar(listaJuegos[3].actividad, context);
+                        }, alumno.colorBotones),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: !alumno.volverDerecha
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: listaJuegos[5].widgetJuego(context, () {
+                                mostrarDialogoCerrarSesion(context).then((
+                                  confirmed,
+                                ) {
+                                  salirFunc(confirmed, alumnoHolder, navigator);
+                                });
+                              }, alumno.colorBotones),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: listaJuegos[4].widgetJuego(context, () {
+                                navegar(ColorPickerExample(), context);
+                              }, alumno.colorBotones),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: listaJuegos[4].widgetJuego(context, () {
+                                navegar(ColorPickerExample(), context);
+                              }, alumno.colorBotones),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: listaJuegos[5].widgetJuego(context, () {
+                                mostrarDialogoCerrarSesion(context).then((
+                                  confirmed,
+                                ) {
+                                  salirFunc(confirmed, alumnoHolder, navigator);
+                                });
+                              }, alumno.colorBotones),
+                            ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+void salirFunc(
+  bool? confirmed,
+  AlumnoHolder alumnoHolder,
+  NavigatorState navigator,
+) {
+  if (confirmed == true) {
+    alumnoHolder.clear();
+    navigator.pop();
+  }
+}
+
+Future<bool?> mostrarDialogoCerrarSesion(BuildContext context) async {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false, // Evita cerrar tocando fuera del diálogo
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Salir'),
+        content: const Text('¿Seguro que quieres salir?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('No'),
+            onPressed: () {
+              Navigator.of(context).pop(false); // Cierra el diálogo
+            },
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text('Si', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      );
+    },
+  );
 }

@@ -3,25 +3,37 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
-class Alumno{
+class Alumno {
   String id;
   String nombre;
   String? imagen;
   String imagenLocal = '';
   Color? _colorFondo;
-  Color? _colorPrincipal ;
+  Color? _colorBarraNav;
+  Color? _colorBotones;
   bool _volverDerecha = false;
 
-  Alumno({required this.id, required this.nombre, required this.imagen, Color? colorFondo, Color? colorPrincipal, volverDerecha}) {
+  Alumno({
+    required this.id,
+    required this.nombre,
+    required this.imagen,
+    Color? colorFondo,
+    Color? colorBarraNav,
+    Color? colorBotones,
+    volverDerecha,
+  }) {
     if (volverDerecha != null) {
       _volverDerecha = volverDerecha;
     }
     if (colorFondo != null) {
       _colorFondo = colorFondo;
     }
-  if (colorPrincipal != null) {
-    _colorPrincipal = colorPrincipal;
-  }
+    if (colorBarraNav != null) {
+      _colorBarraNav = colorBarraNav;
+    }
+    if (colorBotones != null) {
+      _colorBotones = colorBotones;
+    }
   }
 
   Color? get colorFondo => _colorFondo;
@@ -30,43 +42,55 @@ class Alumno{
     _colorFondo = color;
   }
 
-
   bool get volverDerecha => _volverDerecha;
 
   set volverDerecha(bool value) {
     _volverDerecha = value;
   }
 
-  Color? get colorPrincipal => _colorPrincipal;
+  Color? get colorBarraNav => _colorBarraNav;
 
-  set colorPrincipal(Color value) {
-    _colorPrincipal = value;
+  set colorBarraNav(Color value) {
+    _colorBarraNav = value;
+  }
+
+  Color? get colorBotones => _colorBotones;
+
+  set colorBotones(Color value) {
+    _colorBotones = value;
   }
 
   @override
   String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorPrincipal: $colorPrincipal, imagen: $imagen}';
+    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $imagen, volverDerecha: $volverDerecha}';
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
-    Color? colorFondo;
-    Color? colorPrincipalLoc;
-    if (data['colorFondo'] != null){
+    Color? colorFondoLoc, colorBotonesLoc, colorNavLoc;
+    if (data['colorFondo'] != null) {
       int hex = int.parse(data['colorFondo']!, radix: 16);
-      colorFondo = Color(hex);
+      colorFondoLoc = Color(hex);
     }
-    if (data['colorPrincipal'] != null){
-      int hex = int.parse(data['colorPrincipal']!, radix: 16);
-      colorPrincipalLoc = Color(hex);
+    if (data['colorBarraNav'] != null) {
+      int hex = int.parse(data['colorBarraNav']!, radix: 16);
+      colorNavLoc = Color(hex);
     }
+
+    if (data['colorBotones'] != null) {
+      int hex = int.parse(data['colorBotones']!, radix: 16);
+      colorBotonesLoc = Color(hex);
+    }
+
+    print("colorBotonesLoc: $colorBotonesLoc");
 
     return Alumno(
       id: id,
       nombre: data['nombre'] ?? 'Sin nombre',
       imagen: data['imagen'] ?? '',
-      colorFondo: colorFondo,
-      colorPrincipal : colorPrincipalLoc
-
+      volverDerecha: data['volverDerecha'] ?? false,
+      colorFondo: colorFondoLoc,
+      colorBarraNav: colorNavLoc,
+      colorBotones: colorBotonesLoc,
     );
   }
 
@@ -147,5 +171,4 @@ class Alumno{
       ),
     );
   }
-
 }

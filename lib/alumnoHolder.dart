@@ -23,9 +23,16 @@ class AlumnoHolder extends ChangeNotifier {
     }
   }
 
-  void setColorPrincipal(Color color) {
+  void setBarraNav(Color color) {
     if (alumno != null) {
-      alumno!.colorPrincipal = color;
+      alumno!.colorBarraNav = color;
+      notifyListeners();
+    }
+  }
+
+  void setColorBotones(Color color) {
+    if (alumno != null) {
+      alumno!.colorBotones = color;
       notifyListeners();
     }
   }
