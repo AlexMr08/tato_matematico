@@ -50,16 +50,18 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
       print("Ha iniciado sesion correctamente");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(profesorData["director"] ?  "Ha iniciado sesion correctamente, rol: Director" : "Ha iniciado sesion correctamente, rol: Profesor"),
+          content: Text(
+            profesorData["director"]
+                ? "Ha iniciado sesion correctamente, rol: Director"
+                : "Ha iniciado sesion correctamente, rol: Profesor",
+          ),
           backgroundColor: Colors.green,
         ),
       );
       if (profesorData["director"]) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const AgregarProfesor(),
-          ),
+          MaterialPageRoute(builder: (context) => const AgregarProfesor()),
         );
       }
     } else {
@@ -89,51 +91,70 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  'Log In del profesor',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 30),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 30),
 
-              // Campo de texto para el nombre de usuario
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de usuario',
-                  border: OutlineInputBorder(),
+                Center(
+                  child: Container(
+                    height: 350,
+                    width: 350,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/images/logo.webp"),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
 
-              // Campo de texto para la contraseña
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Contraseña',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 30),
+
+                TextField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre de usuario',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 30),
 
-              // Botón de "Iniciar sesión"
-              ElevatedButton(
-                onPressed: () {
-                  String username = usernameController.text.trim();
-                  String password = passwordController.text.trim();
-                  autenticacionProfesor(username, password);
-                },
-                child: const Text('Iniciar sesión'),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Contraseña',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Center(
+                  child: SizedBox(
+                    width: 150,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6750A4),
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        String username = usernameController.text.trim();
+                        String password = passwordController.text.trim();
+                        autenticacionProfesor(username, password);
+                      },
+                      child: const Text('Iniciar sesión'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
