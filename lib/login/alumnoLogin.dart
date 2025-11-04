@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/agregarProfesor.dart';
+import 'package:tato_matematico/alumnoHolder.dart';
+import 'package:provider/provider.dart';
+import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/gamesMenu.dart';
+import 'dart:io';
 
 class AlumnoLogIn extends StatefulWidget {
   const AlumnoLogIn({super.key});
@@ -9,61 +14,49 @@ class AlumnoLogIn extends StatefulWidget {
 }
 
 class _AlumnoLogInState extends State<AlumnoLogIn> {
-  int selectedTab = 0;
-  final TextEditingController usernameController = TextEditingController();
+  late Alumno alumno;
   final TextEditingController passwordController = TextEditingController();
 
-  // Función para autenticar al alumno en la base de datos
+  // Función para autenticar al profesor en la base de datos
   void autenticacionAlumno(String id, String password) async {
     // Validar que los campos no estén vacíos
-    if (id.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ingrese nombre de usuario y contraseña")),
-      );
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Ingrese contraseña")));
       return;
     }
 
-    // Buscar el profesor en la base de datos por nombre de usuario
+    // Buscar el alumno en la base de datos por su id
     var dbref = FirebaseDatabase.instance
         .ref()
         .child("tato")
-        .child("profesorado");
-    DatabaseEvent event = await dbref
-        .orderByChild("username")
-        .equalTo(username)
-        .once();
+        .child("alumnos")
+        .child(id);
 
-    // Si el profesor no existe, mostrar mensaje de error
-    if (event.snapshot.value == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Usuario no registrado")));
-      return;
+    DatabaseEvent event = await dbref.once();
+
+    if (event.snapshot.exists) {
+      var data = event.snapshot.value;
+      print("Alumno encontrado: $data");
+    } else {
+      print("No existe un alumno con ese id");
     }
 
-    Map data = event.snapshot.value as Map;
-    var profesorId = data.keys.first;
-    var profesorData = data[profesorId];
+    Map alumnoData = event.snapshot.value as Map;
 
     // Verificar la contraseña
-    if (profesorData["pass"] == password) {
+    if (alumnoData["pass"] == password) {
       print("Ha iniciado sesion correctamente");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            profesorData["director"]
-                ? "Ha iniciado sesion correctamente, rol: Director"
-                : "Ha iniciado sesion correctamente, rol: Profesor",
+            "Ha iniciado sesion correctamente ${alumnoData['nombre']}",
           ),
           backgroundColor: Colors.green,
         ),
       );
-      if (profesorData["director"]) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AgregarProfesor()),
-        );
-      }
+      navegar(GamesMenu(), context);
     } else {
       ScaffoldMessenger.of(
         context,
@@ -73,6 +66,19 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
 
   @override
   Widget build(BuildContext context) {
+    final alumnoHolder = context.watch<AlumnoHolder>();
+    final navigator = Navigator.of(context);
+
+    //Seccion hecha con chatgpt
+    if (alumnoHolder.alumno == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (navigator.canPop()) navigator.pop();
+      });
+      return const SizedBox.shrink();
+    }
+    //Fin seccion hecha con chatgpt
+    alumno = alumnoHolder.alumno!;
+
     return Scaffold(
       appBar: AppBar(
         leading: Navigator.canPop(context)
@@ -82,7 +88,7 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
               )
             : const Icon(Icons.menu),
         title: const Text(
-          'Inicio de sesion del profesor',
+          'Inicio de sesion de Alumno',
           style: TextStyle(fontSize: 20),
         ),
         centerTitle: true,
@@ -99,32 +105,46 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 30),
-
                 Center(
-                  child: Container(
-                    height: 350,
-                    width: 350,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/logo.webp"),
-                        fit: BoxFit.contain,
-                      ),
+                  child: Text(
+                    alumno.nombre,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Center(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      double size = 200; // Tamaño fijo del avatar en login
+                      ImageProvider? imageProvider;
+                      if (alumno.imagenLocal.isNotEmpty) {
+                        imageProvider = FileImage(File(alumno.imagenLocal));
+                      }
+                      return SizedBox(
+                        width: size,
+                        height: size,
+                        child: CircleAvatar(
+                          backgroundImage: imageProvider,
+                          child: imageProvider == null
+                              ? Text(
+                                  alumno.nombre.isNotEmpty
+                                      ? alumno.nombre[0]
+                                      : '?',
+                                  style: TextStyle(fontSize: size * 0.4),
+                                )
+                              : null,
+                        ),
+                      );
+                    },
                   ),
                 ),
 
                 const SizedBox(height: 30),
-
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre de usuario',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
+                
                 TextField(
                   controller: passwordController,
                   obscureText: true,
@@ -146,9 +166,9 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
                       ),
                       onPressed: () {
                         String password = passwordController.text.trim();
-                        autenticacionAlumno(id, password);
+                        autenticacionAlumno(alumno.id, password);
                       },
-                      child: const Text('Iniciar sesión'),
+                      child: const Text('Entrar'),
                     ),
                   ),
                 ),
