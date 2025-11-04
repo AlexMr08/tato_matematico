@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/agregarProfesor.dart';
 
-class ProfesorLogIn extends StatefulWidget {
-  const ProfesorLogIn({super.key});
+class AlumnoLogIn extends StatefulWidget {
+  const AlumnoLogIn({super.key});
   @override
-  State<ProfesorLogIn> createState() => _ProfesorLogInState();
+  State<AlumnoLogIn> createState() => _AlumnoLogInState();
 }
 
-class _ProfesorLogInState extends State<ProfesorLogIn> {
+class _AlumnoLogInState extends State<AlumnoLogIn> {
   int selectedTab = 0;
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // Función para autenticar al profesor en la base de datos
-  void autenticacionProfesor(String username, String password) async {
+  // Función para autenticar al alumno en la base de datos
+  void autenticacionAlumno(String id, String password) async {
     // Validar que los campos no estén vacíos
-    if (username.isEmpty || password.isEmpty) {
+    if (id.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Ingrese nombre de usuario y contraseña")),
       );
@@ -145,9 +145,8 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () {
-                        String username = usernameController.text.trim();
                         String password = passwordController.text.trim();
-                        autenticacionProfesor(username, password);
+                        autenticacionAlumno(id, password);
                       },
                       child: const Text('Iniciar sesión'),
                     ),
