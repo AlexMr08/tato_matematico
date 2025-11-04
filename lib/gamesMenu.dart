@@ -174,7 +174,7 @@ class _GamesMenuState extends State<GamesMenu> {
                             SizedBox(width: 16),
                             Expanded(
                               child: listaJuegos[4].widgetJuego(context, () {
-                                navegar(ColorPickerExample(), context);
+                                navegar(ConfigColor(), context);
                               }, alumno.colorBotones),
                             ),
                           ],
@@ -183,7 +183,7 @@ class _GamesMenuState extends State<GamesMenu> {
                           children: [
                             Expanded(
                               child: listaJuegos[4].widgetJuego(context, () {
-                                navegar(ColorPickerExample(), context);
+                                navegar(ConfigColor(), context);
                               }, alumno.colorBotones),
                             ),
                             SizedBox(width: 16),

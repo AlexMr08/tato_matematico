@@ -6,14 +6,14 @@ import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:tato_matematico/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 
-class ColorPickerExample extends StatefulWidget {
+class ConfigColor extends StatefulWidget {
   @override
-  _ColorPickerExampleState createState() => _ColorPickerExampleState();
+  _ConfigColorState createState() => _ConfigColorState();
 
-  const ColorPickerExample({super.key});
+  const ConfigColor({super.key});
 }
 
-class _ColorPickerExampleState extends State<ColorPickerExample> {
+class _ConfigColorState extends State<ConfigColor> {
   late AlumnoHolder alumnoHolder;
   @override
   void initState() {
@@ -72,48 +72,53 @@ class _ColorPickerExampleState extends State<ColorPickerExample> {
     );
   }
 
+  Widget _colorTile(String ref, String label, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label),
+        InkWell(
+          onTap: () => _showColorPicker(
+            ref,
+            label,
+            color,
+          ),
+          child: Container(
+            width: 128,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color,
+              border: Border.all(color: Colors.black26),
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     alumnoHolder = context.read<AlumnoHolder>();
 
     return ScaffoldComun(
       titulo: 'Ajustes comunes de color',
+      navBar: null,
       cuerpo: Padding(padding: const EdgeInsets.all(8.0),
       child: Center(
         child: Column(
           children: [
-            ElevatedButton(
-              onPressed: () => _showColorPicker(
-                "colorFondo",
-                "Elige el color de fondo",
-                alumnoHolder.alumno!.colorFondo != null
-                    ? alumnoHolder.alumno!.colorFondo!
-                    : Colors.white,
-              ),
-              child: const Text('Open Background Color Picker'),
-            ),
+            _colorTile("colorFondo", "Color de fondo", alumnoHolder.alumno!.colorFondo != null
+                ? alumnoHolder.alumno!.colorFondo!
+                : Theme.of(context).colorScheme.surface),
             SizedBox(height: 8,),
-            ElevatedButton(
-              onPressed: () => _showColorPicker(
-                "colorBarraNav",
-                "Elige el color de la barra de navegacion",
-                alumnoHolder.alumno!.colorBarraNav != null
-                    ? alumnoHolder.alumno!.colorBarraNav!
-                    : Colors.white,
-              ),
-              child: const Text('Open Main Color Picker'),
-            ),
+            _colorTile("colorBarraNav", "Color de la barra de navegacion", alumnoHolder.alumno!.colorBarraNav != null
+                ? alumnoHolder.alumno!.colorBarraNav!
+                : Theme.of(context).colorScheme.primary),
             SizedBox(height: 8,),
-            ElevatedButton(
-              onPressed: () => _showColorPicker(
-                "colorBotones",
-                "Elige el color de los botones",
-                alumnoHolder.alumno!.colorBotones != null
-                    ? alumnoHolder.alumno!.colorBotones!
-                    : Colors.white,
-              ),
-              child: const Text('Open Button Color Picker'),
-            ),
+            _colorTile("colorBotones", "Color de los botones", alumnoHolder.alumno!.colorBotones != null
+                ? alumnoHolder.alumno!.colorBotones!
+                : Theme.of(context).colorScheme.primaryContainer),
           ],
         ),
       ),)
