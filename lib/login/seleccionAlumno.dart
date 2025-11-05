@@ -7,7 +7,7 @@ import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tato_matematico/login/alumnoLogIn.dart';
+import 'package:tato_matematico/login/alumnoLogin.dart';
 
 class SeleccionAlumno extends StatefulWidget {
   const SeleccionAlumno({super.key});
