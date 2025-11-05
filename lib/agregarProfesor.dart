@@ -63,46 +63,117 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Añadir Profesor"),
+        title: const Text(
+            "Añadir Profesor",
+            style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
+        backgroundColor: Color.fromRGBO(234, 221, 255, 1),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 10),
+
+            // Introducir Nombre Completo
+            const Text(
+              "Nombre Completo",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 10),
             TextField(
               controller: _nombreController,
-              decoration: const InputDecoration(labelText: "Nombre completo"),
+              decoration: InputDecoration(
+                hintText: "Nombre",
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                )
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10,),
+
+            // Introducir Nombre de Usuario
+            const Text(
+              "Nombre de Usuario",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 10),
             TextField(
               controller: _usernameController,
-              decoration: const InputDecoration(labelText: "Nombre de usuario"),
+              decoration: InputDecoration(
+                hintText: "Nombre de Usuario",
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                )
+              )
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+
+            // Introducir Contraseña
+            const Text(
+              "Contraseña",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 10,),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: "Contraseña"),
               obscureText: true,
+              decoration: InputDecoration(
+                hintText: "Introduce contraseña segura",
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20,),
+
+            // Checkbox para director
             Row(
               children: [
                 Checkbox(
-                  value: _esDirector,
-                  onChanged: (v) => setState(() => _esDirector = v ?? false),
+                    value: _esDirector,
+                    onChanged: (v) => setState(() => _esDirector = v ?? false),
                 ),
-                const Text("¿Es director?"),
-              ],
+                const Text(
+                  "¿Es Director?",
+                  style: TextStyle(fontSize: 16),
+                )
+              ]
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: agregarProfesor,
-              child: const Text("Guardar"),
-            ),
+            const SizedBox(height: 100,),
+
+            // Boton para añadir al profesor
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[100],
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: agregarProfesor,
+                child: const Text(
+                  "Añadir Profesor",
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Color.fromRGBO(121, 100, 174, 1)
+                  )
+                ),
+              ),
+            )
           ],
         ),
-      ),
+      )
     );
   }
 }
