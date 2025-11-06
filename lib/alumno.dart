@@ -13,6 +13,7 @@ class Alumno {
   Color? _colorBotones;
   bool _volverDerecha = false;
 
+
   Alumno({
     required this.id,
     required this.nombre,
@@ -94,6 +95,14 @@ class Alumno {
     );
   }
 
+  ImageProvider? _cachedImage;
+
+  ImageProvider? get cachedImage {
+    if (imagenLocal.isEmpty) return null;
+    _cachedImage ??= FileImage(File(imagenLocal));
+    return _cachedImage;
+  }
+
   //Descarga una imagen de 10MB como maximo
   Future<void> descargarImagen(
     Directory tempDir, {
@@ -126,12 +135,6 @@ class Alumno {
   Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
     ImageProvider? imageProvider;
 
-    if (imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(imagenLocal));
-      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
-      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
-    }
-
     var ori = MediaQuery.of(context).orientation;
 
     return InkWell(
@@ -150,8 +153,8 @@ class Alumno {
                 width: size,
                 height: size,
                 child: CircleAvatar(
-                  backgroundImage: imageProvider,
-                  child: imageProvider == null
+                  backgroundImage: cachedImage,
+                  child: cachedImage == null
                       ? Text(
                           nombre.isNotEmpty ? nombre[0] : '?',
                           style: TextStyle(fontSize: size * 0.4),
@@ -180,8 +183,6 @@ class Alumno {
       // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
       //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
     }
-
-    var ori = MediaQuery.of(context).orientation;
 
     return Card(
       elevation: 2,

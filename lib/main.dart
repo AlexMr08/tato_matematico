@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tato Aventuras',
       theme: appTheme,
-      home: const HomeScreen(),
+      home: const SeleccionAlumno(),
       debugShowCheckedModeBanner: false,
     );
   }

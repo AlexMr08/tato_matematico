@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/alumnoHolder.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
+
+import '../holders/alumnoHolder.dart';
 
 class AlumnoLogIn extends StatefulWidget {
   const AlumnoLogIn({super.key});
@@ -70,6 +71,7 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
     final navigator = Navigator.of(context);
 
     //Seccion hecha con chatgpt
+
     if (alumnoHolder.alumno == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (navigator.canPop()) navigator.pop();
@@ -119,7 +121,7 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
                 Center(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      double size = 200; // Tamaño fijo del avatar en login
+                      double size = 150; // Tamaño fijo del avatar en login
                       ImageProvider? imageProvider;
                       if (alumno.imagenLocal.isNotEmpty) {
                         imageProvider = FileImage(File(alumno.imagenLocal));

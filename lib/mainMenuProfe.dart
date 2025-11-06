@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
+import 'package:tato_matematico/agregarProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/colorPicker.dart';
@@ -12,13 +13,13 @@ import 'alumno.dart';
 import 'fab.dart';
 import 'holders/profesorHolder.dart';
 
-class PruebaProfe extends StatefulWidget {
-  const PruebaProfe({super.key});
+class MainMenuProfe extends StatefulWidget {
+  const MainMenuProfe({super.key});
   @override
-  State<PruebaProfe> createState() => _PruebaProfeState();
+  State<MainMenuProfe> createState() => _MainMenuProfeState();
 }
 
-class _PruebaProfeState extends State<PruebaProfe> {
+class _MainMenuProfeState extends State<MainMenuProfe> {
   int currentPageIndex = 0;
   bool esDirector = true;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
@@ -93,7 +94,8 @@ class _PruebaProfeState extends State<PruebaProfe> {
               M3FabAction(
                 icon: Icons.supervisor_account_rounded,
                 label: 'Añadir profesor',
-                onPressed: () {},
+                onPressed: (){
+                  navegar(AgregarProfesor(), context);},
               ),
             ],
             direction: FabDirection.up,

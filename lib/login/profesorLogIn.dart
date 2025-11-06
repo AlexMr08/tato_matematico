@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/agregarProfesor.dart';
+import 'package:provider/provider.dart';
+
+import '../holders/profesorHolder.dart';
+import '../profesor.dart';
+import '../mainMenuProfe.dart';
 
 class ProfesorLogIn extends StatefulWidget {
   const ProfesorLogIn({super.key});
@@ -9,9 +13,9 @@ class ProfesorLogIn extends StatefulWidget {
 }
 
 class _ProfesorLogInState extends State<ProfesorLogIn> {
-  int selectedTab = 0;
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final _logo = const AssetImage("assets/images/logo.webp");
 
   // Función para autenticar al profesor en la base de datos
   void autenticacionProfesor(String username, String password) async {
@@ -63,7 +67,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PruebaProfe()),
+        MaterialPageRoute(builder: (context) => const MainMenuProfe()),
       );
     } else {
       ScaffoldMessenger.of(
@@ -100,19 +104,16 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 30),
-
-                Center(
-                  child: Container(
+                Container(
                     height: 350,
                     width: 350,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage("assets/images/logo.webp"),
+                        image: _logo,
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
-                ),
 
                 const SizedBox(height: 30),
 
@@ -138,20 +139,17 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                 const SizedBox(height: 20),
 
                 Center(
-                  child: SizedBox(
-                    width: 150,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6750A4),
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        String username = usernameController.text.trim();
-                        String password = passwordController.text.trim();
-                        autenticacionProfesor(username, password);
-                      },
-                      child: const Text('Iniciar sesión'),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
+                    onPressed: () {
+                      String username = usernameController.text.trim();
+                      String password = passwordController.text.trim();
+                      autenticacionProfesor(username, password);
+                    },
+                    child: const Text('Iniciar sesión'),
                   ),
                 ),
               ],

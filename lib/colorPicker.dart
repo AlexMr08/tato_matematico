@@ -104,6 +104,7 @@ class _ConfigColorState extends State<ConfigColor> {
     return ScaffoldComun(
       titulo: 'Ajustes comunes de color',
       navBar: null,
+      funcionSalir: (){Navigator.pop(context);},
       cuerpo: Padding(padding: const EdgeInsets.all(8.0),
       child: Center(
         child: Column(
