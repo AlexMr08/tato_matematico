@@ -7,6 +7,10 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
 
+import '../holders/alumnoHolder.dart';
+
+import 'package:tato_matematico/holders/alumnoHolder.dart';
+
 class AlumnoLogIn extends StatefulWidget {
   const AlumnoLogIn({super.key});
   @override
@@ -119,7 +123,7 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
                 Center(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      double size = 200; // Tamaño fijo del avatar en login
+                      double size = 150; // Tamaño fijo del avatar en login
                       ImageProvider? imageProvider;
                       if (alumno.imagenLocal.isNotEmpty) {
                         imageProvider = FileImage(File(alumno.imagenLocal));

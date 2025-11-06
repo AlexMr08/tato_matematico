@@ -5,10 +5,12 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tato_matematico/theme.dart';
 
-import 'alumnoHolder.dart';
+import 'holders/alumnoHolder.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
+
+import 'holders/profesorHolder.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,11 +22,9 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (_) => AlumnoHolder(),
         ),
-        /*
         ChangeNotifierProvider(
           create: (_) => ProfesorHolder(),
         ),
-         */
       ],
       child: const MyApp(),
     ),
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tato Aventuras',
       theme: appTheme,
-      home: const HomeScreen(),
+      home: const SeleccionAlumno(),
       debugShowCheckedModeBanner: false,
     );
   }

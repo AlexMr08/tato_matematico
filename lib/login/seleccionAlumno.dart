@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
-import 'package:tato_matematico/alumnoHolder.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
@@ -21,12 +23,21 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   int paginaActual = 0;
   final int itemsPorPagina = 12;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  late DatabaseReference _alumnosRef;
+  StreamSubscription<DatabaseEvent>? _subAdded;
+  StreamSubscription<DatabaseEvent>? _subChanged;
+  StreamSubscription<DatabaseEvent>? _subRemoved;
   Future<List<Alumno>>? _futureAlumnos;
 
   @override
   initState() {
     super.initState();
-    _futureAlumnos = _loadAlumnos();
+    _alumnosRef = _dbRef.child('tato').child('alumnos');
+    _futureAlumnos = _loadAlumnos().then((list) {
+      setState(() => alumnos = list);
+      _attachListeners();
+      return list;
+    });
   }
 
   VoidCallback? retroceder() {
@@ -61,6 +72,39 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
       alumnos.add(alumno);
     }
     return alumnos;
+  }
+
+  void _attachListeners() {
+    _subAdded = _alumnosRef.onChildAdded.listen((event) => _handleChildAdded(event));
+    _subChanged = _alumnosRef.onChildChanged.listen((event) => _handleChildChanged(event));
+  }
+
+  Future<void> _handleChildAdded(DatabaseEvent event) async {
+    if (event.snapshot.value == null) return;
+    final key = event.snapshot.key!;
+    // evita duplicados
+    if (alumnos.any((a) => a.id == key)) return;
+    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+    final newAlumno = Alumno.fromMap(key, data);
+    await newAlumno.descargarImagen(await getTemporaryDirectory());
+    setState(() => alumnos.add(newAlumno));
+    _futureAlumnos = Future.value(alumnos);
+  }
+
+  Future<void> _handleChildChanged(DatabaseEvent event) async {
+    if (event.snapshot.value == null) return;
+    final key = event.snapshot.key!;
+    final index = alumnos.indexWhere((a) => a.id == key);
+    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+    final updated = Alumno.fromMap(key, data);
+    await updated.descargarImagen(await getTemporaryDirectory());
+    if (index != -1) {
+      setState(() => alumnos[index] = updated);
+    } else {
+      // si no estaba, añadirlo
+      setState(() => alumnos.add(updated));
+    }
+    _futureAlumnos = Future.value(alumnos);
   }
 
   @override

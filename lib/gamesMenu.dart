@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
-import 'alumnoHolder.dart';
+import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'juego.dart';
 import 'colorPicker.dart';

@@ -8,6 +8,7 @@ class ScaffoldComun extends StatelessWidget {
   final NavigationBar? navBar;
   final Widget cuerpo;
   final Widget? fab;
+  final VoidCallback? funcionSalir;
 
   /// Constructor del ScaffoldComun
   /// @param key Clave del widget
@@ -19,6 +20,7 @@ class ScaffoldComun extends StatelessWidget {
     required this.cuerpo,
     this.navBar,
     this.fab,
+    this.funcionSalir,
   });
 
   /// Construye el widget Scaffold con AppBar y cuerpo personalizado
@@ -27,15 +29,13 @@ class ScaffoldComun extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Navigator.canPop(context)
-            ? InkWell(
+        leading: InkWell(
+                onTap: funcionSalir,
                 child: Icon(
                   Icons.arrow_back,
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
-                onTap: () => {Navigator.pop(context)},
-              )
-            : const Icon(Icons.menu),
+              ),
         title: Text(
           titulo,
           style: TextStyle(

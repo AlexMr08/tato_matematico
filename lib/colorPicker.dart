@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
-import 'package:tato_matematico/alumnoHolder.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 
 class ConfigColor extends StatefulWidget {
@@ -104,6 +104,7 @@ class _ConfigColorState extends State<ConfigColor> {
     return ScaffoldComun(
       titulo: 'Ajustes comunes de color',
       navBar: null,
+      funcionSalir: (){Navigator.pop(context);},
       cuerpo: Padding(padding: const EdgeInsets.all(8.0),
       child: Center(
         child: Column(
