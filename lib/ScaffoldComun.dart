@@ -14,6 +14,7 @@ class ScaffoldComun extends StatelessWidget {
   /// @param key Clave del widget
   /// @param titulo Título de la pantalla
   /// @param cuerpo Cuerpo de la pantalla
+  /// @returns ScaffoldComun widget
   const ScaffoldComun({
     super.key,
     required this.titulo,

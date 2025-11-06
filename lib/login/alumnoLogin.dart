@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/alumnoHolder.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/auxFunc.dart';

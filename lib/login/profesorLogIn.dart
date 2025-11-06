@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 
+import '../ScaffoldComun.dart';
 import '../holders/profesorHolder.dart';
 import '../profesor.dart';
 import '../mainMenuProfe.dart';
