@@ -78,24 +78,12 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Navigator.canPop(context)
-            ? InkWell(
-                child: const Icon(Icons.arrow_back),
-                onTap: () => {Navigator.pop(context)},
-              )
-            : const Icon(Icons.menu),
-        title: const Text(
-          'Inicio de sesion del profesor',
-          style: TextStyle(fontSize: 20),
-        ),
-        centerTitle: true,
-        actions: [Padding(padding: const EdgeInsets.only(right: 16))],
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SafeArea(
+    return ScaffoldComun(
+      titulo: 'Inicio de sesion del profesor',
+      funcionSalir: Navigator.canPop(context) ? () => Navigator.pop(context) : null,
+      fab: null,
+      navBar: null,
+      cuerpo: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Padding(
@@ -104,16 +92,19 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 30),
-                Container(
+
+                Center(
+                  child: Container(
                     height: 350,
                     width: 350,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       image: DecorationImage(
-                        image: _logo,
+                        image: AssetImage("assets/images/logo.webp"),
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
+                ),
 
                 const SizedBox(height: 30),
 
@@ -139,17 +130,20 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                 const SizedBox(height: 20),
 
                 Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  child: SizedBox(
+                    width: 150,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      onPressed: () {
+                        String username = usernameController.text.trim();
+                        String password = passwordController.text.trim();
+                        autenticacionProfesor(username, password);
+                      },
+                      child: const Text('Iniciar sesión'),
                     ),
-                    onPressed: () {
-                      String username = usernameController.text.trim();
-                      String password = passwordController.text.trim();
-                      autenticacionProfesor(username, password);
-                    },
-                    child: const Text('Iniciar sesión'),
                   ),
                 ),
               ],
