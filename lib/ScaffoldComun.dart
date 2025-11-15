@@ -10,6 +10,7 @@ class ScaffoldComun extends StatelessWidget {
   final Widget? fab;
   final VoidCallback? funcionSalir;
   final Widget? header;
+  final String? subtitulo;
 
   /// Constructor del ScaffoldComun
   /// @param key Clave del widget
@@ -24,6 +25,7 @@ class ScaffoldComun extends StatelessWidget {
     this.fab,
     this.funcionSalir,
     this.header,
+    this.subtitulo,
   });
 
   /// Construye el widget Scaffold con AppBar y cuerpo personalizado
@@ -48,6 +50,19 @@ class ScaffoldComun extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+        bottom: subtitulo != null ? PreferredSize(
+          preferredSize: const Size.fromHeight(0),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              subtitulo!,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ) : null,
         actions: [Padding(padding: const EdgeInsets.only(right: 16))],
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,

@@ -176,7 +176,7 @@ class Alumno {
     );
   }
 
-  Widget widgetProfesor(BuildContext context, VoidCallback navegar) {
+  Widget widgetProfesor(BuildContext context, VoidCallback navegar, Icon icono) {
     ImageProvider? imageProvider;
     if (imagenLocal.isNotEmpty) {
       imageProvider = FileImage(File(imagenLocal));
@@ -204,7 +204,7 @@ class Alumno {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: IconButton(icon: Icon(Icons.edit), onPressed: navegar),
+        trailing: IconButton(icon: icono, onPressed: navegar),
         onTap: null,
       ),
     );

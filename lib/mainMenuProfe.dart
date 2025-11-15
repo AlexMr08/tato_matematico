@@ -8,6 +8,9 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/colorPicker.dart';
 import 'package:tato_matematico/profesor.dart';
+import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/editarClase.dart';
+
 
 import 'alumno.dart';
 import 'fab.dart';
@@ -25,13 +28,18 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
   Future<List<Alumno>>? _futureAlumnos;
   Future<List<Profesor>>? _futureProfesores;
+  Future<List<Clase>>? _futureClases;
   late Profesor profesor;
   final TextEditingController _searchController = TextEditingController();
   List<Alumno> _alumnosFiltrados = [];
   List<Alumno> _alumnos = [];
   List<Profesor> _profesoresFiltrados = [];
   List<Profesor> _profesores = [];
+  List<Clase> _clases = [];
+  Clase? claseActual;
+  bool editandoClase = false;
   bool _yaCargado = false;
+  List<String> titulos = ["Listado de Alumnos", "Listado de Profesores", "Clases", "Perfil"]; 
 
   @override
   initState() {
@@ -49,7 +57,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       if (profesorHolder.profesor != null) {
         // Siempre carga los alumnos
         _futureAlumnos = _loadAlumnos();
-
+        _futureClases = _loadClases();
         // Solo carga profesores si es director
         if (profesorHolder.profesor!.director) {
           _futureProfesores = _loadProfesores();
@@ -208,6 +216,26 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     return alumnos;
   }
 
+  Future<List<Clase>> _loadClases() async {
+    final snapshot = await _dbRef.child("tato").child("clases").get();
+    if (!snapshot.exists) return [];
+
+    final data = Map<String, dynamic>.from(snapshot.value as Map);
+    final List<Clase> clases = [];
+
+    for (final entry in data.entries) {
+      print("-----------------------------------");
+      print(entry.value);
+      final claseData = Map<String, dynamic>.from(entry.value as Map);
+      final clase = Clase.fromMap(entry.key, claseData);
+      clases.add(clase);
+      print('Clase cargada: $clase');
+    }
+
+    _clases = clases;
+    return clases;
+  }
+
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
@@ -234,7 +262,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         });
       },
       child: ScaffoldComun(
-        titulo: "Listado de Alumnos",
+        titulo: editandoClase ? "Edición de Clase" : titulos [!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex],
+        subtitulo: (profesor.director ? "Director" : "Profesor") + " ${profesor.nombre}",
         funcionSalir: () {
           mostrarDialogoCerrarSesion(context).then((confirmed) {
             salirFunc(confirmed, profesorHolder, navigator);
@@ -277,27 +306,33 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           destinations: profesor.director
               ? <Widget>[
                   const NavigationDestination(
-                    selectedIcon: Icon(Icons.home),
-                    icon: Icon(Icons.home_outlined),
+                    icon: Icon(Icons.group),
                     label: 'Alumnos',
                   ),
                   const NavigationDestination(
-                    icon: const Icon(Icons.notifications_sharp),
+                    icon: const Icon(Icons.school),
                     label: 'Profesores',
                   ),
                   const NavigationDestination(
-                    icon: Icon(Icons.messenger_sharp),
+                    icon: const Icon(Icons.menu_book),
+                    label: 'Clases'
+                  ),
+                  const NavigationDestination(
+                    icon: Icon(Icons.account_circle),
                     label: 'Perfil',
                   ),
                 ]
               : <Widget>[
                   const NavigationDestination(
-                    selectedIcon: Icon(Icons.home),
-                    icon: Icon(Icons.home_outlined),
+                    icon: Icon(Icons.group),
                     label: 'Alumnos',
                   ),
                   const NavigationDestination(
-                    icon: Icon(Icons.messenger_sharp),
+                    icon: const Icon(Icons.menu_book),
+                    label: 'Clases'
+                  ),
+                  const NavigationDestination(
+                    icon: Icon(Icons.account_circle),
                     label: 'Perfil',
                   ),
                 ],
@@ -325,7 +360,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   return _alumnosFiltrados[index].widgetProfesor(context, () {
                     context.read<AlumnoHolder>().setAlumno(_alumnosFiltrados[index]);
                     navegar(ConfigColor(), context);
-                  });
+                  }, Icon(Icons.edit) );
                 },
               );
             },
@@ -350,9 +385,51 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
                 itemCount: _profesoresFiltrados.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return _profesoresFiltrados[index].widgetProfesor(context, () {
-                    context.read<ProfesorHolder>().setProfesor(_profesoresFiltrados[index]);
-                    navegar(ConfigColor(), context);
+                  return _profesoresFiltrados[index].widgetProfesor(context, () {});
+                },
+              );
+            },
+          ),
+
+          /// Clases page
+          FutureBuilder(
+            future: _futureClases,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No hay clases'));
+              }
+
+              if (editandoClase && claseActual != null) {
+                return EditarClase(
+                  clase: claseActual!,
+                  allAlumnos: _alumnos,
+                  salirDeEdicion: () {
+                    setState(() {
+                      editandoClase = false;
+                      claseActual = null;
+                    });
+                  },
+                );
+              }
+
+
+              final double fabOverlapPadding =
+                  88.0 + MediaQuery.of(context).padding.bottom;
+
+              return ListView.builder(
+                reverse: false,
+                padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
+                itemCount: _clases.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _clases[index].widgetClase(context, () {
+                    setState(() {
+                      claseActual = _clases[index];
+                      editandoClase = true;
+                    });
                   });
                 },
               );
@@ -381,7 +458,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               ],
             ),
           ),
-        ][!profesor.director && currentPageIndex == 1 ? 2 : currentPageIndex],
+        ][!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex],
       ),
     );
   }
@@ -430,3 +507,4 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     );
   }
 }
+
