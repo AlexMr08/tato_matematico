@@ -57,6 +57,8 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
     setState(() {
       _esDirector = false;
     });
+    
+    Navigator.of(context).pop(true);
   }
 
   @override

@@ -109,25 +109,36 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
 
                 const SizedBox(height: 30),
 
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre de usuario',
-                    border: OutlineInputBorder(),
+                Center(
+                  child: SizedBox(
+                    width: 500,
+                    child: TextField(
+                      controller: usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre de usuario',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                   ),
                 ),
+
 
                 const SizedBox(height: 16),
 
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    border: OutlineInputBorder(),
+                Center(
+                  child: SizedBox(
+                    width: 500,
+                    child: TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Contraseña',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                   ),
                 ),
-
+                
                 const SizedBox(height: 20),
 
                 Center(

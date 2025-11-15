@@ -9,6 +9,7 @@ class ScaffoldComun extends StatelessWidget {
   final Widget cuerpo;
   final Widget? fab;
   final VoidCallback? funcionSalir;
+  final Widget? header;
 
   /// Constructor del ScaffoldComun
   /// @param key Clave del widget
@@ -22,6 +23,7 @@ class ScaffoldComun extends StatelessWidget {
     this.navBar,
     this.fab,
     this.funcionSalir,
+    this.header,
   });
 
   /// Construye el widget Scaffold con AppBar y cuerpo personalizado
@@ -51,7 +53,14 @@ class ScaffoldComun extends StatelessWidget {
         elevation: 0,
       ),
       bottomNavigationBar: navBar,
-      body: SafeArea(child: cuerpo),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (header != null) header!,
+            Expanded(child: cuerpo),
+          ],
+        ),
+      ),
       floatingActionButton: fab,
     );
   }

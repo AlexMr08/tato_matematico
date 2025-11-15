@@ -24,12 +24,168 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   bool esDirector = true;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
   Future<List<Alumno>>? _futureAlumnos;
+  Future<List<Profesor>>? _futureProfesores;
   late Profesor profesor;
+  final TextEditingController _searchController = TextEditingController();
+  List<Alumno> _alumnosFiltrados = [];
+  List<Alumno> _alumnos = [];
+  List<Profesor> _profesoresFiltrados = [];
+  List<Profesor> _profesores = [];
+  bool _yaCargado = false;
 
   @override
   initState() {
     super.initState();
-    _futureAlumnos = _loadAlumnos();
+  }
+  
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_yaCargado) {
+      final profesorHolder = context.read<ProfesorHolder>();
+
+      // Si el profesor ya está listo, podemos tomar una decisión
+      if (profesorHolder.profesor != null) {
+        // Siempre carga los alumnos
+        _futureAlumnos = _loadAlumnos();
+
+        // Solo carga profesores si es director
+        if (profesorHolder.profesor!.director) {
+          _futureProfesores = _loadProfesores();
+        }
+        _yaCargado = true; // Para que no vuelva a ejecutarse
+      }
+    }
+  }
+  Widget _buildHeader() {
+    String texto = "";
+    switch (currentPageIndex) {
+      case 0:
+        texto = "alumno";
+        break;
+      case 1:
+        texto = "profesor";
+        break;
+      default:
+        return SizedBox.shrink();
+    }
+    if(profesor.director == false && currentPageIndex == 1){
+      return SizedBox.shrink();
+    }
+    return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          color: Theme.of(context).colorScheme.primary, // mismo color
+          child: 
+          Center(
+            child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                  width: 700,
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      if (currentPageIndex == 0){
+                        setState(() {
+                          _alumnosFiltrados = _alumnos
+                              .where((alumno) => alumno.nombre
+                                  .toLowerCase()
+                                  .contains(value.toLowerCase()))
+                              .toList();
+                        });
+                      }
+                      if (currentPageIndex == 1){
+                        setState(() {
+                          _profesoresFiltrados = _profesores
+                              .where((profesor) => profesor.nombre
+                                  .toLowerCase()
+                                  .contains(value.toLowerCase()))
+                              .toList();
+                        });
+                      }
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Buscar $texto",
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                ),
+
+              const SizedBox(width: 250),
+
+                // IconButton.filled(
+                //   style: IconButton.styleFrom(
+                //     backgroundColor: const Color.fromARGB(255, 95, 255, 149),
+                //     foregroundColor: Colors.black,
+                //     shape: const CircleBorder(),
+                //     padding: EdgeInsets.zero,
+                //   ),
+                //   iconSize: 28,
+                //   onPressed: () {
+                //     navegar(AgregarProfesor(), context);
+                //   },
+                //   icon: const Icon(Icons.add),
+                // ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 46, 149, 26),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  if (currentPageIndex == 0){
+                    navegar(AgregarProfesor(), context);
+                  }
+                  if (currentPageIndex == 1) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AgregarProfesor()),
+                    ).then((value) {
+                      if (value == true) {
+                        setState(() {
+                          _futureProfesores = _loadProfesores();
+                        });
+                      }
+                    });
+                  };
+                },
+                label: Text("Añadir $texto"),
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          ),
+        );
+  }
+
+  Future<List<Profesor>> _loadProfesores() async {
+    final snapshot = await _dbRef.child("tato").child("profesorado").get();
+    if (!snapshot.exists) return [];
+
+    final data = Map<String, dynamic>.from(snapshot.value as Map);
+    final tempDir = await getTemporaryDirectory();
+
+    final List<Profesor> profesores = [];
+    for (final entry in data.entries) {
+      final profesorData = Map<dynamic, dynamic>.from(entry.value);
+      final profesor = Profesor.fromMap(entry.key, profesorData);
+      await profesor.descargarImagen(tempDir);
+      print('Profesor cargado: $profesor');
+      profesores.add(profesor);
+    }
+    _profesores = profesores;
+    _profesoresFiltrados = List.from(profesores);
+    return profesores;
   }
 
   Future<List<Alumno>> _loadAlumnos() async {
@@ -47,6 +203,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       print('Alumno cargado: $alumno');
       alumnos.add(alumno);
     }
+    _alumnos = alumnos;
+    _alumnosFiltrados = List.from(alumnos);
     return alumnos;
   }
 
@@ -76,36 +234,42 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         });
       },
       child: ScaffoldComun(
-        titulo: "Panel de profesor: ${profesor.nombre}",
+        titulo: "Listado de Alumnos",
         funcionSalir: () {
           mostrarDialogoCerrarSesion(context).then((confirmed) {
             salirFunc(confirmed, profesorHolder, navigator);
           });
         },
-        fab: Visibility(
-          visible: profesor.director && currentPageIndex != 2,
-          child: M3FabMenu(
-            actions: [
-              M3FabAction(
-                icon: Icons.account_circle,
-                label: 'Añadir alumno',
-                onPressed: () {},
-              ),
-              M3FabAction(
-                icon: Icons.supervisor_account_rounded,
-                label: 'Añadir profesor',
-                onPressed: (){
-                  navegar(AgregarProfesor(), context);},
-              ),
-            ],
-            direction: FabDirection.up,
-            showLabels: true,
-          ),
-        ),
+        header: _buildHeader(),
+        // fab: Visibility(
+        //   visible: profesor.director && currentPageIndex != 2,
+        //   child: M3FabMenu(
+        //     actions: [
+        //       M3FabAction(
+        //         icon: Icons.account_circle,
+        //         label: 'Añadir alumno',
+        //         onPressed: () {},
+        //       ),
+        //       M3FabAction(
+        //         icon: Icons.supervisor_account_rounded,
+        //         label: 'Añadir profesor',
+        //         onPressed: (){
+        //           navegar(AgregarProfesor(), context);},
+        //       ),
+        //     ],
+        //     direction: FabDirection.up,
+        //     showLabels: true,
+        //   ),
+        // ),
         navBar: NavigationBar(
           onDestinationSelected: (int index) {
             setState(() {
               currentPageIndex = index;
+              if (profesor.director && (index == 0 || index == 1)) {
+                _searchController.clear();
+                _alumnosFiltrados = List.from(_alumnos);
+                _profesoresFiltrados = List.from(_profesores);
+              }
             });
           },
           indicatorColor: Colors.amber,
@@ -150,17 +314,16 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(child: Text('No hay alumnos'));
               }
-              final alumnos = snapshot.data!;
               final double fabOverlapPadding =
                   88.0 + MediaQuery.of(context).padding.bottom;
 
               return ListView.builder(
                 reverse: false,
                 padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
-                itemCount: alumnos.length,
+                itemCount: _alumnosFiltrados.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return alumnos[index].widgetProfesor(context, () {
-                    context.read<AlumnoHolder>().setAlumno(alumnos[index]);
+                  return _alumnosFiltrados[index].widgetProfesor(context, () {
+                    context.read<AlumnoHolder>().setAlumno(_alumnosFiltrados[index]);
                     navegar(ConfigColor(), context);
                   });
                 },
@@ -169,14 +332,31 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           ),
 
           /// Profesores page
-          Card(
-            shadowColor: Colors.transparent,
-            margin: const EdgeInsets.all(8.0),
-            child: SizedBox.expand(
-              child: Center(
-                child: Text('Home page', style: theme.textTheme.titleLarge),
-              ),
-            ),
+          FutureBuilder(
+            future: _futureProfesores,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No hay profesores'));
+              }
+              final double fabOverlapPadding =
+                  88.0 + MediaQuery.of(context).padding.bottom;
+
+              return ListView.builder(
+                reverse: false,
+                padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
+                itemCount: _profesoresFiltrados.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _profesoresFiltrados[index].widgetProfesor(context, () {
+                    context.read<ProfesorHolder>().setProfesor(_profesoresFiltrados[index]);
+                    navegar(ConfigColor(), context);
+                  });
+                },
+              );
+            },
           ),
 
           /// Perfil page
@@ -201,7 +381,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               ],
             ),
           ),
-        ][currentPageIndex],
+        ][!profesor.director && currentPageIndex == 1 ? 2 : currentPageIndex],
       ),
     );
   }

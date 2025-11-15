@@ -22,7 +22,7 @@ class Profesor {
 
   @override
   String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, imagen: $imagen, esDirector: $director}';
+    return 'Profesor{id: $id,nombre: $nombre, imagen: $imagen, esDirector: $director}';
   }
 
   factory Profesor.fromMap(String id, Map<dynamic, dynamic> data) {
@@ -62,6 +62,40 @@ class Profesor {
       imagenLocal = '';
       return;
     }
+  }
+
+  Widget widgetProfesor(BuildContext context, VoidCallback navegar) {
+    ImageProvider? imageProvider;
+    if (imagenLocal.isNotEmpty) {
+      imageProvider = FileImage(File(imagenLocal));
+      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
+      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          radius: 28,
+          backgroundImage: imageProvider,
+          child: imageProvider == null
+              ? Text(
+                  nombre.isNotEmpty ? nombre[0] : '?',
+                  style: const TextStyle(fontSize: 20),
+                )
+              : null,
+        ),
+        title: Text(
+          nombre,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: IconButton(icon: Icon(Icons.edit), onPressed: navegar),
+        onTap: null,
+      ),
+    );
   }
 
 }
