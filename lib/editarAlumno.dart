@@ -1,0 +1,319 @@
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:tato_matematico/ScaffoldComun.dart';
+import 'package:provider/provider.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'alumno.dart';
+
+class EditarAlumno extends StatefulWidget{
+  @override
+  State<EditarAlumno> createState() => _EditarAlumnoState();
+}
+
+class _EditarAlumnoState extends State<EditarAlumno> {
+  String tipoPassword = "alfanumerica";
+  late final TextEditingController _nombreController;
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+
+  // Estado para controlar el modo de edicion
+  bool _isEditingName = false;
+  bool _isControllerInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isControllerInitialized) {
+      final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno;
+      _nombreController = TextEditingController(text: alumno?.nombre ?? '');
+      _isControllerInitialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    super.dispose();
+  }
+
+  void _guardarNombre(Alumno alumno) async {
+    final nuevoNombre = _nombreController.text.trim();
+    if (nuevoNombre.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El nombre no puede estar vacío.')),
+      );
+      return;
+    }
+    if (nuevoNombre == alumno.nombre) {
+      // Si no hay cambios, simplemente salimos del modo edición.
+      setState(() => _isEditingName = false);
+      return;
+    }
+    try {
+      // Actualizamos la base de datos
+      await _dbRef.child('tato/alumnos/${alumno.id}').update({
+        'nombre': nuevoNombre,
+      });
+
+      // Actualizamos el estado local
+      alumno.nombre = nuevoNombre;
+      context.read<AlumnoHolder>().setAlumno(alumno);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nombre actualizado correctamente.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar el nombre: $e')),
+      );
+    } finally {
+      // Salimos del modo edición
+      setState(() => _isEditingName = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Consumer<AlumnoHolder>(
+        builder: (context, alumnoHolder, child) {
+          final Alumno? alumno = alumnoHolder.alumno;
+          return ScaffoldComun(
+            titulo: alumno!.nombre,
+            subtitulo: 'Editar Alumno',
+            funcionSalir: () {
+              Navigator.pop(context);
+            },
+            cuerpo: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  // ------------------------------
+                  //     BLOQUE IZQUIERDO
+                  // ------------------------------
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 90,
+                          backgroundColor: colorScheme.primaryContainer,
+                          backgroundImage: alumno.cachedImage,
+                          child: alumno.cachedImage == null
+                              ? Icon(
+                                Icons.person,
+                                size: 90,
+                                color: colorScheme.onPrimaryContainer,
+                              )
+                              : null,
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                          child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                  child: Center(
+                                    child: _isEditingName
+                                        ? TextFormField(
+                                      controller: _nombreController,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          fontSize: 20, fontWeight: FontWeight.bold
+                                      ),
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 8, horizontal: 4
+                                        ),
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onFieldSubmitted: (_) => _guardarNombre(alumno),
+                                    )
+                                        : Text(
+                                      // Usamos el controlador para mostrar el nombre, asegurando consistencia
+                                      _nombreController.text,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      icon: Icon(
+                                        _isEditingName ? Icons.save_alt_outlined : Icons.edit_outlined,
+                                        color: colorScheme.primary,
+                                      ),
+                                      onPressed: () {
+                                        if (_isEditingName) {
+                                          _guardarNombre(alumno);
+                                        } else {
+                                          setState(() {
+                                            _isEditingName = true;
+                                          });
+                                        }
+                                      }
+                                  ),
+                                )
+                              ]
+                          ),
+                        ),
+
+
+                        const SizedBox(height: 15),
+
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: Icon(Icons.edit),
+                          label: Text("Cambiar Imagen"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.secondary,
+                            foregroundColor: colorScheme.onSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ------------------------------
+                  //       BLOQUE CENTRAL
+                  // ------------------------------
+                  Expanded(
+                    flex: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Tipo de Contraseña",
+                          style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        SizedBox(
+                          width: 260,
+                          child: DropdownButtonFormField<String>(
+                            initialValue: tipoPassword,
+                            items: const [
+                              DropdownMenuItem(
+                                value: "alfanumerica",
+                                child: Text("Contraseña Alfanumérica"),
+                              ),
+                              DropdownMenuItem(
+                                value: "seleccion_imagen",
+                                child: Text("Selección de imagen"),
+                              ),
+                              DropdownMenuItem(
+                                value: "secuencia_imagen",
+                                child: Text("Secuencia de imágenes"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() => tipoPassword = value!);
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Tipo de contraseña",
+                            ),
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: Icon(Icons.navigate_next),
+                          label: Text("Siguiente"),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 30,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ------------------------------
+                  //     BLOQUE DERECHO
+                  // ------------------------------
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        const Text(
+                          "Ajustes Accesibilidad",
+                          style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: Icon(Icons.palette),
+                          label: Text("Colores"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.secondaryContainer,
+                            foregroundColor: colorScheme.onSecondaryContainer,
+                            minimumSize: Size(120, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: Icon(Icons.extension),
+                          label: Text("Juego 1"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.secondaryContainer,
+                            foregroundColor: colorScheme.onSecondaryContainer,
+                            minimumSize: Size(120, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                ],
+              ),
+            ),
+          );
+        }
+    );
+
+  }
+}
