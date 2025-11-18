@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -62,6 +63,14 @@ class Profesor {
       imagenLocal = '';
       return;
     }
+  }
+
+  void actualizarNombre(String nuevoNombre) {
+    nombre = nuevoNombre;
+    DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+    _dbRef.child("tato").child("profesorado").child(id).update({
+      "nombre": nuevoNombre,
+    });
   }
 
   Widget widgetProfesor(BuildContext context, VoidCallback navegar) {

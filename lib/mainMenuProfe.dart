@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,13 +9,12 @@ import 'package:tato_matematico/agregarProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/colorPicker.dart';
+import 'package:tato_matematico/perfilProfesor.dart';
 import 'package:tato_matematico/profesor.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/editarClase.dart';
 
-
 import 'alumno.dart';
-import 'fab.dart';
 import 'holders/profesorHolder.dart';
 
 class MainMenuProfe extends StatefulWidget {
@@ -39,20 +40,19 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   Clase? claseActual;
   bool editandoClase = false;
   bool _yaCargado = false;
-  List<String> titulos = ["Listado de Alumnos", "Listado de Profesores", "Clases", "Perfil"]; 
+  List<String> titulos = ["Listado de Alumnos", "Listado de Profesores", "Clases", "Perfil"];
 
   @override
   initState() {
     super.initState();
   }
-  
+
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_yaCargado) {
       final profesorHolder = context.read<ProfesorHolder>();
-
       // Si el profesor ya está listo, podemos tomar una decisión
       if (profesorHolder.profesor != null) {
         // Siempre carga los alumnos
@@ -60,13 +60,13 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         _futureClases = _loadClases();
         // Solo carga profesores si es director
         if (profesorHolder.profesor!.director) {
-          _futureProfesores = _loadProfesores();
+          _futureProfesores = _loadProfesores(profesorHolder);
         }
         _yaCargado = true; // Para que no vuelva a ejecutarse
       }
     }
   }
-  Widget _buildHeader() {
+  Widget _buildHeader(ProfesorHolder profesorHolder) {
     String texto = "";
     switch (currentPageIndex) {
       case 0:
@@ -85,7 +85,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           color: Theme.of(context).colorScheme.primary, // mismo color
-          child: 
+          child:
           Center(
             child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -144,8 +144,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 // ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 46, 149, 26),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -161,7 +161,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     ).then((value) {
                       if (value == true) {
                         setState(() {
-                          _futureProfesores = _loadProfesores();
+                          _futureProfesores = _loadProfesores(profesorHolder);
                         });
                       }
                     });
@@ -176,7 +176,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         );
   }
 
-  Future<List<Profesor>> _loadProfesores() async {
+  Future<List<Profesor>> _loadProfesores(ProfesorHolder profesorHolder) async {
     final snapshot = await _dbRef.child("tato").child("profesorado").get();
     if (!snapshot.exists) return [];
 
@@ -189,7 +189,11 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       final profesor = Profesor.fromMap(entry.key, profesorData);
       await profesor.descargarImagen(tempDir);
       print('Profesor cargado: $profesor');
-      profesores.add(profesor);
+      if(profesor.id != profesorHolder.profesor!.id) {
+        profesores.add(profesor);
+      }else{
+        profesorHolder.setProfesor(profesor);
+      }
     }
     _profesores = profesores;
     _profesoresFiltrados = List.from(profesores);
@@ -237,8 +241,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   }
 
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
     final profesorHolder = context.watch<ProfesorHolder>();
     final navigator = Navigator.of(context);
 
@@ -252,6 +254,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     //Fin seccion hecha con chatgpt
     profesor = profesorHolder.profesor!;
 
+    print("currentPageIndex: $currentPageIndex");
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
@@ -262,34 +265,14 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         });
       },
       child: ScaffoldComun(
-        titulo: editandoClase ? "Edición de Clase" : titulos [!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex],
-        subtitulo: (profesor.director ? "Director" : "Profesor") + " ${profesor.nombre}",
+        titulo: editandoClase ? "Edición de Clase" : (currentPageIndex != 3 ? titulos [!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex]: profesor.username),
+        subtitulo: currentPageIndex != 3 ? (profesor.director ? "Administrador" : "Profesor") + " ${profesor.nombre}" : null,
         funcionSalir: () {
           mostrarDialogoCerrarSesion(context).then((confirmed) {
             salirFunc(confirmed, profesorHolder, navigator);
           });
         },
-        header: _buildHeader(),
-        // fab: Visibility(
-        //   visible: profesor.director && currentPageIndex != 2,
-        //   child: M3FabMenu(
-        //     actions: [
-        //       M3FabAction(
-        //         icon: Icons.account_circle,
-        //         label: 'Añadir alumno',
-        //         onPressed: () {},
-        //       ),
-        //       M3FabAction(
-        //         icon: Icons.supervisor_account_rounded,
-        //         label: 'Añadir profesor',
-        //         onPressed: (){
-        //           navegar(AgregarProfesor(), context);},
-        //       ),
-        //     ],
-        //     direction: FabDirection.up,
-        //     showLabels: true,
-        //   ),
-        // ),
+        header: _buildHeader(profesorHolder),
         navBar: NavigationBar(
           onDestinationSelected: (int index) {
             setState(() {
@@ -301,7 +284,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               }
             });
           },
-          indicatorColor: Colors.amber,
           selectedIndex: currentPageIndex,
           destinations: profesor.director
               ? <Widget>[
@@ -419,7 +401,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
 
               final double fabOverlapPadding =
                   88.0 + MediaQuery.of(context).padding.bottom;
-
               return ListView.builder(
                 reverse: false,
                 padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
@@ -437,26 +418,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           ),
 
           /// Perfil page
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Column(
-              children: <Widget>[
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.notifications_sharp),
-                    title: Text('Notification 1'),
-                    subtitle: Text('This is a notification'),
-                  ),
-                ),
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.notifications_sharp),
-                    title: Text('Notification 2'),
-                    subtitle: Text('This is a notification'),
-                  ),
-                ),
-              ],
-            ),
+          Center(
+            child: PerfilProfesor(profesor: profesor, clases: profesor.director ? _clases : _clases.where((clase) => clase.idTutor == profesor.id).toList())
           ),
         ][!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex],
       ),
