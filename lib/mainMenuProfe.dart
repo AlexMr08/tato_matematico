@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,7 +10,7 @@ import 'package:tato_matematico/colorPicker.dart';
 import 'package:tato_matematico/perfilProfesor.dart';
 import 'package:tato_matematico/profesor.dart';
 import 'package:tato_matematico/clase.dart';
-import 'package:tato_matematico/editarClase.dart';
+import 'package:tato_matematico/edicion/editarClase.dart';
 
 import 'alumno.dart';
 import 'holders/profesorHolder.dart';
