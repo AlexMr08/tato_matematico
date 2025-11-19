@@ -2,8 +2,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'alumno.dart';
+import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/edicion alumnos/configAlfanumerica.dart';
 
 class EditarAlumno extends StatefulWidget{
   @override
@@ -38,6 +40,25 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   void dispose() {
     _nombreController.dispose();
     super.dispose();
+  }
+
+  void _irAConfiguracion(BuildContext context, Alumno alumno) {
+    Widget pantallaDestino;
+
+    switch(tipoPassword) {
+      case "alfanumerica":
+        pantallaDestino = ConfigAlfanumericaScreen(alumno: alumno);
+        break;
+      case "seleccion_imagen":
+        pantallaDestino = ConfigImagenUnicaScreen(alumno: alumno);
+        break;
+      case "secuencia_imagen":
+        pantallaDestino = ConfigSecuenciaScreen(alumno: alumno);
+        break;
+      default:
+        return;
+    }
+    navegar(pantallaDestino, context);
   }
 
   void _guardarNombre(Alumno alumno) async {
@@ -103,13 +124,13 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                     child: Column(
                       children: [
                         CircleAvatar(
-                          radius: 90,
+                          radius: 80,
                           backgroundColor: colorScheme.primaryContainer,
                           backgroundImage: alumno.cachedImage,
                           child: alumno.cachedImage == null
                               ? Icon(
                                 Icons.person,
-                                size: 90,
+                                size: 80,
                                 color: colorScheme.onPrimaryContainer,
                               )
                               : null,
@@ -196,7 +217,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                   //       BLOQUE CENTRAL
                   // ------------------------------
                   Expanded(
-                    flex: 4,
+                    flex: 3,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -238,19 +259,26 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           ),
                         ),
 
-                        const Spacer(),
+                        const SizedBox(height: 60,),
 
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.navigate_next),
-                          label: Text("Siguiente"),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 30,
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: () => _irAConfiguracion(context, alumno),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                              elevation: 4,
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("CONFIGURAR CONTRASEÑA", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                SizedBox(width: 10),
+                                Icon(Icons.arrow_forward_ios)
+                              ],
                             ),
                           ),
                         ),
@@ -314,6 +342,36 @@ class _EditarAlumnoState extends State<EditarAlumno> {
           );
         }
     );
+  }
+}
 
+//// PANTALLAS PARA DISTINTOS TIPOS DE CONTRASEÑAS ////
+class ConfigImagenUnicaScreen extends StatelessWidget {
+  final Alumno alumno;
+  const ConfigImagenUnicaScreen({required this.alumno});
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaffoldComun(
+      titulo: alumno.nombre,
+      subtitulo: "Configurar Pictograma",
+      funcionSalir: () => Navigator.pop(context),
+      cuerpo: Center(child: Text("Aquí irá el selector de tamaño de Grid y la librería de imágenes")),
+    );
+  }
+}
+
+class ConfigSecuenciaScreen extends StatelessWidget {
+  final Alumno alumno;
+  const ConfigSecuenciaScreen({required this.alumno});
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaffoldComun(
+      titulo: alumno.nombre,
+      subtitulo: "Configurar Secuencia",
+      funcionSalir: () => Navigator.pop(context),
+      cuerpo: Center(child: Text("Aquí irá la configuración de pasos (1, 2, 3) y librería")),
+    );
   }
 }

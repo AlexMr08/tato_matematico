@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:tato_matematico/agregarProfesor.dart';
+import 'package:tato_matematico/edicion%20alumnos/editarAlumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/colorPicker.dart';
@@ -359,7 +360,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 itemBuilder: (BuildContext context, int index) {
                   return _alumnosFiltrados[index].widgetProfesor(context, () {
                     context.read<AlumnoHolder>().setAlumno(_alumnosFiltrados[index]);
-                    navegar(ConfigColor(), context);
+                    navegar(EditarAlumno(), context);
                   }, Icon(Icons.edit) );
                 },
               );
