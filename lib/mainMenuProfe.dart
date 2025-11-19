@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +14,8 @@ import 'package:tato_matematico/perfilProfesor.dart';
 import 'package:tato_matematico/profesor.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/edicion/editarClase.dart';
+import 'package:tato_matematico/agregarAlumno.dart';
+
 
 import 'alumno.dart';
 import 'holders/profesorHolder.dart';
@@ -52,6 +56,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     super.didChangeDependencies();
     if (!_yaCargado) {
       final profesorHolder = context.read<ProfesorHolder>();
+
       // Si el profesor ya está listo, podemos tomar una decisión
       if (profesorHolder.profesor != null) {
         // Siempre carga los alumnos
@@ -150,13 +155,23 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   ),
                 ),
                 onPressed: () {
-                  if (currentPageIndex == 0){
-                    navegar(AgregarProfesor(), context);
+                  // ALUMNOS
+                  if (currentPageIndex == 0) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AgregarAlumno()),
+                    ).then((value) {
+                      if (value == true) {
+                        setState(() {
+                          _futureAlumnos = _loadAlumnos();
+                        });
+                      }
+                    });
                   }
                   if (currentPageIndex == 1) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => AgregarProfesor()),
+                      MaterialPageRoute(builder: (context) => const AgregarProfesor()),
                     ).then((value) {
                       if (value == true) {
                         setState(() {
@@ -164,7 +179,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                         });
                       }
                     });
-                  };
+                  }
                 },
                 label: Text("Añadir $texto"),
                 icon: const Icon(Icons.add),
@@ -240,6 +255,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   }
 
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     final profesorHolder = context.watch<ProfesorHolder>();
     final navigator = Navigator.of(context);
 
@@ -253,7 +270,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     //Fin seccion hecha con chatgpt
     profesor = profesorHolder.profesor!;
 
-    print("currentPageIndex: $currentPageIndex");
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
