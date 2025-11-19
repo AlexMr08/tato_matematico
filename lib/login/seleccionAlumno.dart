@@ -28,16 +28,21 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   StreamSubscription<DatabaseEvent>? _subChanged;
   StreamSubscription<DatabaseEvent>? _subRemoved;
   Future<List<Alumno>>? _futureAlumnos;
+  bool _yaCargado = false;
 
   @override
   initState() {
     super.initState();
     _alumnosRef = _dbRef.child('tato').child('alumnos');
-    _futureAlumnos = _loadAlumnos().then((list) {
-      setState(() => alumnos = list);
-      _attachListeners();
-      return list;
-    });
+  }
+
+  @override
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    if (!_yaCargado) {
+        _futureAlumnos = _loadAlumnos();
+        _yaCargado = true; // Para que no vuelva a ejecutarse
+      }
   }
 
   VoidCallback? retroceder() {
