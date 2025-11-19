@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tato_matematico/ScaffoldComun.dart';
 
 class AgregarProfesor extends StatefulWidget {
   const AgregarProfesor({super.key});
@@ -32,7 +33,10 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
         .child("profesorado");
 
     // Verificar si ya existe el username
-    final snapshot = await dbRef.orderByChild("username").equalTo(username).once();
+    final snapshot = await dbRef
+        .orderByChild("username")
+        .equalTo(username)
+        .once();
     if (snapshot.snapshot.value != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Ese nombre de usuario ya existe")),
@@ -57,22 +61,16 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
     setState(() {
       _esDirector = false;
     });
-    
+
     Navigator.of(context).pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-            "Añadir Profesor",
-            style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Color.fromRGBO(234, 221, 255, 1),
-      ),
-      body: SingleChildScrollView(
+    return ScaffoldComun(
+      titulo: "Añadir profesor",
+      funcionSalir: () => {Navigator.pop(context)},
+      cuerpo: SingleChildScrollView(
         padding: EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,16 +85,13 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
             const SizedBox(height: 10),
             TextField(
               controller: _nombreController,
-              decoration: InputDecoration(
-                hintText: "Nombre",
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                )
+              obscureText: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Nombre completo',
               ),
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(height: 10),
 
             // Introducir Nombre de Usuario
             const Text(
@@ -106,14 +101,11 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
             const SizedBox(height: 10),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(
-                hintText: "Nombre de Usuario",
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                )
-              )
+              obscureText: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Nombre de usuario',
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -122,42 +114,36 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
               "Contraseña",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Introduce contraseña segura",
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Contraseña segura',
               ),
             ),
-            const SizedBox(height: 20,),
+            const SizedBox(height: 20),
 
             // Checkbox para director
             Row(
               children: [
                 Checkbox(
-                    value: _esDirector,
-                    onChanged: (v) => setState(() => _esDirector = v ?? false),
+                  value: _esDirector,
+                  onChanged: (v) => setState(() => _esDirector = v ?? false),
                 ),
-                const Text(
-                  "¿Es Director?",
-                  style: TextStyle(fontSize: 16),
-                )
-              ]
+                const Text("¿Es Director?", style: TextStyle(fontSize: 16)),
+              ],
             ),
-            const SizedBox(height: 100,),
+            const SizedBox(height: 100),
 
             // Boton para añadir al profesor
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[100],
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -167,15 +153,14 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
                 child: const Text(
                   "Añadir Profesor",
                   style: TextStyle(
-                      fontSize: 18,
-                      color: Color.fromRGBO(121, 100, 174, 1)
-                  )
+                    fontSize: 18,
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
-      )
+      ),
     );
   }
 }

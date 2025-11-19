@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/alumno.dart';
-import 'package:tato_matematico/edicion alumnos/configAlfanumerica.dart';
+import 'package:tato_matematico/edicion/configAlfanumerica.dart';
 
 class EditarAlumno extends StatefulWidget{
   @override

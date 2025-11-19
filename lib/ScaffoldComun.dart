@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/fab.dart';
 
 /// Widget que crea un Scaffold personalizado para las pantallas comunes
 
@@ -35,36 +34,34 @@ class ScaffoldComun extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: InkWell(
-                onTap: funcionSalir,
-                child: Icon(
-                  Icons.arrow_back,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-        title: Text(
-          titulo,
-          style: TextStyle(
-            fontSize: 20,
+          onTap: funcionSalir,
+          child: Icon(
+            Icons.arrow_back,
             color: Theme.of(context).colorScheme.onPrimary,
-            fontWeight: FontWeight.w500,
           ),
         ),
-        centerTitle: true,
-        bottom: subtitulo != null ? PreferredSize(
-          preferredSize: const Size.fromHeight(0),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              subtitulo!,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-                fontSize: 14,
-              ),
+        title: Column(
+          spacing: 4,
+          children: [
+            Text(
+              titulo,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
-          ),
-        ) : null,
+            ?subtitulo != null
+                ? Text(
+                    subtitulo!,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
+                : null,
+          ],
+        ),
+        centerTitle: true,
         actions: [Padding(padding: const EdgeInsets.only(right: 16))],
         backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
       ),
       bottomNavigationBar: navBar,

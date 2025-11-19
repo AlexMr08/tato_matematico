@@ -1,21 +1,17 @@
-import 'dart:io';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
-import 'package:tato_matematico/agregarProfesor.dart';
-import 'package:tato_matematico/edicion%20alumnos/editarAlumno.dart';
+import 'package:tato_matematico/agregar/agregarProfesor.dart';
+import 'package:tato_matematico/edicion/editarAlumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/colorPicker.dart';
 import 'package:tato_matematico/perfilProfesor.dart';
 import 'package:tato_matematico/profesor.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/edicion/editarClase.dart';
-import 'package:tato_matematico/agregarAlumno.dart';
-
+import 'package:tato_matematico/agregar/agregarAlumno.dart';
 
 import 'alumno.dart';
 import 'holders/profesorHolder.dart';
@@ -43,13 +39,17 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   Clase? claseActual;
   bool editandoClase = false;
   bool _yaCargado = false;
-  List<String> titulos = ["Listado de Alumnos", "Listado de Profesores", "Clases", "Perfil"];
+  List<String> titulos = [
+    "Listado de Alumnos",
+    "Listado de Profesores",
+    "Clases",
+    "Perfil",
+  ];
 
   @override
   initState() {
     super.initState();
   }
-
 
   @override
   void didChangeDependencies() {
@@ -70,6 +70,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       }
     }
   }
+
   Widget _buildHeader(ProfesorHolder profesorHolder) {
     String texto = "";
     switch (currentPageIndex) {
@@ -82,112 +83,110 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       default:
         return SizedBox.shrink();
     }
-    if(profesor.director == false && currentPageIndex == 1){
+    if (profesor.director == false && currentPageIndex == 1) {
       return SizedBox.shrink();
     }
     return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          color: Theme.of(context).colorScheme.primary, // mismo color
-          child:
-          Center(
-            child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                  width: 700,
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      if (currentPageIndex == 0){
-                        setState(() {
-                          _alumnosFiltrados = _alumnos
-                              .where((alumno) => alumno.nombre
-                                  .toLowerCase()
-                                  .contains(value.toLowerCase()))
-                              .toList();
-                        });
-                      }
-                      if (currentPageIndex == 1){
-                        setState(() {
-                          _profesoresFiltrados = _profesores
-                              .where((profesor) => profesor.nombre
-                                  .toLowerCase()
-                                  .contains(value.toLowerCase()))
-                              .toList();
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(
-                      hintText: "Buscar $texto",
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                  ),
-                ),
-
-              const SizedBox(width: 250),
-
-                // IconButton.filled(
-                //   style: IconButton.styleFrom(
-                //     backgroundColor: const Color.fromARGB(255, 95, 255, 149),
-                //     foregroundColor: Colors.black,
-                //     shape: const CircleBorder(),
-                //     padding: EdgeInsets.zero,
-                //   ),
-                //   iconSize: 28,
-                //   onPressed: () {
-                //     navegar(AgregarProfesor(), context);
-                //   },
-                //   icon: const Icon(Icons.add),
-                // ),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: () {
-                  // ALUMNOS
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      color: Theme.of(context).colorScheme.primary, // mismo color
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 700,
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
                   if (currentPageIndex == 0) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AgregarAlumno()),
-                    ).then((value) {
-                      if (value == true) {
-                        setState(() {
-                          _futureAlumnos = _loadAlumnos();
-                        });
-                      }
+                    setState(() {
+                      _alumnosFiltrados = _alumnos
+                          .where(
+                            (alumno) => alumno.nombre.toLowerCase().contains(
+                              value.toLowerCase(),
+                            ),
+                          )
+                          .toList();
                     });
                   }
                   if (currentPageIndex == 1) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AgregarProfesor()),
-                    ).then((value) {
-                      if (value == true) {
-                        setState(() {
-                          _futureProfesores = _loadProfesores(profesorHolder);
-                        });
-                      }
+                    setState(() {
+                      _profesoresFiltrados = _profesores
+                          .where(
+                            (profesor) => profesor.nombre
+                                .toLowerCase()
+                                .contains(value.toLowerCase()),
+                          )
+                          .toList();
                     });
                   }
                 },
-                label: Text("Añadir $texto"),
-                icon: const Icon(Icons.add),
+                decoration: InputDecoration(
+                  hintText: "Buscar $texto",
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: Icon(Icons.search),
+                ),
               ),
-            ],
-          ),
-          ),
-        );
+            ),
+
+            const SizedBox(width: 250),
+
+            // IconButton.filled(
+            //   style: IconButton.styleFrom(
+            //     backgroundColor: const Color.fromARGB(255, 95, 255, 149),
+            //     foregroundColor: Colors.black,
+            //     shape: const CircleBorder(),
+            //     padding: EdgeInsets.zero,
+            //   ),
+            //   iconSize: 28,
+            //   onPressed: () {
+            //     navegar(AgregarProfesor(), context);
+            //   },
+            //   icon: const Icon(Icons.add),
+            // ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                foregroundColor: Theme.of(
+                  context,
+                ).colorScheme.onPrimaryContainer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                if (currentPageIndex == 0) {
+                  navegar(const AgregarAlumno(), context);
+                }
+                if (currentPageIndex == 1) {
+                  navegar(const AgregarProfesor(), context);
+                  /*Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AgregarProfesor(),
+                    ),
+                  ).then((value) {
+                    if (value == true) {
+                      setState(() {
+                        _futureProfesores = _loadProfesores(profesorHolder);
+                      });
+                    }
+                  });*/
+                }
+              },
+              label: Text("Añadir $texto"),
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<List<Profesor>> _loadProfesores(ProfesorHolder profesorHolder) async {
@@ -203,9 +202,9 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       final profesor = Profesor.fromMap(entry.key, profesorData);
       await profesor.descargarImagen(tempDir);
       print('Profesor cargado: $profesor');
-      if(profesor.id != profesorHolder.profesor!.id) {
+      if (profesor.id != profesorHolder.profesor!.id) {
         profesores.add(profesor);
-      }else{
+      } else {
         profesorHolder.setProfesor(profesor);
       }
     }
@@ -255,8 +254,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   }
 
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
     final profesorHolder = context.watch<ProfesorHolder>();
     final navigator = Navigator.of(context);
 
@@ -280,8 +277,18 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         });
       },
       child: ScaffoldComun(
-        titulo: editandoClase ? "Edición de Clase" : (currentPageIndex != 3 ? titulos [!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex]: profesor.username),
-        subtitulo: currentPageIndex != 3 ? (profesor.director ? "Administrador" : "Profesor") + " ${profesor.nombre}" : null,
+        titulo: editandoClase
+            ? "Edición de Clase"
+            : (currentPageIndex != 3
+                  ? titulos[!profesor.director &&
+                            (currentPageIndex == 1 || currentPageIndex == 2)
+                        ? currentPageIndex + 1
+                        : currentPageIndex]
+                  : profesor.username),
+        subtitulo: currentPageIndex != 3
+            ? (profesor.director ? "Administrador" : "Profesor") +
+                  " ${profesor.nombre}"
+            : null,
         funcionSalir: () {
           mostrarDialogoCerrarSesion(context).then((confirmed) {
             salirFunc(confirmed, profesorHolder, navigator);
@@ -312,7 +319,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   ),
                   const NavigationDestination(
                     icon: const Icon(Icons.menu_book),
-                    label: 'Clases'
+                    label: 'Clases',
                   ),
                   const NavigationDestination(
                     icon: Icon(Icons.account_circle),
@@ -326,7 +333,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   ),
                   const NavigationDestination(
                     icon: const Icon(Icons.menu_book),
-                    label: 'Clases'
+                    label: 'Clases',
                   ),
                   const NavigationDestination(
                     icon: Icon(Icons.account_circle),
@@ -334,109 +341,128 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   ),
                 ],
         ),
-        cuerpo: <Widget>[
-          /// Alumnos page
-          FutureBuilder(
-            future: _futureAlumnos,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No hay alumnos'));
-              }
-              final double fabOverlapPadding =
-                  88.0 + MediaQuery.of(context).padding.bottom;
+        cuerpo:
+            <Widget>[
+              /// Alumnos page
+              FutureBuilder(
+                future: _futureAlumnos,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No hay alumnos'));
+                  }
+                  final double fabOverlapPadding =
+                      88.0 + MediaQuery.of(context).padding.bottom;
 
-              return ListView.builder(
-                reverse: false,
-                padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
-                itemCount: _alumnosFiltrados.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _alumnosFiltrados[index].widgetProfesor(context, () {
-                    context.read<AlumnoHolder>().setAlumno(_alumnosFiltrados[index]);
-                    navegar(EditarAlumno(), context);
-                  }, Icon(Icons.edit) );
+                  return ListView.builder(
+                    reverse: false,
+                    padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
+                    itemCount: _alumnosFiltrados.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return _alumnosFiltrados[index].widgetProfesor(
+                        context,
+                        () {
+                          context.read<AlumnoHolder>().setAlumno(
+                            _alumnosFiltrados[index],
+                          );
+                          navegar(EditarAlumno(), context);
+                        },
+                        Icon(Icons.edit),
+                      );
+                    },
+                  );
                 },
-              );
-            },
-          ),
+              ),
 
-          /// Profesores page
-          FutureBuilder(
-            future: _futureProfesores,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No hay profesores'));
-              }
-              final double fabOverlapPadding =
-                  88.0 + MediaQuery.of(context).padding.bottom;
+              /// Profesores page
+              FutureBuilder(
+                future: _futureProfesores,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No hay profesores'));
+                  }
+                  final double fabOverlapPadding =
+                      88.0 + MediaQuery.of(context).padding.bottom;
 
-              return ListView.builder(
-                reverse: false,
-                padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
-                itemCount: _profesoresFiltrados.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _profesoresFiltrados[index].widgetProfesor(context, () {});
+                  return ListView.builder(
+                    reverse: false,
+                    padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
+                    itemCount: _profesoresFiltrados.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return _profesoresFiltrados[index].widgetProfesor(
+                        context,
+                        () {},
+                      );
+                    },
+                  );
                 },
-              );
-            },
-          ),
+              ),
 
-          /// Clases page
-          FutureBuilder(
-            future: _futureClases,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No hay clases'));
-              }
+              /// Clases page
+              FutureBuilder(
+                future: _futureClases,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No hay clases'));
+                  }
 
-              if (editandoClase && claseActual != null) {
-                return EditarClase(
-                  clase: claseActual!,
-                  allAlumnos: _alumnos,
-                  salirDeEdicion: () {
-                    setState(() {
-                      editandoClase = false;
-                      claseActual = null;
-                    });
-                  },
-                );
-              }
+                  if (editandoClase && claseActual != null) {
+                    return EditarClase(
+                      clase: claseActual!,
+                      allAlumnos: _alumnos,
+                      salirDeEdicion: () {
+                        setState(() {
+                          editandoClase = false;
+                          claseActual = null;
+                        });
+                      },
+                    );
+                  }
 
-
-              final double fabOverlapPadding =
-                  88.0 + MediaQuery.of(context).padding.bottom;
-              return ListView.builder(
-                reverse: false,
-                padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
-                itemCount: _clases.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _clases[index].widgetClase(context, () {
-                    setState(() {
-                      claseActual = _clases[index];
-                      editandoClase = true;
-                    });
-                  });
+                  final double fabOverlapPadding =
+                      88.0 + MediaQuery.of(context).padding.bottom;
+                  return ListView.builder(
+                    reverse: false,
+                    padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
+                    itemCount: _clases.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return _clases[index].widgetClase(context, () {
+                        setState(() {
+                          claseActual = _clases[index];
+                          editandoClase = true;
+                        });
+                      });
+                    },
+                  );
                 },
-              );
-            },
-          ),
+              ),
 
-          /// Perfil page
-          Center(
-            child: PerfilProfesor(profesor: profesor, clases: profesor.director ? _clases : _clases.where((clase) => clase.idTutor == profesor.id).toList())
-          ),
-        ][!profesor.director && (currentPageIndex == 1 || currentPageIndex == 2) ? currentPageIndex + 1  : currentPageIndex],
+              /// Perfil page
+              Center(
+                child: PerfilProfesor(
+                  profesor: profesor,
+                  clases: profesor.director
+                      ? _clases
+                      : _clases
+                            .where((clase) => clase.idTutor == profesor.id)
+                            .toList(),
+                ),
+              ),
+            ][!profesor.director &&
+                    (currentPageIndex == 1 || currentPageIndex == 2)
+                ? currentPageIndex + 1
+                : currentPageIndex],
       ),
     );
   }
@@ -485,4 +511,3 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     );
   }
 }
-
