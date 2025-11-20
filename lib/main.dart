@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tato_matematico/firebase_options.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/login/seleccionAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tato_matematico/theme.dart';
-
-import 'holders/alumnoHolder.dart';
-import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 

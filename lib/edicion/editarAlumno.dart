@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/colorPicker.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
@@ -14,6 +15,7 @@ class EditarAlumno extends StatefulWidget{
 
 class _EditarAlumnoState extends State<EditarAlumno> {
   String tipoPassword = "alfanumerica";
+  int posicionBarra = 0;
   late final TextEditingController _nombreController;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
@@ -97,6 +99,33 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     }
   }
 
+  void _guardarBarra(Alumno alumno) async {
+    final nuevoNombre = posicionBarra;
+
+    if (nuevoNombre == alumno.nombre) {
+      // Si no hay cambios, simplemente salimos del modo edición.
+      return;
+    }
+    try {
+      // Actualizamos la base de datos
+      await _dbRef.child('tato/alumnos/${alumno.id}').update({
+        'posicionBarra': nuevoNombre,
+      });
+
+      // Actualizamos el estado local
+      alumno.posicionBarra = nuevoNombre;
+      context.read<AlumnoHolder>().setAlumno(alumno);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Posicion de la barra actualizada correctamente.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar la posicion de la barra: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -114,13 +143,14 @@ class _EditarAlumnoState extends State<EditarAlumno> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 16,
                 children: [
 
                   // ------------------------------
                   //     BLOQUE IZQUIERDO
                   // ------------------------------
                   Expanded(
-                    flex: 3,
+                    flex: 1,
                     child: Column(
                       children: [
                         CircleAvatar(
@@ -198,15 +228,15 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                         ),
 
 
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 16),
 
                         ElevatedButton.icon(
                           onPressed: () {},
                           icon: Icon(Icons.edit),
                           label: Text("Cambiar Imagen"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.secondary,
-                            foregroundColor: colorScheme.onSecondary,
+                            backgroundColor: colorScheme.primaryContainer,
+                            foregroundColor: colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ],
@@ -217,7 +247,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                   //       BLOQUE CENTRAL
                   // ------------------------------
                   Expanded(
-                    flex: 3,
+                    flex: 1,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -229,10 +259,10 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         SizedBox(
-                          width: 260,
+                          width: double.infinity,
                           child: DropdownButtonFormField<String>(
                             initialValue: tipoPassword,
                             items: const [
@@ -259,7 +289,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           ),
                         ),
 
-                        const SizedBox(height: 60,),
+                        const SizedBox(height: 16),
 
                         SizedBox(
                           width: double.infinity,
@@ -267,8 +297,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           child: ElevatedButton(
                             onPressed: () => _irAConfiguracion(context, alumno),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.colorScheme.primary,
-                              foregroundColor: theme.colorScheme.onPrimary,
+                              backgroundColor: theme.colorScheme.primaryContainer,
+                              foregroundColor: theme.colorScheme.onPrimaryContainer,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                               elevation: 4,
                             ),
@@ -285,12 +315,11 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                       ],
                     ),
                   ),
-
                   // ------------------------------
                   //     BLOQUE DERECHO
                   // ------------------------------
                   Expanded(
-                    flex: 2,
+                    flex: 1,
                     child: Column(
                       children: [
                         const Text(
@@ -301,15 +330,65 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<int>(
+                                initialValue: posicionBarra,
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 0,
+                                    child: Text("Arriba"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 1,
+                                    child: Text("Abajo"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 2,
+                                    child: Text("Izquierda"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 3,
+                                    child: Text("Derecha"),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  setState(() => posicionBarra = value!);
+                                },
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "Posicion botones principales",
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: Icon(
+                                  Icons.save_alt_outlined,
+                                  color: colorScheme.primary,
+                                ),
+                                onPressed: () {
+                                  _guardarBarra(alumno);
+                                }
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
 
                         ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.read<AlumnoHolder>().setAlumno(alumno);
+                            navegar(ConfigColor(), context);
+                          },
                           icon: Icon(Icons.palette),
                           label: Text("Colores"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.secondaryContainer,
-                            foregroundColor: colorScheme.onSecondaryContainer,
+                            backgroundColor: colorScheme.primaryContainer,
+                            foregroundColor: colorScheme.onPrimaryContainer,
                             minimumSize: Size(120, 50),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
@@ -317,15 +396,15 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         ElevatedButton.icon(
                           onPressed: () {},
                           icon: Icon(Icons.extension),
                           label: Text("Juego 1"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.secondaryContainer,
-                            foregroundColor: colorScheme.onSecondaryContainer,
+                            backgroundColor: colorScheme.primaryContainer,
+                            foregroundColor: colorScheme.onPrimaryContainer,
                             minimumSize: Size(120, 50),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),

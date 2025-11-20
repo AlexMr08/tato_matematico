@@ -5,9 +5,6 @@ import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
-
-import '../holders/alumnoHolder.dart';
-
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 
 class AlumnoLogIn extends StatefulWidget {
@@ -147,7 +144,7 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
                 ),
 
                 const SizedBox(height: 30),
-                
+
                 TextField(
                   controller: passwordController,
                   obscureText: true,
@@ -164,8 +161,12 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
                     width: 150,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6750A4),
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimaryContainer,
                       ),
                       onPressed: () {
                         String password = passwordController.text.trim();

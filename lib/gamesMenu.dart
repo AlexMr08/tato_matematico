@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/alumnoScaffold.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'juego.dart';
@@ -40,19 +41,6 @@ class _GamesMenuState extends State<GamesMenu> {
       nombre: 'Juego 4',
       color: Theme.of(context).colorScheme.primaryContainer,
     ),
-    Juego(
-      id: 'estadisticas',
-      actividad: Placeholder(),
-      nombre: 'estadisticas',
-      color: Theme.of(context).colorScheme.primaryContainer,
-    ),
-    Juego(
-      id: 'volver',
-      actividad: Placeholder(),
-      nombre: 'Salir',
-      color: Theme.of(context).colorScheme.primaryContainer,
-      icono: Icons.exit_to_app,
-    ),
   ];
 
   int selectedTab = 0;
@@ -67,7 +55,6 @@ class _GamesMenuState extends State<GamesMenu> {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
 
-
     //Seccion hecha con chatgpt
     if (alumnoHolder.alumno == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -81,11 +68,15 @@ class _GamesMenuState extends State<GamesMenu> {
     if (kDebugMode) {
       print(alumno);
     }
-    Color colorTextoSup = alumno.colorBarraNav != null
-        ? alumno.colorBarraNav!.computeLuminance() > 0.5
-              ? Colors.black
-              : Colors.white
-        : Theme.of(context).colorScheme.onPrimary;
+
+    PosicionBarra posicionBarra = switch(alumno.posicionBarra){
+      0 => PosicionBarra.arriba,
+      1 => PosicionBarra.abajo,
+      2 => PosicionBarra.izquierda,
+      3 => PosicionBarra.derecha,
+      _ => PosicionBarra.abajo
+    };
+
     //PopScope hecho con chatgpt, el resto no
     return PopScope(
       canPop: false,
@@ -97,110 +88,58 @@ class _GamesMenuState extends State<GamesMenu> {
           salirFunc(confirmed, alumnoHolder, navigator);
         });
       },
-      child: Scaffold(
-        backgroundColor:
-            alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Column(
+      child: AlumnoScaffold(
+        alumno: alumno,
+        posicion: posicionBarra,
+        hasEstadisticas: true,
+        hasAjustes: true,
+        onVolver: () {
+          mostrarDialogoCerrarSesion(context).then((confirmed) {
+            salirFunc(confirmed, alumnoHolder, navigator);
+          });
+        },
+        onAjustes: (){navegar(ConfigColor(), context);},
+        onEstadisticas: (){},
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             children: [
-              Text(
-                'Seleccion de juego',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: listaJuegos[0].widgetJuego(context, () {
+                        navegar(listaJuegos[0].actividad, context);
+                      }, alumno.colorBotones),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: listaJuegos[1].widgetJuego(context, () {
+                        navegar(listaJuegos[1].actividad, context);
+                      }, alumno.colorBotones),
+                    ),
+                  ],
+                ),
               ),
-              Text(alumno.nombre, style: TextStyle(fontSize: 16)),
+              SizedBox(height: 16),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: listaJuegos[2].widgetJuego(context, () {
+                        navegar(listaJuegos[2].actividad, context);
+                      }, alumno.colorBotones),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: listaJuegos[3].widgetJuego(context, () {
+                        navegar(listaJuegos[3].actividad, context);
+                      }, alumno.colorBotones),
+                    ),
+                  ],
+                ),
+              )
             ],
-          ),
-          centerTitle: true,
-          backgroundColor:
-              alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary,
-          titleTextStyle: TextStyle(color: colorTextoSup),
-          elevation: 0,
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: listaJuegos[0].widgetJuego(context, () {
-                          navegar(listaJuegos[0].actividad, context);
-                        }, alumno.colorBotones),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: listaJuegos[1].widgetJuego(context, () {
-                          navegar(listaJuegos[1].actividad, context);
-                        }, alumno.colorBotones),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: listaJuegos[2].widgetJuego(context, () {
-                          navegar(listaJuegos[2].actividad, context);
-                        }, alumno.colorBotones),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: listaJuegos[3].widgetJuego(context, () {
-                          navegar(listaJuegos[3].actividad, context);
-                        }, alumno.colorBotones),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: !alumno.volverDerecha
-                      ? Row(
-                          children: [
-                            Expanded(
-                              child: listaJuegos[5].widgetJuego(context, () {
-                                mostrarDialogoCerrarSesion(context).then((
-                                  confirmed,
-                                ) {
-                                  salirFunc(confirmed, alumnoHolder, navigator);
-                                });
-                              }, alumno.colorBotones),
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: listaJuegos[4].widgetJuego(context, () {
-                                navegar(ConfigColor(), context);
-                              }, alumno.colorBotones),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          children: [
-                            Expanded(
-                              child: listaJuegos[4].widgetJuego(context, () {
-                                navegar(ConfigColor(), context);
-                              }, alumno.colorBotones),
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: listaJuegos[5].widgetJuego(context, () {
-                                mostrarDialogoCerrarSesion(context).then((
-                                  confirmed,
-                                ) {
-                                  salirFunc(confirmed, alumnoHolder, navigator);
-                                });
-                              }, alumno.colorBotones),
-                            ),
-                          ],
-                        ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

@@ -12,6 +12,7 @@ class Alumno {
   Color? _colorBarraNav;
   Color? _colorBotones;
   bool _volverDerecha = false;
+  int? posicionBarra;
 
 
   Alumno({
@@ -22,6 +23,7 @@ class Alumno {
     Color? colorBarraNav,
     Color? colorBotones,
     volverDerecha,
+    posicionBarra,
   }) {
     if (volverDerecha != null) {
       _volverDerecha = volverDerecha;
@@ -34,6 +36,9 @@ class Alumno {
     }
     if (colorBotones != null) {
       _colorBotones = colorBotones;
+    }
+    if (posicionBarra != null) {
+      this.posicionBarra = posicionBarra;
     }
   }
 
@@ -82,8 +87,6 @@ class Alumno {
       colorBotonesLoc = Color(hex);
     }
 
-    print("colorBotonesLoc: $colorBotonesLoc");
-
     return Alumno(
       id: id,
       nombre: data['nombre'] ?? 'Sin nombre',
@@ -92,6 +95,7 @@ class Alumno {
       colorFondo: colorFondoLoc,
       colorBarraNav: colorNavLoc,
       colorBotones: colorBotonesLoc,
+      posicionBarra: data['posicionBarra'],
     );
   }
 
@@ -133,8 +137,6 @@ class Alumno {
   }
 
   Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
-    ImageProvider? imageProvider;
-
     var ori = MediaQuery.of(context).orientation;
 
     return InkWell(

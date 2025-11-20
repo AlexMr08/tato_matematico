@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:path_provider/path_provider.dart';
@@ -67,8 +66,6 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
 
     final data = Map<String, dynamic>.from(snapshot.value as Map);
     final tempDir = await getTemporaryDirectory();
-
-    final List<Alumno> alumnos = [];
     for (final entry in data.entries) {
       final alumnoData = Map<dynamic, dynamic>.from(entry.value);
       final alumno = Alumno.fromMap(entry.key, alumnoData);
@@ -76,10 +73,19 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
       print('Alumno cargado: $alumno');
       alumnos.add(alumno);
     }
+    _attachListenersAlumno();
     return alumnos;
   }
 
-  void _attachListeners() {
+  @override
+  void dispose() {
+    _subAdded?.cancel();
+    _subChanged?.cancel();
+    _subRemoved?.cancel();
+    super.dispose();
+  }
+
+  void _attachListenersAlumno() {
     _subAdded = _alumnosRef.onChildAdded.listen((event) => _handleChildAdded(event));
     _subChanged = _alumnosRef.onChildChanged.listen((event) => _handleChildChanged(event));
   }
