@@ -7,6 +7,7 @@ import 'package:tato_matematico/colorPicker.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
+import 'package:tato_matematico/edicion/configImagenUnica.dart';
 
 class EditarAlumno extends StatefulWidget{
   @override
@@ -425,20 +426,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 }
 
 //// PANTALLAS PARA DISTINTOS TIPOS DE CONTRASEÑAS ////
-class ConfigImagenUnicaScreen extends StatelessWidget {
-  final Alumno alumno;
-  const ConfigImagenUnicaScreen({required this.alumno});
 
-  @override
-  Widget build(BuildContext context) {
-    return ScaffoldComun(
-      titulo: alumno.nombre,
-      subtitulo: "Configurar Pictograma",
-      funcionSalir: () => Navigator.pop(context),
-      cuerpo: Center(child: Text("Aquí irá el selector de tamaño de Grid y la librería de imágenes")),
-    );
-  }
-}
 
 class ConfigSecuenciaScreen extends StatelessWidget {
   final Alumno alumno;
