@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tato_matematico/profesor.dart';
 
 class EditarClase extends StatefulWidget {
   final Clase clase;
@@ -22,12 +23,32 @@ class _EditarClaseState extends State<EditarClase> {
   late TextEditingController _nombreController;
   final DatabaseReference dbref = FirebaseDatabase.instance.ref();
   late List<Alumno> alumnos;
-
+  String? profesorTutor;
+  List<Profesor> _profesores = [];
+  
   @override
   void initState() {
     super.initState();
     _nombreController = TextEditingController(text: widget.clase.nombre);
     alumnos = alumnosDeClase(widget.clase, widget.allAlumnos);
+    getProfesores();
+  }
+
+  Future<void> getProfesores() async {
+    final dbref = FirebaseDatabase.instance.ref();
+    final snapshot = await dbref.child('tato').child('profesorado').get();
+
+    if (snapshot.exists) {
+      final data = snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
+        _profesores.add(Profesor.fromMap(key, value));
+      });
+    }
+
+    profesorTutor = widget.clase.idTutor.isNotEmpty ? widget.clase.idTutor : null;
+    
+
+    setState(() {});
   }
 
   List<Alumno> alumnosDeClase(Clase clase, List<Alumno> allAlumnos) {
@@ -220,6 +241,84 @@ class _EditarClaseState extends State<EditarClase> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
+                'Tutor: ',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 20),  
+              _profesores.isEmpty
+                  ? const CircularProgressIndicator()
+                  :
+              DropdownButton<String>(
+                value: profesorTutor,
+                underline: Container(
+                  height: 2,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                borderRadius: BorderRadius.circular(10),
+                hint: const Text("Selecciona tutor"),
+                items: _profesores.map((prof) {
+                  return DropdownMenuItem(
+                    value: prof.id,
+                    child: Text(prof.nombre),
+                  );
+                }).toList(),
+                onChanged: (nuevoId) async {
+                  setState(() => profesorTutor = nuevoId);
+                },
+              ),
+              const SizedBox(width: 20),
+
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(
+                    context,
+                  ).colorScheme.onPrimaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  if (profesorTutor != null) {
+                    dbref
+                        .child('tato')
+                        .child('clases')
+                        .child(widget.clase.id)
+                        .update({'id_tutor': profesorTutor})
+                        .then((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tutor actualizado correctamente'),
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          setState(() {
+                            widget.clase.idTutor = profesorTutor!;
+                          });
+                        })
+                        .catchError((error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error al actualizar el tutor: $error',
+                              ),
+                            ),
+                          );
+                        });
+                  }
+                },
+                label: Text("Guardar Tutor"),
+                icon: const Icon(Icons.save),
+              ),
+
+              const SizedBox(width: 80),
+              Text(
                 'Número de alumnos en la clase: ${alumnos.length}',
                 style: const TextStyle(
                   fontSize: 18,
@@ -312,7 +411,7 @@ class _EditarClaseState extends State<EditarClase> {
           ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
         ElevatedButton(
           onPressed: widget.salirDeEdicion,
           style: ElevatedButton.styleFrom(
@@ -322,7 +421,7 @@ class _EditarClaseState extends State<EditarClase> {
           ),
           child: Text("Volver a Clases"),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
       ],
     );
   }

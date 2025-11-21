@@ -80,10 +80,13 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       case 1:
         texto = "profesor";
         break;
+      case 2:
+        texto = "clase";
+        break;
       default:
         return SizedBox.shrink();
     }
-    if (profesor.director == false && currentPageIndex == 1) {
+    if (profesor.director == false && currentPageIndex == 1 || editandoClase) {
       return SizedBox.shrink();
     }
     return Container(
@@ -178,6 +181,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                       });
                     }
                   });*/
+                }
+                if (currentPageIndex == 2) {
                 }
               },
               label: Text("Añadir $texto"),
