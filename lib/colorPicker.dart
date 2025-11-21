@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
+import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 
 class ConfigColor extends StatefulWidget {
   @override
+
+  Alumno? alum;
+
   _ConfigColorState createState() => _ConfigColorState();
 
-  const ConfigColor({super.key});
+  ConfigColor({super.key, this.alum});
 }
 
 class _ConfigColorState extends State<ConfigColor> {
@@ -99,7 +103,14 @@ class _ConfigColorState extends State<ConfigColor> {
 
   @override
   Widget build(BuildContext context) {
+    Alumno alumno;
     alumnoHolder = context.read<AlumnoHolder>();
+    if(widget.alum != null){
+      alumno = widget.alum!;
+    }else{
+      alumno = alumnoHolder.alumno!;
+    }
+
 
     return ScaffoldComun(
       titulo: 'Ajustes comunes de color',
@@ -109,16 +120,16 @@ class _ConfigColorState extends State<ConfigColor> {
       child: Center(
         child: Column(
           children: [
-            _colorTile("colorFondo", "Color de fondo", alumnoHolder.alumno!.colorFondo != null
-                ? alumnoHolder.alumno!.colorFondo!
+            _colorTile("colorFondo", "Color de fondo", alumno.colorFondo != null
+                ? alumno.colorFondo!
                 : Theme.of(context).colorScheme.surface),
             SizedBox(height: 8,),
-            _colorTile("colorBarraNav", "Color de la barra de navegacion", alumnoHolder.alumno!.colorBarraNav != null
-                ? alumnoHolder.alumno!.colorBarraNav!
+            _colorTile("colorBarraNav", "Color de la barra de navegacion", alumno.colorBarraNav != null
+                ? alumno.colorBarraNav!
                 : Theme.of(context).colorScheme.primary),
             SizedBox(height: 8,),
-            _colorTile("colorBotones", "Color de los botones", alumnoHolder.alumno!.colorBotones != null
-                ? alumnoHolder.alumno!.colorBotones!
+            _colorTile("colorBotones", "Color de los botones", alumno.colorBotones != null
+                ? alumno.colorBotones!
                 : Theme.of(context).colorScheme.primaryContainer),
           ],
         ),

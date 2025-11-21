@@ -87,12 +87,14 @@ class AlumnoScaffold extends StatelessWidget {
       body: SafeArea(child: body),
     );
   }
-
+  //Se han cambiado los botones con IA :)
   Widget _construirBarra(BuildContext context) {
     final bool esHorizontal =
         posicion == PosicionBarra.arriba || posicion == PosicionBarra.abajo;
 
-    final botones = [
+    // Definimos la lista de widgets.
+    final List<Widget> botones = [
+      // 1. Botón Volver (Siempre presente)
       _BotonNav(
         icon: Icons.arrow_back,
         label: "Volver",
@@ -100,35 +102,42 @@ class AlumnoScaffold extends StatelessWidget {
         esHorizontal: esHorizontal,
         color: alumno.colorBarraNav,
       ),
-      if (hasAjustes)
-        _BotonNav(
-          icon: Icons.settings,
-          label: "Ajustes",
-          onTap: onAjustes,
-          esHorizontal: esHorizontal,
-          color: alumno.colorBarraNav,
-        ),
-      if (hasEstadisticas)
-        _BotonNav(
-          icon: Icons.bar_chart,
-          label: "Estadísticas",
-          onTap: onEstadisticas,
-          esHorizontal: esHorizontal,
-          color: alumno.colorBarraNav,
-        ),
+
+      // 2. Botón Ajustes o Espacio vacío
+      hasAjustes
+          ? _BotonNav(
+        icon: Icons.settings,
+        label: "Ajustes",
+        onTap: onAjustes,
+        esHorizontal: esHorizontal,
+        color: alumno.colorBarraNav,
+      )
+          : const SizedBox(), // <--- Relleno invisible
+
+      // 3. Botón Estadísticas o Espacio vacío
+      hasEstadisticas
+          ? _BotonNav(
+        icon: Icons.bar_chart,
+        label: "Estadísticas",
+        onTap: onEstadisticas,
+        esHorizontal: esHorizontal,
+        color: alumno.colorBarraNav,
+      )
+          : const SizedBox(), // <--- Relleno invisible
     ];
 
     return Container(
       width: esHorizontal ? double.infinity : 80,
       height: esHorizontal ? 80 : double.infinity,
       color: alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary,
-      // Quitamos el padding para que el botón toque los bordes
       child: esHorizontal
           ? Row(
-              // Usamos map para envolver cada botón en Expanded
-              children: botones.map((b) => Expanded(child: b)).toList(),
-            )
-          : Column(children: botones.map((b) => Expanded(child: b)).toList()),
+        // Al envolver el SizedBox en Expanded, actúa como un "Spacer"
+        children: botones.map((b) => Expanded(child: b)).toList(),
+      )
+          : Column(
+        children: botones.map((b) => Expanded(child: b)).toList(),
+      ),
     );
   }
 }
@@ -190,4 +199,91 @@ class _BotonNav extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<bool?> mostrarDialogoSiNoAlumno(
+  BuildContext context,
+  String titulo,
+  String contenido,
+) async {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(titulo),
+        content: Text(contenido),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+        ),
+        actionsAlignment:
+            MainAxisAlignment.spaceEvenly, // Distribuye el espacio
+        actions: <Widget>[
+          // ----------------- BOTÓN NO -----------------
+          Material(
+            elevation: 5,
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.red.shade50,
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pop(false);
+              },
+              borderRadius: BorderRadius.circular(15),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/no.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "No",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ----------------- BOTÓN SI -----------------
+          Material(
+            elevation: 5,
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.green.shade50,
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pop(true);
+              },
+              borderRadius: BorderRadius.circular(15),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/si.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "Si",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/alumnoScaffold.dart';
@@ -69,12 +70,12 @@ class _GamesMenuState extends State<GamesMenu> {
       print(alumno);
     }
 
-    PosicionBarra posicionBarra = switch(alumno.posicionBarra){
+    PosicionBarra posicionBarra = switch (alumno.posicionBarra) {
       0 => PosicionBarra.arriba,
       1 => PosicionBarra.abajo,
       2 => PosicionBarra.izquierda,
       3 => PosicionBarra.derecha,
-      _ => PosicionBarra.abajo
+      _ => PosicionBarra.abajo,
     };
 
     //PopScope hecho con chatgpt, el resto no
@@ -84,7 +85,9 @@ class _GamesMenuState extends State<GamesMenu> {
         if (didPop) return; // Ya se hizo pop automáticamente, no hacemos nada
 
         // Mostrar el diálogo de confirmación
-        mostrarDialogoCerrarSesion(context).then((confirmed) {
+        mostrarDialogoSiNoAlumno(context, "Salir", "¿Seguro que salir?").then((
+          confirmed,
+        ) {
           salirFunc(confirmed, alumnoHolder, navigator);
         });
       },
@@ -94,12 +97,18 @@ class _GamesMenuState extends State<GamesMenu> {
         hasEstadisticas: true,
         hasAjustes: true,
         onVolver: () {
-          mostrarDialogoCerrarSesion(context).then((confirmed) {
+          mostrarDialogoSiNoAlumno(
+            context,
+            "Salir",
+            "¿Seguro que quieres salir?",
+          ).then((confirmed) {
             salirFunc(confirmed, alumnoHolder, navigator);
           });
         },
-        onAjustes: (){navegar(ConfigColor(), context);},
-        onEstadisticas: (){},
+        onAjustes: () {
+          navegar(ConfigColor(), context);
+        },
+        onEstadisticas: () {},
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -138,7 +147,7 @@ class _GamesMenuState extends State<GamesMenu> {
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -156,35 +165,4 @@ void salirFunc(
     alumnoHolder.clear();
     navigator.pop();
   }
-}
-
-Future<bool?> mostrarDialogoCerrarSesion(BuildContext context) async {
-  return showDialog<bool>(
-    context: context,
-    barrierDismissible: false, // Evita cerrar tocando fuera del diálogo
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Salir'),
-        content: const Text('¿Seguro que quieres salir?'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('No'),
-            onPressed: () {
-              Navigator.of(context).pop(false); // Cierra el diálogo
-            },
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text('Si', style: TextStyle(color: Colors.white)),
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-          ),
-        ],
-      );
-    },
-  );
 }

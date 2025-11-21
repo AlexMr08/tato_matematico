@@ -125,7 +125,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 decoration: InputDecoration(
                   hintText: "Buscar $texto",
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).colorScheme.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -469,11 +469,11 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
 
   void salirFunc(
     bool? confirmed,
-    ProfesorHolder alumnoHolder,
+    ProfesorHolder profesorHolder,
     NavigatorState navigator,
   ) {
     if (confirmed == true) {
-      alumnoHolder.clear();
+      profesorHolder.clear();
       navigator.pop();
     }
   }
