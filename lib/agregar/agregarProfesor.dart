@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
+import 'package:cryptography/cryptography.dart';
 
 class AgregarProfesor extends StatefulWidget {
   const AgregarProfesor({super.key});
@@ -44,10 +48,36 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
       return;
     }
 
-    await dbRef.push().set({
+    String? key = dbRef.push().key;
+
+    final pbkdf2 = Pbkdf2(
+      macAlgorithm: Hmac.sha256(),
+      iterations: 10000, // Estándar recomendado mínimo hoy en día
+      bits: 256, // 32 bytes de salida
+    );
+
+    final rng = Random.secure();
+    final saltBytes = List<int>.generate(16, (_) => rng.nextInt(256));
+
+    final secretKey = await pbkdf2.deriveKey(
+      secretKey: SecretKey(utf8.encode(password)),
+      nonce: saltBytes,
+    );
+
+    final hashBytes = await secretKey.extractBytes();
+
+    final hashHex = hashBytes
+        .map((b) => b.toRadixString(16).padLeft(2, '0'))
+        .join();
+    final saltHex = saltBytes
+        .map((b) => b.toRadixString(16).padLeft(2, '0'))
+        .join();
+
+    await dbRef.child(key!).set({
       "nombre": nombre,
       "username": username,
-      "pass": password,
+      "pass": hashHex,
+      "salt": saltHex,
       "director": _esDirector,
     });
 
@@ -85,7 +115,7 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
             const SizedBox(height: 10),
             TextField(
               controller: _nombreController,
-              obscureText: true,
+              obscureText: false,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Nombre completo',
@@ -101,7 +131,7 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
             const SizedBox(height: 10),
             TextField(
               controller: _usernameController,
-              obscureText: true,
+              obscureText: false,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Nombre de usuario',
@@ -142,8 +172,12 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(
+                    context,
+                  ).colorScheme.onPrimaryContainer,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -152,9 +186,7 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
                 onPressed: agregarProfesor,
                 child: const Text(
                   "Añadir Profesor",
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
             ),

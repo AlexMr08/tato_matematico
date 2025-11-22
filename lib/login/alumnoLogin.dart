@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
@@ -56,7 +56,10 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
           backgroundColor: Colors.green,
         ),
       );
-      navegar(GamesMenu(), context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => GamesMenu()),
+      );
     } else {
       ScaffoldMessenger.of(
         context,

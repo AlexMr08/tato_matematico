@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
-import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/login/profesorLogIn.dart';
+import 'package:tato_matematico/holders/alumnosHolder.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tato_matematico/login/alumnoLogin.dart';
 
 class SeleccionAlumno extends StatefulWidget {
@@ -39,12 +38,70 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   }
 
   @override
-  Future<void> didChangeDependencies() async {
-    super.didChangeDependencies();
-    if (!_yaCargado) {
-      _futureAlumnos = _loadAlumnos();
-      _yaCargado = true; // Para que no vuelva a ejecutarse
+  Widget build(BuildContext context) {
+    AlumnosHolder ah = context.watch<AlumnosHolder>();
+    if (ah.isLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
+
+    var alumnos = ah.obtenerAlumnosPorClase(widget.clase);
+
+    if (alumnos.isEmpty) {
+      return ScaffoldComunV2(
+        titulo: "Seleccion de alumno",
+        subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
+        cuerpo: const Center(child: Text("La clase no tiene alumnos")),
+      );
+    }
+
+    final double spacing = 8;
+    final isTabletVar = isTablet(context);
+    final int columnas = isTabletVar ? 4 : 3; // hasta 3 por fila
+    final int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
+
+    return ScaffoldComunV2(
+      titulo: "Seleccion de alumno",
+      subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
+      cuerpo: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(height: 8),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double itemWidth =
+                        (constraints.maxWidth - (spacing * (columnas - 1))) /
+                        columnas;
+                    final int rowCount = (itemsPorPagina / columnas).ceil();
+                    final double itemHeight =
+                        (constraints.maxHeight - (spacing * (rowCount - 1))) /
+                        rowCount;
+
+                    return GridAlumnos(
+                      listaAlumnos: alumnos,
+                      paginaActual: paginaActual,
+                      totalPaginas: totalPaginas,
+                      itemsPorPagina: itemsPorPagina,
+                      crossAxisCount: columnas,
+                      itemWidth: itemWidth,
+                      itemHeight: itemHeight,
+                      spacing: spacing,
+                      totalItems: alumnos.length,
+                    );
+                  },
+                ),
+              ),
+            ),
+            BotonesInferiores(
+              onPrevious: retroceder(),
+              onNext: avanzar(totalPaginas),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   VoidCallback? retroceder() {
@@ -61,6 +118,16 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
             paginaActual++;
           })
         : null;
+  }
+
+  /*
+  @override
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    if (!_yaCargado) {
+      _futureAlumnos = _loadAlumnos();
+      _yaCargado = true; // Para que no vuelva a ejecutarse
+    }
   }
 
   Future<List<Alumno>> _loadAlumnos() async {
@@ -215,6 +282,8 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
       ),
     );
   }
+
+   */
 }
 
 class GridAlumnos extends StatelessWidget {
@@ -264,11 +333,14 @@ class GridAlumnos extends StatelessWidget {
       ),
       itemCount: currentPageItems,
       itemBuilder: (context, index) {
-        return alumnosPagina[index].widgetAlumno(context, () {
-          context.read<AlumnoHolder>().setAlumno(alumnosPagina[index]);
-          navegar(AlumnoLogIn(), context);
-        });
-      },
+        final alumno = alumnosPagina[index];
+        return alumno.widgetAlumnoV2(
+          onTap: () {
+            context.read<AlumnoHolder>().setAlumno(alumno);
+            navegar(AlumnoLogIn(), context);
+          },
+        );
+      }
     );
   }
 }

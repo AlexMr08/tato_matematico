@@ -1,19 +1,21 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComun.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/agregar/agregarProfesor.dart';
 import 'package:tato_matematico/edicion/editarAlumno.dart';
+import 'package:tato_matematico/edicion/editarClaseV2.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/holders/alumnosHolder.dart';
+import 'package:tato_matematico/holders/clasesHolder.dart';
+import 'package:tato_matematico/holders/profesoresHolder.dart';
 import 'package:tato_matematico/perfilProfesor.dart';
-import 'package:tato_matematico/profesor.dart';
+import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/edicion/editarClase.dart';
 import 'package:tato_matematico/agregar/agregarAlumno.dart';
 
-import 'alumno.dart';
+import 'datos/alumno.dart';
 import 'holders/profesorHolder.dart';
 
 class MainMenuProfe extends StatefulWidget {
@@ -25,10 +27,7 @@ class MainMenuProfe extends StatefulWidget {
 class _MainMenuProfeState extends State<MainMenuProfe> {
   int currentPageIndex = 0;
   bool esDirector = true;
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-  Future<List<Alumno>>? _futureAlumnos;
-  Future<List<Profesor>>? _futureProfesores;
-  Future<List<Clase>>? _futureClases;
+  int numItems = 0;
   late Profesor profesor;
   final TextEditingController _searchController = TextEditingController();
   List<Alumno> _alumnosFiltrados = [];
@@ -39,38 +38,12 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   List<Clase> _clases = [];
   Clase? claseActual;
   bool editandoClase = false;
-  bool _yaCargado = false;
   List<String> titulos = [
     "Listado de Alumnos",
     "Listado de Profesores",
     "Clases",
     "Perfil",
   ];
-
-  @override
-  initState() {
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_yaCargado) {
-      final profesorHolder = context.read<ProfesorHolder>();
-
-      // Si el profesor ya está listo, podemos tomar una decisión
-      if (profesorHolder.profesor != null) {
-        // Siempre carga los alumnos
-        _futureAlumnos = _loadAlumnos();
-        _futureClases = _loadClases();
-        // Solo carga profesores si es director
-        if (profesorHolder.profesor!.director) {
-          _futureProfesores = _loadProfesores(profesorHolder);
-        }
-        _yaCargado = true; // Para que no vuelva a ejecutarse
-      }
-    }
-  }
 
   Widget _buildHeader(ProfesorHolder profesorHolder) {
     String texto = "";
@@ -87,101 +60,101 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       default:
         return SizedBox.shrink();
     }
-    if ((profesor.director == false && currentPageIndex == 1) || editandoClase) {
+    esDirector = profesorHolder.profesor!.director;
+    numItems = esDirector ? 3 : 2;
+    if ((profesor.director == false && currentPageIndex == numItems) ||
+        editandoClase) {
       return SizedBox.shrink();
     }
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: Theme.of(context).colorScheme.primary, // mismo color
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 700,
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  if (currentPageIndex == 0) {
-                    setState(() {
-                      _alumnosFiltrados = _alumnos
-                          .where(
-                            (alumno) => alumno.nombre.toLowerCase().contains(
-                              value.toLowerCase(),
-                            ),
-                          )
-                          .toList();
-                    });
-                  }
-                  if (currentPageIndex == 1) {
-                    setState(() {
-                      _profesoresFiltrados = _profesores
-                          .where(
-                            (profesor) => profesor.nombre
-                                .toLowerCase()
-                                .contains(value.toLowerCase()),
-                          )
-                          .toList();
-                    });
-                  }
-                  if (currentPageIndex == 2) {
-                    setState(() {
-                      _clasesFiltradas = _clases
-                          .where(
-                            (clase) => clase.nombre
-                                .toLowerCase()
-                                .contains(value.toLowerCase()),
-                          )
-                          .toList();
-                    });
-                  }
-                },
-                decoration: InputDecoration(
-                  hintText: "Buscar $texto",
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: Icon(Icons.search),
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 250),
-
-            // IconButton.filled(
-            //   style: IconButton.styleFrom(
-            //     backgroundColor: const Color.fromARGB(255, 95, 255, 149),
-            //     foregroundColor: Colors.black,
-            //     shape: const CircleBorder(),
-            //     padding: EdgeInsets.zero,
-            //   ),
-            //   iconSize: 28,
-            //   onPressed: () {
-            //     navegar(AgregarProfesor(), context);
-            //   },
-            //   icon: const Icon(Icons.add),
-            // ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                foregroundColor: Theme.of(
-                  context,
-                ).colorScheme.onPrimaryContainer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: 700,
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
                 if (currentPageIndex == 0) {
-                  navegar(const AgregarAlumno(), context);
+                  setState(() {
+                    _alumnosFiltrados = _alumnos
+                        .where(
+                          (alumno) => alumno.nombre.toLowerCase().contains(
+                            value.toLowerCase(),
+                          ),
+                        )
+                        .toList();
+                  });
                 }
                 if (currentPageIndex == 1) {
-                  navegar(const AgregarProfesor(), context);
-                  /*Navigator.push(
+                  setState(() {
+                    _profesoresFiltrados = _profesores
+                        .where(
+                          (profesor) => profesor.nombre.toLowerCase().contains(
+                            value.toLowerCase(),
+                          ),
+                        )
+                        .toList();
+                  });
+                }
+                if (currentPageIndex == 2) {
+                  setState(() {
+                    _clasesFiltradas = _clases
+                        .where(
+                          (clase) => clase.nombre.toLowerCase().contains(
+                            value.toLowerCase(),
+                          ),
+                        )
+                        .toList();
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                hintText: "Buscar $texto",
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 250),
+
+          // IconButton.filled(
+          //   style: IconButton.styleFrom(
+          //     backgroundColor: const Color.fromARGB(255, 95, 255, 149),
+          //     foregroundColor: Colors.black,
+          //     shape: const CircleBorder(),
+          //     padding: EdgeInsets.zero,
+          //   ),
+          //   iconSize: 28,
+          //   onPressed: () {
+          //     navegar(AgregarProfesor(), context);
+          //   },
+          //   icon: const Icon(Icons.add),
+          // ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              if (currentPageIndex == 0) {
+                navegar(const AgregarAlumno(), context);
+              }
+              if (currentPageIndex == 1) {
+                navegar(const AgregarProfesor(), context);
+                /*Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const AgregarProfesor(),
@@ -193,85 +166,72 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                       });
                     }
                   });*/
-                }
-                if (currentPageIndex == 2) {
-                  //navegar(const AgregarClase(), context);
-                }
-              },
-              label: Text("Añadir $texto"),
-              icon: const Icon(Icons.add),
-            ),
-          ],
-        ),
+              }
+              if (currentPageIndex == 2) {
+                //navegar(const AgregarClase(), context);
+              }
+            },
+            label: Text("Añadir $texto"),
+            icon: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
 
-  Future<List<Profesor>> _loadProfesores(ProfesorHolder profesorHolder) async {
-    final snapshot = await _dbRef.child("tato").child("profesorado").get();
-    if (!snapshot.exists) return [];
-
-    final data = Map<String, dynamic>.from(snapshot.value as Map);
-    final tempDir = await getTemporaryDirectory();
-
-    final List<Profesor> profesores = [];
-    for (final entry in data.entries) {
-      final profesorData = Map<dynamic, dynamic>.from(entry.value);
-      final profesor = Profesor.fromMap(entry.key, profesorData);
-      await profesor.descargarImagen(tempDir);
-      print('Profesor cargado: $profesor');
-      if (profesor.id != profesorHolder.profesor!.id) {
-        profesores.add(profesor);
-      } else {
-        profesorHolder.setProfesor(profesor);
-      }
-    }
-    _profesores = profesores;
-    _profesoresFiltrados = List.from(profesores);
-    return profesores;
-  }
-
-  Future<List<Alumno>> _loadAlumnos() async {
-    final snapshot = await _dbRef.child("tato").child("alumnos").get();
-    if (!snapshot.exists) return [];
-
-    final data = Map<String, dynamic>.from(snapshot.value as Map);
-    final tempDir = await getTemporaryDirectory();
-
-    final List<Alumno> alumnos = [];
-    for (final entry in data.entries) {
-      final alumnoData = Map<dynamic, dynamic>.from(entry.value);
-      final alumno = Alumno.fromMap(entry.key, alumnoData);
-      await alumno.descargarImagen(tempDir);
-      print('Alumno cargado: $alumno');
-      alumnos.add(alumno);
-    }
-    _alumnos = alumnos;
-    _alumnosFiltrados = List.from(alumnos);
-    return alumnos;
-  }
-
-  Future<List<Clase>> _loadClases() async {
-    final snapshot = await _dbRef.child("tato").child("clases").get();
-    if (!snapshot.exists) return [];
-
-    final data = Map<String, dynamic>.from(snapshot.value as Map);
-    final List<Clase> clases = [];
-
-    for (final entry in data.entries) {
-      final claseData = Map<String, dynamic>.from(entry.value as Map);
-      final clase = Clase.fromMap(entry.key, claseData);
-      clases.add(clase);
-      print('Clase cargada: $clase');
-    }
-
-    _clases = clases;
-    _clasesFiltradas = List.from(clases);
-    return clases;
-  }
-
   Widget build(BuildContext context) {
     final profesorHolder = context.watch<ProfesorHolder>();
+    final ah = context.watch<AlumnosHolder>();
+    final ch = context.watch<ClasesHolder>();
+    final ph = context.watch<ProfesoresHolder>();
+
+    if (profesorHolder.profesor != null &&
+        profesorHolder.profesor!.director &&
+        !ph.isInit) {
+      context.read<ProfesoresHolder>().init();
+    }
+
+    _alumnos = ah.alumnos;
+    _clases = ch.clases;
+    _profesores = ph.profesores;
+
+    if (_searchController.text.isEmpty) {
+      _alumnosFiltrados = List.from(_alumnos);
+    } else {
+      _alumnosFiltrados = _alumnos
+          .where(
+            (alumno) => alumno.nombre.toLowerCase().contains(
+              _searchController.text.toLowerCase(),
+            ),
+          )
+          .toList();
+    }
+
+    if (_searchController.text.isEmpty) {
+      _clasesFiltradas = List.from(_clases);
+    } else {
+      // Aquí aplicamos el filtro si el usuario escribió algo en el buscador
+      _clasesFiltradas = _clases
+          .where(
+            (clase) => clase.nombre.toLowerCase().contains(
+              _searchController.text.toLowerCase(),
+            ),
+          )
+          .toList();
+    }
+
+    if (_searchController.text.isEmpty) {
+      _profesoresFiltrados = List.from(_profesores);
+    } else {
+      _profesoresFiltrados = _profesores
+          .where(
+            (profesor) => profesor.nombre.toLowerCase().contains(
+              _searchController.text.toLowerCase(),
+            ),
+          )
+          .toList();
+    }
+
     final navigator = Navigator.of(context);
 
     //Seccion hecha con chatgpt
@@ -293,7 +253,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           salirFunc(confirmed, profesorHolder, navigator);
         });
       },
-      child: ScaffoldComun(
+      child: ScaffoldComunV2(
         titulo: editandoClase
             ? "Edición de Clase"
             : (currentPageIndex != 3
@@ -305,11 +265,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         subtitulo: currentPageIndex != 3
             ? "${profesor.director ? "Administrador" : "Profesor"} ${profesor.nombre}"
             : null,
-        funcionSalir: () {
-          mostrarDialogoCerrarSesion(context).then((confirmed) {
-            salirFunc(confirmed, profesorHolder, navigator);
-          });
-        },
         header: _buildHeader(profesorHolder),
         navBar: NavigationBar(
           onDestinationSelected: (int index) {
@@ -360,59 +315,31 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         cuerpo:
             <Widget>[
               /// Alumnos page
-              FutureBuilder(
-                future: _futureAlumnos,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No hay alumnos'));
-                  }
-                  final double fabOverlapPadding =
-                      88.0 + MediaQuery.of(context).padding.bottom;
-
-                  return ListView.builder(
-                    reverse: false,
-                    padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
-                    itemCount: _alumnosFiltrados.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _alumnosFiltrados[index].widgetProfesor(
-                        context,
-                        () {
-                          context.read<AlumnoHolder>().setAlumno(
-                            _alumnosFiltrados[index],
-                          );
-                          navegar(EditarAlumno(), context);
-                        },
-                        Icon(Icons.edit),
-                      );
-                    },
-                  );
+              ListView.builder(
+                reverse: false,
+                itemCount: _alumnosFiltrados.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _alumnosFiltrados[index].widgetProfesorV2(onTap: () {
+                    context.read<AlumnoHolder>().setAlumno(
+                      _alumnosFiltrados[index],
+                    );
+                    navegar(EditarAlumno(), context);
+                  }, icono: Icon(Icons.edit));
                 },
               ),
 
               /// Profesores page
-              FutureBuilder(
-                future: _futureProfesores,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+              Builder(
+                builder: (context) {
+                  if (ph.isLoading) {
                     return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No hay profesores'));
                   }
-                  final double fabOverlapPadding =
-                      88.0 + MediaQuery.of(context).padding.bottom;
-
                   return ListView.builder(
                     reverse: false,
-                    padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
+                    padding: EdgeInsets.only(top: 8),
                     itemCount: _profesoresFiltrados.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _profesoresFiltrados[index].widgetProfesor(
+                      return _profesoresFiltrados[index].widgetProfesorV2(
                         context,
                         () {},
                       );
@@ -422,42 +349,29 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               ),
 
               /// Clases page
-              FutureBuilder(
-                future: _futureClases,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              Builder(
+                builder: (context) {
+                  if (_clases.isEmpty) {
                     return const Center(child: Text('No hay clases'));
                   }
 
-                  if (editandoClase && claseActual != null) {
-                    return EditarClase(
-                      clase: claseActual!,
-                      allAlumnos: _alumnos,
-                      salirDeEdicion: () {
-                        setState(() {
-                          editandoClase = false;
-                          claseActual = null;
-                        });
-                      },
+                  if (_searchController.text.isNotEmpty &&
+                      _clasesFiltradas.isEmpty) {
+                    return const Center(
+                      child: Text('No se encontraron clases'),
                     );
                   }
 
                   final double fabOverlapPadding =
                       88.0 + MediaQuery.of(context).padding.bottom;
+
                   return ListView.builder(
                     reverse: false,
                     padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
                     itemCount: _clasesFiltradas.length,
                     itemBuilder: (BuildContext context, int index) {
                       return _clasesFiltradas[index].widgetClase(context, () {
-                        setState(() {
-                          claseActual = _clasesFiltradas[index];
-                          editandoClase = true;
-                        });
+                        navegar(EditarClaseV2(clase: _clasesFiltradas[index], allAlumnos: _alumnos), context);
                       });
                     },
                   );
@@ -490,6 +404,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   ) {
     if (confirmed == true) {
       profesorHolder.clear();
+      //context.read<ProfesoresHolder>().desconectar();
       navigator.pop();
     }
   }

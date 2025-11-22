@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/holders/clasesHolder.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:tato_matematico/login/seleccionAlumno.dart';
 
@@ -29,6 +31,7 @@ class _SeleccionClaseState extends State<SeleccionClase> {
     _clasesRef = _dbRef.child('tato').child('clases');
 
     // Cargamos datos iniciales y LUEGO escuchamos cambios
+    /*
     _loadClases().then((clases) {
       if (mounted) {
         setState(() {
@@ -38,8 +41,51 @@ class _SeleccionClaseState extends State<SeleccionClase> {
         _attachListenersAlumno(); // Escuchamos cambios DESPUÉS de la carga inicial
       }
     });
+     */
   }
 
+  @override
+  Widget build(BuildContext context) {
+    ClasesHolder ch = context.watch<ClasesHolder>();
+    var clases = ch.clases;
+
+    if (ch.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (ch.clases.isEmpty) {
+      return ScaffoldComunV2(
+        titulo: "Seleccion de clase",
+        cuerpo: const Center(child: Text("No hay clases")),
+      );
+    }
+
+    return ScaffoldComunV2(
+      titulo: "Seleccion de clase",
+      funcionLeading: () {
+        navegar(ProfesorLogIn(), context);
+      },
+      iconoLeading: Icons.school,
+      cuerpo: ListView.builder(
+        padding: EdgeInsets.only(
+          bottom: 88.0 + MediaQuery.of(context).padding.bottom,
+          top: 8,
+        ),
+        itemCount: clases.length,
+        itemBuilder: (BuildContext context, int index) {
+          final clase = clases[index];
+          return KeyedSubtree(
+            key: ValueKey(clase.id),
+            child: clase.widgetClase(context, () {
+              navegar(SeleccionAlumno(clase: clase), context);
+            }),
+          );
+        },
+      ),
+    );
+  }
+
+  /*
   void _attachListenersAlumno() {
     _subAdded = _clasesRef.onChildAdded.listen(
       (event) => _handleChildAdded(event),
@@ -85,9 +131,10 @@ class _SeleccionClaseState extends State<SeleccionClase> {
     }
     // ELIMINAR ESTA LÍNEA: _futureClases = Future.value(_clases);
   }
-
   @override
   Widget build(BuildContext context) {
+    ClasesHolder hc = context.watch<ClasesHolder>();
+    var clases = hc.clases;
     return ScaffoldComunV2(
       titulo: "Seleccion de clase",
       funcionLeading: (){navegar(ProfesorLogIn(), context);},
@@ -102,10 +149,10 @@ class _SeleccionClaseState extends State<SeleccionClase> {
                 bottom: 88.0 + MediaQuery.of(context).padding.bottom,
                 top: 8,
               ),
-              itemCount: _clases.length,
+              itemCount: clases.length,
               itemBuilder: (BuildContext context, int index) {
                 // IMPORTANTE: Asigna una KEY única basada en el ID
-                final clase = _clases[index];
+                final clase = clases[index];
                 return KeyedSubtree(
                   key: ValueKey(
                     clase.id,
@@ -139,4 +186,6 @@ class _SeleccionClaseState extends State<SeleccionClase> {
     _clases = clases;
     return clases;
   }
+
+ */
 }

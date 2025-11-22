@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tato_matematico/firebase_options.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:tato_matematico/holders/alumnosHolder.dart';
+import 'package:tato_matematico/holders/clasesHolder.dart';
+import 'package:tato_matematico/holders/profesoresHolder.dart';
 import 'package:tato_matematico/login/seleccionAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tato_matematico/login/seleccionClase.dart';
+import 'package:tato_matematico/splashScreen.dart';
 import 'package:tato_matematico/theme.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +29,9 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (_) => ProfesorHolder(),
         ),
+        ChangeNotifierProvider(create: (_) => ClasesHolder()),
+        ChangeNotifierProvider(create: (_) => AlumnosHolder()),
+        ChangeNotifierProvider(create: (_) => ProfesoresHolder())
       ],
       child: const MyApp(),
     ),
@@ -62,7 +69,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tato Aventuras',
       theme: appTheme,
-      home: SeleccionClase(),
+      home: SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

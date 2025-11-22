@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/alumnoScaffold.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';

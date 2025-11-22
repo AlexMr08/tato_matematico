@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/profesor.dart';
+import 'package:tato_matematico/datos/profesor.dart';
 
 class EditarClase extends StatefulWidget {
   final Clase clase;
@@ -169,7 +169,8 @@ class _EditarClaseState extends State<EditarClase> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return
+      Column(
       children: [
         const SizedBox(height: 20),
         Center(

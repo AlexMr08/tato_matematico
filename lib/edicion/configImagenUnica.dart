@@ -1,6 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:tato_matematico/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';

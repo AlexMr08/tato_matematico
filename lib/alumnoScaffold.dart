@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 
 enum PosicionBarra { arriba, abajo, izquierda, derecha }
 

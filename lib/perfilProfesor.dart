@@ -1,7 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/clase.dart';
-import 'package:tato_matematico/profesor.dart';
+import 'package:tato_matematico/edicion/editarClaseV2.dart';
+import 'package:tato_matematico/edicion/profesorEditarContrasena.dart';
+import 'package:tato_matematico/datos/profesor.dart';
+import 'package:tato_matematico/holders/alumnosHolder.dart';
+import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 class PerfilProfesor extends StatefulWidget {
   final Profesor profesor;
@@ -57,6 +63,8 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
       imageProvider = FileImage(File(widget.profesor.imagenLocal));
     }
 
+    var alumnos = context.read<AlumnosHolder>().alumnos;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Column(
@@ -76,27 +84,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                     onTap: () {
                       // acción al tocar el avatar (ej. cambiar imagen)
                     },
-                    child: imageProvider != null
-                        ? Image(image: imageProvider, fit: BoxFit.cover)
-                        : Container(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primaryContainer,
-                            child: Center(
-                              child: Text(
-                                widget.profesor.nombre.isNotEmpty
-                                    ? widget.profesor.nombre[0]
-                                    : '?',
-                                style: TextStyle(
-                                  fontSize: 48,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryContainer,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
+                    child: FotoPerfil(profesor: widget.profesor)
                   ),
                 ),
               ),
@@ -142,7 +130,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: () {
-                        // editar contraseña
+                        navegar(ProfesorEditarContrasena(profesor: widget.profesor), context);
                       },
                       icon: Icon(
                         Icons.edit,
@@ -194,7 +182,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return widget.clases[index].widgetClase(context, () {
-                  // Acción al presionar el botón de editar clase
+                  navegar(EditarClaseV2(clase: widget.clases[index], allAlumnos: alumnos), context);
                 });
               },
             ),

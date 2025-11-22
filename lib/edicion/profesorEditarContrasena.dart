@@ -10,75 +10,42 @@ import '../holders/profesorHolder.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import '../mainMenuProfe.dart';
 
-class ProfesorLogIn extends StatefulWidget {
-  const ProfesorLogIn({super.key});
+class ProfesorEditarContrasena extends StatefulWidget {
+  final Profesor profesor;
+  const ProfesorEditarContrasena({super.key, required this.profesor});
   @override
-  State<ProfesorLogIn> createState() => _ProfesorLogInState();
+  State<ProfesorEditarContrasena> createState() => _ProfesorEditarContrasenaState();
 }
 
-class _ProfesorLogInState extends State<ProfesorLogIn> {
+class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _logo = const AssetImage("assets/images/logo.webp");
 
   // Función para autenticar al profesor en la base de datos
-  void autenticacionProfesor(String username, String password) async {
+  void actualizarContrasena(String password1, String password2, String id) async {
     // Validar que los campos no estén vacíos
-    if (username.isEmpty || password.isEmpty) {
+    if (password1.isEmpty || password2.isEmpty || password1 != password2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ingrese nombre de usuario y contraseña")),
+        const SnackBar(content: Text("Las contraseñas no coinciden")),
       );
       return;
     }
 
-    // Buscar el profesor en la base de datos por nombre de usuario
+    // Buscar el profesor en la base de datos por su id
     var dbref = FirebaseDatabase.instance
         .ref()
         .child("tato")
-        .child("profesorado");
-    DatabaseEvent event = await dbref
-        .orderByChild("username")
-        .equalTo(username)
-        .once();
-
-    // Si el profesor no existe, mostrar mensaje de error
-    if (event.snapshot.value == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Usuario no registrado")));
-      return;
-    }
+        .child("profesorado").child(widget.profesor.id);
+    DatabaseEvent event = await dbref.once();
 
     Map data = event.snapshot.value as Map;
-    var profesorId = data.keys.first;
-    var profesorData = data[profesorId];
 
-    var hashHex = await _generarHash(profesorData["salt"], password);
-    // Verificar la contraseña
-    if (profesorData["pass"] == hashHex) {
-      print("Ha iniciado sesion correctamente");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            profesorData["director"]
-                ? "Ha iniciado sesion correctamente, rol: Director"
-                : "Ha iniciado sesion correctamente, rol: Profesor",
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
-      context.read<ProfesorHolder>().setProfesor(
-        Profesor.fromMap(profesorId, Map<dynamic, dynamic>.from(profesorData)),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainMenuProfe()),
-      );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Contraseña incorrecta")));
-    }
+    var hashHex = await _generarHash(data["salt"], password1);
+
+    await dbref.update({
+      "pass": hashHex,
+    });
   }
 
   @override
@@ -121,7 +88,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                     child: TextField(
                       controller: usernameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nombre de usuario',
+                        labelText: 'Nueva contraseña',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -137,7 +104,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                       controller: passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: 'Contraseña',
+                        labelText: 'Repetir nueva contraseña',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -147,8 +114,6 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                 const SizedBox(height: 20),
 
                 Center(
-                  child: SizedBox(
-                    width: 150,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -159,12 +124,11 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                       onPressed: () {
                         String username = usernameController.text.trim();
                         String password = passwordController.text.trim();
-                        autenticacionProfesor(username, password);
+                        actualizarContrasena(username, password, widget.profesor.id);
                       },
-                      child: const Text('Iniciar sesión'),
+                      child: const Text('Cambiar contraseña'),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -190,8 +154,8 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
     final nonce = await SecretKey(saltBytes);
 
     final secretKey = await pbkdf2.deriveKey(
-        secretKey: SecretKey(utf8.encode(password)),
-        nonce: await nonce.extractBytes(),
+      secretKey: SecretKey(utf8.encode(password)),
+      nonce: await nonce.extractBytes(),
     );
 
     final hashBytes = await secretKey.extractBytes();
