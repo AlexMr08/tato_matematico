@@ -35,6 +35,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   List<Alumno> _alumnos = [];
   List<Profesor> _profesoresFiltrados = [];
   List<Profesor> _profesores = [];
+  List<Clase> _clasesFiltradas = [];
   List<Clase> _clases = [];
   Clase? claseActual;
   bool editandoClase = false;
@@ -86,7 +87,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       default:
         return SizedBox.shrink();
     }
-    if (profesor.director == false && currentPageIndex == 1 || editandoClase) {
+    if ((profesor.director == false && currentPageIndex == 1) || editandoClase) {
       return SizedBox.shrink();
     }
     return Container(
@@ -118,6 +119,17 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                       _profesoresFiltrados = _profesores
                           .where(
                             (profesor) => profesor.nombre
+                                .toLowerCase()
+                                .contains(value.toLowerCase()),
+                          )
+                          .toList();
+                    });
+                  }
+                  if (currentPageIndex == 2) {
+                    setState(() {
+                      _clasesFiltradas = _clases
+                          .where(
+                            (clase) => clase.nombre
                                 .toLowerCase()
                                 .contains(value.toLowerCase()),
                           )
@@ -183,6 +195,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   });*/
                 }
                 if (currentPageIndex == 2) {
+                  //navegar(const AgregarClase(), context);
                 }
               },
               label: Text("Añadir $texto"),
@@ -246,8 +259,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     final List<Clase> clases = [];
 
     for (final entry in data.entries) {
-      print("-----------------------------------");
-      print(entry.value);
       final claseData = Map<String, dynamic>.from(entry.value as Map);
       final clase = Clase.fromMap(entry.key, claseData);
       clases.add(clase);
@@ -255,6 +266,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     }
 
     _clases = clases;
+    _clasesFiltradas = List.from(clases);
     return clases;
   }
 
@@ -439,11 +451,11 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   return ListView.builder(
                     reverse: false,
                     padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
-                    itemCount: _clases.length,
+                    itemCount: _clasesFiltradas.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _clases[index].widgetClase(context, () {
+                      return _clasesFiltradas[index].widgetClase(context, () {
                         setState(() {
-                          claseActual = _clases[index];
+                          claseActual = _clasesFiltradas[index];
                           editandoClase = true;
                         });
                       });

@@ -8,6 +8,7 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
 import 'package:tato_matematico/edicion/configImagenUnica.dart';
+import 'package:tato_matematico/edicion/configSecuencia.dart';
 
 class EditarAlumno extends StatefulWidget{
   @override
@@ -129,8 +130,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer<AlumnoHolder>(
         builder: (context, alumnoHolder, child) {
           final Alumno? alumno = alumnoHolder.alumno;
@@ -298,8 +298,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           child: ElevatedButton(
                             onPressed: () => _irAConfiguracion(context, alumno),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.colorScheme.primaryContainer,
-                              foregroundColor: theme.colorScheme.onPrimaryContainer,
+                              backgroundColor: colorScheme.primaryContainer,
+                              foregroundColor: colorScheme.onPrimaryContainer,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                               elevation: 4,
                             ),
@@ -425,19 +425,3 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 }
 
 //// PANTALLAS PARA DISTINTOS TIPOS DE CONTRASEÑAS ////
-
-
-class ConfigSecuenciaScreen extends StatelessWidget {
-  final Alumno alumno;
-  const ConfigSecuenciaScreen({required this.alumno});
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaffoldComun(
-      titulo: alumno.nombre,
-      subtitulo: "Configurar Secuencia",
-      funcionSalir: () => Navigator.pop(context),
-      cuerpo: Center(child: Text("Aquí irá la configuración de pasos (1, 2, 3) y librería")),
-    );
-  }
-}
