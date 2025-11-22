@@ -261,7 +261,7 @@ class _AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
-  const _AlumnViewCard({super.key, required this.alumno, required this.onTap});
+  const _AlumnViewCard({required this.alumno, required this.onTap});
 
   @override
   State<_AlumnViewCard> createState() => _AlumnViewCardState();
@@ -380,7 +380,7 @@ class _TeacherViewCard extends StatefulWidget {
   final Icon icono;
   final VoidCallback onTap;
 
-  const _TeacherViewCard({super.key, required this.alumno, required this.onTap, required this.icono});
+  const _TeacherViewCard({required this.alumno, required this.onTap, required this.icono});
 
   @override
   State<_TeacherViewCard> createState() => _TeacherViewCardState();

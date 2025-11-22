@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:tato_matematico/datos/alumno.dart';
-
 abstract class LoginData {
   // Clase abstracta para polimorfismo
 }

@@ -5,7 +5,6 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
 import 'package:tato_matematico/holders/clasesHolder.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
-import 'package:tato_matematico/login/seleccionAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tato_matematico/login/seleccionClase.dart';

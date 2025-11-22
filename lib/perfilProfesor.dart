@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
@@ -58,11 +57,6 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider? imageProvider;
-    if (widget.profesor.imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(widget.profesor.imagenLocal));
-    }
-
     var alumnos = context.read<AlumnosHolder>().alumnos;
 
     return Padding(

@@ -207,7 +207,7 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
             const Text("Longitud de la Secuencia Correcta", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<int>(
-              value: _sequenceLength,
+              initialValue: _sequenceLength,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 filled: true,

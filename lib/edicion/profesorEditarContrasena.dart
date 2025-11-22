@@ -3,12 +3,9 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:provider/provider.dart';
 
 import '../ScaffoldComun.dart';
-import '../holders/profesorHolder.dart';
 import 'package:tato_matematico/datos/profesor.dart';
-import '../mainMenuProfe.dart';
 
 class ProfesorEditarContrasena extends StatefulWidget {
   final Profesor profesor;
@@ -20,7 +17,6 @@ class ProfesorEditarContrasena extends StatefulWidget {
 class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final _logo = const AssetImage("assets/images/logo.webp");
 
   // Función para autenticar al profesor en la base de datos
   void actualizarContrasena(String password1, String password2, String id) async {

@@ -8,13 +8,11 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 
 class ConfigColor extends StatefulWidget {
-  @override
-
-  Alumno? alum;
+  final Alumno? alum;
 
   _ConfigColorState createState() => _ConfigColorState();
 
-  ConfigColor({super.key, this.alum});
+  const ConfigColor({super.key, this.alum});
 }
 
 class _ConfigColorState extends State<ConfigColor> {

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
@@ -8,12 +6,11 @@ import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/login/alumnoLogin.dart';
 
 class SeleccionAlumno extends StatefulWidget {
-  Clase clase;
-  SeleccionAlumno({super.key, required this.clase});
+  final Clase clase;
+  const SeleccionAlumno({super.key, required this.clase});
 
   @override
   State<SeleccionAlumno> createState() => _SeleccionAlumnoState();
@@ -23,19 +20,6 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   List<Alumno> alumnos = [];
   int paginaActual = 0;
   final int itemsPorPagina = 12;
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-  late DatabaseReference _alumnosRef;
-  StreamSubscription<DatabaseEvent>? _subAdded;
-  StreamSubscription<DatabaseEvent>? _subChanged;
-  StreamSubscription<DatabaseEvent>? _subRemoved;
-  Future<List<Alumno>>? _futureAlumnos;
-  bool _yaCargado = false;
-
-  @override
-  initState() {
-    super.initState();
-    _alumnosRef = _dbRef.child('tato').child('alumnos');
-  }
 
   @override
   Widget build(BuildContext context) {

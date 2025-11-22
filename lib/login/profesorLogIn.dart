@@ -19,7 +19,6 @@ class ProfesorLogIn extends StatefulWidget {
 class _ProfesorLogInState extends State<ProfesorLogIn> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final _logo = const AssetImage("assets/images/logo.webp");
 
   // Función para autenticar al profesor en la base de datos
   void autenticacionProfesor(String username, String password) async {

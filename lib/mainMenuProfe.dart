@@ -12,7 +12,6 @@ import 'package:tato_matematico/holders/profesoresHolder.dart';
 import 'package:tato_matematico/perfilProfesor.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/clase.dart';
-import 'package:tato_matematico/edicion/editarClase.dart';
 import 'package:tato_matematico/agregar/agregarAlumno.dart';
 
 import 'datos/alumno.dart';
@@ -36,12 +35,10 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   List<Profesor> _profesores = [];
   List<Clase> _clasesFiltradas = [];
   List<Clase> _clases = [];
-  Clase? claseActual;
-  bool editandoClase = false;
   List<String> titulos = [
     "Listado de Alumnos",
     "Listado de Profesores",
-    "Clases",
+    "Listado de Clases",
     "Perfil",
   ];
 
@@ -62,8 +59,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     }
     esDirector = profesorHolder.profesor!.director;
     numItems = esDirector ? 3 : 2;
-    if ((profesor.director == false && currentPageIndex == numItems) ||
-        editandoClase) {
+    if ((profesor.director == false && currentPageIndex == numItems)) {
       return SizedBox.shrink();
     }
     return Container(
@@ -254,9 +250,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
         });
       },
       child: ScaffoldComunV2(
-        titulo: editandoClase
-            ? "Edición de Clase"
-            : (currentPageIndex != 3
+        titulo: (currentPageIndex != 3
                   ? titulos[!profesor.director &&
                             (currentPageIndex == 1 || currentPageIndex == 2)
                         ? currentPageIndex + 1
@@ -270,7 +264,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           onDestinationSelected: (int index) {
             setState(() {
               currentPageIndex = index;
-              if (profesor.director && (index == 0 || index == 1)) {
+              if (profesor.director) {
                 _searchController.clear();
                 _alumnosFiltrados = List.from(_alumnos);
                 _profesoresFiltrados = List.from(_profesores);
