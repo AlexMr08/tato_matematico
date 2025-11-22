@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ImagenStorage extends StatefulWidget {
   final String rutaGs;
@@ -20,66 +21,85 @@ class ImagenStorage extends StatefulWidget {
 }
 
 class _ImagenStorageState extends State<ImagenStorage> {
-  String? _urlPublica;
-  bool _loading = true;
+  Future<String?>? _futureUrl;
 
   @override
   void initState() {
     super.initState();
-    _obtenerUrlPublica();
+    _futureUrl = _obtenerUrlPublica();
   }
 
-  Future<void> _obtenerUrlPublica() async {
-    if (widget.rutaGs.isEmpty) return;
+  Future<String?>? _obtenerUrlPublica() async {
+    if (widget.rutaGs.isEmpty) return null;
 
     try {
       // Crear referencia ruta gs
-      final ref = FirebaseStorage.instance.ref().child(widget.rutaGs);
+      final ref = FirebaseStorage.instance.refFromURL(widget.rutaGs);
 
       // Obtenemos url de descarga
-      final url = await ref.getDownloadURL();
-
-      if(mounted) {
-        setState(() {
-          _urlPublica = url;
-          _loading = false;
-        });
-      }
+      return await ref.getDownloadURL();
     }
     catch (e) {
       print("Error cargando imagen ${widget.rutaGs}: $e");
-      if (mounted) setState(() => _loading = false);
+      return null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Si está cargando, mostramos un spinner pequeñito
-    if (_loading) {
-      return SizedBox(
-        width: widget.ancho,
-        height: widget.alto,
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      );
-    }
+    return FutureBuilder(
+        future: _futureUrl,
+        builder: (context, snapshot) {
+          // Carga inicial mientras obtenemos la url
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _placeholder();
+          }
 
-    // Si tenemos URL, mostramos la imagen
-    if (_urlPublica != null) {
-      return Image.network(
-        _urlPublica!,
-        width: widget.ancho,
-        height: widget.alto,
-        fit: widget.fit,
-        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.red),
-      );
-    }
+          // Si hay un error o no hay url
+          if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+            return _errorWidget();
+          }
+          final url = snapshot.data!;
 
-    // Si no funciona nada, mostramos icono roto
+          // Libreria de cache
+          return CachedNetworkImage(
+            imageUrl: url,
+            height: widget.alto,
+            width: widget.ancho,
+            fit: widget.fit,
+            // Mientras se descarga la imagen si no esta en cache
+            placeholder: (context, url) => _placeholder(),
+            // Si falla la descarga
+            errorWidget: (context, url, error) => _errorWidget(),
+
+            fadeInDuration: const Duration(milliseconds: 300),
+          );
+        }
+    );
+  }
+  /// Widget de carga mientras se descarga la imagen
+  Widget _placeholder() {
     return Container(
       width: widget.ancho,
       height: widget.alto,
       color: Colors.grey[200],
+      child: Center(
+          child: SizedBox(
+              width: 20, height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.grey[400])
+          )
+      ),
+    );
+  }
+
+  /// Widget auxiliar para mostrar si hay error (Icono roto)
+  Widget _errorWidget() {
+    return Container(
+      width: widget.ancho,
+      height: widget.alto,
+      color: Colors.grey[300],
       child: const Icon(Icons.broken_image, color: Colors.grey),
     );
   }
 }
+

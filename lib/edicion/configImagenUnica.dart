@@ -27,8 +27,10 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   // PARAMETROS PARA LA CONFIGURACION
   int _gridSize = 6;            // Tamaño del grid
   bool _isRandom = true;        // Imagenes distractoras aleatorias
-  String? _correctImageId;      // ID imagen correcta
-  Map<String, bool> _manualDistractoras = {}; // IDs imagenes distractoras
+
+  // PARAMETROS PARA LA SELECCION
+  String? _selectedCorrectImageId;      // ID imagen correcta
+  Map<String, bool> _selectedDistractoras = {}; // IDs imagenes distractoras
 
   // DATOS DE LA BIBLIOTECA DE PICTOGRAMAS
   List<Pictograma> _biblioteca =  [];
@@ -77,10 +79,10 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
       Map<String, dynamic> loginConfig = {
         "tipoLogin": "seleccionImagen",
         "seleccionImagen": {
-          "idImagenCorrecta": _correctImageId,
+          "idImagenCorrecta": _selectedCorrectImageId,
           "totalImagenes": _gridSize,
           "distractorasAleatorias": _isRandom,
-          "imagenesDistractoras": _isRandom ? null : _manualDistractoras,
+          "imagenesDistractoras": _isRandom ? null : _selectedDistractoras,
         },
         // Desactivamos los otros tipos de login
         "alfanumerica": null,
@@ -90,7 +92,13 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
       await _dbRef.child('tato').child('login').child(widget.alumno.id).set(loginConfig);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login guardado correctamente")));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Login guardado correctamente"),
+              backgroundColor: Colors.green
+          )
+      );
       Navigator.pop(context); // Volver a editar alumno
     }
     catch (e) {
@@ -104,34 +112,38 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   void _manejarClickImagen(Pictograma img) {
     setState(() {
       // 1. Deseleccionar si tocamos la que ya es correcta
-      if (_correctImageId == img.id) {
-        _correctImageId = null;
+      if (_selectedCorrectImageId == img.id) {
+        _selectedCorrectImageId = null;
         return;
       }
 
       // 2. Deseleccionar si tocamos una distractora (Modo Manual)
-      if (_manualDistractoras.containsKey(img.id)) {
-        _manualDistractoras.remove(img.id);
+      if (_selectedDistractoras.containsKey(img.id)) {
+        _selectedDistractoras.remove(img.id);
         return;
       }
 
       // 3. Si no hay correcta, asignarla
-      if (_correctImageId == null) {
-        _correctImageId = img.id;
+      if (_selectedCorrectImageId == null) {
+        _selectedCorrectImageId = img.id;
         return;
       }
 
-      // 4. Si ya hay correcta...
+      // 4. Si ya hay correcta, que se hace con la nueva
       if (_isRandom) {
         // En modo aleatorio, reemplazamos la correcta
-        _correctImageId = img.id;
+        _selectedCorrectImageId = img.id;
       } else {
         // En modo manual, intentamos añadir como distractor
-        if (_manualDistractoras.length < (_gridSize - 1)) {
-          _manualDistractoras[img.id] = true;
+        // Solamente si hay hueco (total - 1 correcta = distractoras)
+        if (_selectedDistractoras.length < (_gridSize - 1)) {
+          _selectedDistractoras[img.id] = true;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Grid lleno. Deselecciona alguna para cambiarla."), duration: Duration(seconds: 1))
+              const SnackBar(
+                  content: Text("Grid lleno. Deselecciona alguna para cambiarla."),
+                  duration: Duration(seconds: 1)
+              )
           );
         }
       }
@@ -145,7 +157,7 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
       subtitulo: _currentStep == 1 ? "Ajustes del Grid" : "Selección de Imágenes",
       funcionSalir: () {
         if (_currentStep == 2) {
-          setState(() => _currentStep = 1); // Volver atrás
+          setState(() => _currentStep = 1);
         } else {
           Navigator.pop(context);
         }
@@ -153,7 +165,10 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
       cuerpo: Column(
         children: [
           // MOSTRAR FASE 1 O FASE 2
-          if (_currentStep == 1) _buildPaso1Config() else _buildPaso2Seleccion(),
+          if (_currentStep == 1)
+            _buildPaso1Config()
+          else
+            _buildPaso2Seleccion(),
         ],
       ),
     );
@@ -163,12 +178,14 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   // VISTA PASO 1: CONFIGURACIÓN INICIAL (Grid y Modo)
   // ---------------------------------------------------
   Widget _buildPaso1Config() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            // DROPDOWN MENU 1
             const Text("1. ¿Cuántas imagenes se mostrarán en total?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             DropdownButtonFormField<int>(
@@ -180,34 +197,62 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                 DropdownMenuItem(value: 9, child: Text("9 Imágenes (3x3)")),
                 DropdownMenuItem(value: 12, child: Text("12 Imágenes (3x4)")),
               ],
-              onChanged: (v) => setState(() => _gridSize = v!),
+              onChanged: (v) => setState(() {
+                _gridSize = v!;
+                _selectedDistractoras.clear(); // Limpiar al cambiar de tamaño
+              }),
             ),
+
             const SizedBox(height: 30),
+
+            // DROPDOWN MENU 2
             const Text("2. ¿Cómo se eligen las imágenes incorrectas?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            SwitchListTile(
-              title: Text(_isRandom ? "Modo Aleatorio" : "Modo Manual"),
-              subtitle: Text(_isRandom
-                  ? "Tú eliges la correcta, la app rellena el resto."
-                  : "Tú eliges TODAS las imágenes una a una."),
-              value: _isRandom,
-              activeThumbColor: Colors.blue,
+            DropdownButtonFormField<bool>(
+              initialValue: _isRandom,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: true,
+                  child: Text("Aleatorias"),
+                ),
+                DropdownMenuItem(
+                  value: false,
+                  child: Text("Seleccionar las incorrectas",)
+                )
+              ],
               onChanged: (v) {
                 setState(() {
-                  _isRandom = v;
-                  _manualDistractoras.clear(); // Limpiar al cambiar de modo
+                  _isRandom = v!;
+                  _selectedDistractoras.clear(); // Limpiar al cambiar de modo
                 });
               },
             ),
+
             const Spacer(),
+
+            // BOTON SIGUIENTE
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 onPressed: () => setState(() => _currentStep = 2),
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text("CONTINUAR A SELECCIÓN"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundColor: colorScheme.onPrimaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                child: const Text(
+                  "CONTINUAR A SELECCIONAR IMÁGENES",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             )
           ],
@@ -217,13 +262,18 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   }
 
   // ---------------------------------------------------
-  // VISTA PASO 2: SELECCIÓN VISUAL (Split Screen)
+  // VISTA PASO 2: SELECCIÓN VISUAL
   // ---------------------------------------------------
   Widget _buildPaso2Seleccion() {
+    // Colores del tema
+    final colorScheme = Theme.of(context).colorScheme;
+
     // Cálculos para la UI
     int distractoresNecesarios = _gridSize - 1;
-    int distractoresActuales = _manualDistractoras.length;
-    bool hayCorrecta = _correctImageId != null;
+    int distractoresActuales = _selectedDistractoras.length;
+    bool hayCorrecta = _selectedCorrectImageId != null;
+
+    // Comprobacion para guardar
     bool listoParaGuardar = hayCorrecta && (_isRandom || distractoresActuales == distractoresNecesarios);
 
     return Expanded(
@@ -235,45 +285,72 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             color: Colors.grey[100],
             child: Column(
               children: [
+                // HUECO IMAGEN CORRECTA
                 const Text("IMAGEN CORRECTA (CONTRASEÑA)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                 const SizedBox(height: 5),
-                // Hueco Imagen Correcta
-                Container(
-                  width: 80, height: 80,
-                  decoration: BoxDecoration(
+                InkWell(
+                  onTap: hayCorrecta ? () => setState(() => _selectedCorrectImageId = null) : null,
+                  child: Container(
+                    width: 80, height: 80,
+                    decoration: BoxDecoration(
                       color: Colors.white,
-                      border: Border.all(color: hayCorrecta ? Colors.green : Colors.grey, width: 3),
-                      borderRadius: BorderRadius.circular(8)
-                  ),
-                  child: hayCorrecta
-                      ? _previewImagen(_correctImageId!)
-                      : const Icon(Icons.question_mark, color: Colors.grey),
+                      border: Border.all(
+                        color: hayCorrecta ? Colors.green : Colors.grey,
+                        width: hayCorrecta ? 4 : 2,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [if(hayCorrecta) BoxShadow(color: Colors.green.withValues(alpha: 0.2), blurRadius: 5)]
+                    ),
+                    child: hayCorrecta
+                      ? _previewImagen(_selectedCorrectImageId!)
+                      : const Icon(Icons.lock_outline, size: 40, color: Colors.grey),
+                  )
+
                 ),
 
-                // Huecos Distractores (Solo Manual)
+                // HUECOS IMAGENES DISTRACTORAS (si es manual)
                 if (!_isRandom) ...[
                   const SizedBox(height: 10),
-                  Text("DISTRACTORES ($distractoresActuales / $distractoresNecesarios)", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text("DISTRACTORES ($distractoresActuales / $distractoresNecesarios)",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12
+                      )
+                  ),
+
                   const SizedBox(height: 5),
+
                   SizedBox(
                     height: 50,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
+                      // Ponemos tantos huecos como imagenes distractoras hagan falta
                       itemCount: distractoresNecesarios,
                       itemBuilder: (context, index) {
+                        // Averiguar si el hueco esta lleno
                         String? id;
-                        if (index < _manualDistractoras.keys.length) id = _manualDistractoras.keys.elementAt(index);
+                        if (index < _selectedDistractoras.keys.length) {
+                          id = _selectedDistractoras.keys.elementAt(index);
+                        }
 
-                        return Container(
-                          width: 50, height: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: id != null ? Colors.red : Colors.grey[300]!),
-                              borderRadius: BorderRadius.circular(4),
-                              color: Colors.white
+                        return InkWell(
+                          onTap: id != null ? () => setState(() => _selectedDistractoras.remove(id)) : null,
+                          child: Container(
+                            width: 50, height: 50,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: id != null ? Colors.red : Colors.grey[300]!,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: id != null
+                              ? _previewImagen(id)
+                              : const Icon(Icons.add, color: Colors.grey)
                           ),
-                          child: id != null ? _previewImagen(id) : null,
                         );
+
                       },
                     ),
                   )
@@ -293,40 +370,65 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             child: _isLoadingLibrary
                 ? const Center(child: CircularProgressIndicator())
                 : _biblioteca.isEmpty
-                ? const Center(child: Text("No hay imágenes en la biblioteca"))
-                : GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8
-              ),
-              itemCount: _biblioteca.length,
-              itemBuilder: (context, index) {
-                final picto = _biblioteca[index];
-                bool esCorrecta = _correctImageId == picto.id;
-                bool esDistractor = _manualDistractoras.containsKey(picto.id);
+                  ? const Center(child: Text("No hay imágenes en la biblioteca"))
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(8),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4, // 4 columnas
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8
+                      ),
+                      itemCount: _biblioteca.length,
+                      itemBuilder: (context, index) {
+                        final picto = _biblioteca[index];
+                        bool esCorrecta = _selectedCorrectImageId == picto.id;
+                        bool esDistractor = _selectedDistractoras.containsKey(picto.id);
 
-                return InkWell(
-                  onTap: () => _manejarClickImagen(picto),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: esCorrecta
-                          ? Border.all(color: Colors.green, width: 4)
-                          : esDistractor
-                          ? Border.all(color: Colors.red, width: 3)
-                          : null,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      // USAMOS EL WIDGET IMAGENSTORAGE SIN CACHÉ
-                      child: ImagenStorage(rutaGs: picto.url, fit: BoxFit.cover),
-                    ),
+                        return InkWell(
+                          onTap: () => _manejarClickImagen(picto),
+                          child: Stack(
+                            children: [
+                              // La Imagen
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: esCorrecta
+                                    ? Border.all(color: Colors.green, width: 4)
+                                    : esDistractor
+                                      ? Border.all(color: Colors.red, width: 3)
+                                      : null,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  // USAMOS WIDGET CON CACHE
+                                  child: ImagenStorage(
+                                    rutaGs: picto.url,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              // Indicador visual (Check o X)
+                              if (esCorrecta || esDistractor)
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle
+                                    ),
+                                    child: Icon(
+                                      esCorrecta ? Icons.check_circle : Icons.remove_circle,
+                                      color: esCorrecta ? Colors.green : Colors.red,
+                                      size: 20,
+                                    ),
+                                  ),
+                                )
+                            ],
+                          ),
+                        );
+                      },
                   ),
-                );
-              },
-            ),
           ),
 
           // --- BOTÓN GUARDAR ---
@@ -334,15 +436,17 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             width: double.infinity,
             height: 60,
             child: ElevatedButton(
-              onPressed: listoParaGuardar ? _guardarConfiguracion : null,
+              onPressed: listoParaGuardar && !_isSaving ? _guardarConfiguracion : null,
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundColor: colorScheme.onPrimaryContainer,
                   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero)
               ),
               child: _isSaving
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(listoParaGuardar ? "GUARDAR LOGIN" : "SELECCIONA LAS IMÁGENES...", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  : Text(listoParaGuardar ? "GUARDAR CONFIGURACION" : "SELECCIONA LAS IMÁGENES...",
+                        style: const TextStyle(fontWeight: FontWeight.bold)
+                  ),
             ),
           )
         ],

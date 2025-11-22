@@ -42,6 +42,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   provider: ^6.0.0
   crypto: ^3.0.0
+  cached_network_image: ^3.3.0
 
 
 dev_dependencies:
