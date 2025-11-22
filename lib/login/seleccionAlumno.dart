@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/alumno.dart';
+import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
@@ -11,7 +13,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tato_matematico/login/alumnoLogin.dart';
 
 class SeleccionAlumno extends StatefulWidget {
-  const SeleccionAlumno({super.key});
+  Clase clase;
+  SeleccionAlumno({super.key, required this.clase});
 
   @override
   State<SeleccionAlumno> createState() => _SeleccionAlumnoState();
@@ -39,9 +42,9 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
     if (!_yaCargado) {
-        _futureAlumnos = _loadAlumnos();
-        _yaCargado = true; // Para que no vuelva a ejecutarse
-      }
+      _futureAlumnos = _loadAlumnos();
+      _yaCargado = true; // Para que no vuelva a ejecutarse
+    }
   }
 
   VoidCallback? retroceder() {
@@ -67,11 +70,13 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
     final data = Map<String, dynamic>.from(snapshot.value as Map);
     final tempDir = await getTemporaryDirectory();
     for (final entry in data.entries) {
-      final alumnoData = Map<dynamic, dynamic>.from(entry.value);
-      final alumno = Alumno.fromMap(entry.key, alumnoData);
-      await alumno.descargarImagen(tempDir);
-      print('Alumno cargado: $alumno');
-      alumnos.add(alumno);
+      if (widget.clase.alumnos.contains(entry.key)) {
+        final alumnoData = Map<dynamic, dynamic>.from(entry.value);
+        final alumno = Alumno.fromMap(entry.key, alumnoData);
+        await alumno.descargarImagen(tempDir);
+        print('Alumno cargado: $alumno');
+        alumnos.add(alumno);
+      }
     }
     _attachListenersAlumno();
     return alumnos;
@@ -86,8 +91,12 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   }
 
   void _attachListenersAlumno() {
-    _subAdded = _alumnosRef.onChildAdded.listen((event) => _handleChildAdded(event));
-    _subChanged = _alumnosRef.onChildChanged.listen((event) => _handleChildChanged(event));
+    _subAdded = _alumnosRef.onChildAdded.listen(
+      (event) => _handleChildAdded(event),
+    );
+    _subChanged = _alumnosRef.onChildChanged.listen(
+      (event) => _handleChildChanged(event),
+    );
   }
 
   Future<void> _handleChildAdded(DatabaseEvent event) async {
@@ -95,6 +104,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
     final key = event.snapshot.key!;
     // evita duplicados
     if (alumnos.any((a) => a.id == key)) return;
+    if (!widget.clase.alumnos.contains(key)) return;
     final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
     final newAlumno = Alumno.fromMap(key, data);
     await newAlumno.descargarImagen(await getTemporaryDirectory());
@@ -105,6 +115,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   Future<void> _handleChildChanged(DatabaseEvent event) async {
     if (event.snapshot.value == null) return;
     final key = event.snapshot.key!;
+    if (!widget.clase.alumnos.contains(key)) return;
     final index = alumnos.indexWhere((a) => a.id == key);
     final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
     final updated = Alumno.fromMap(key, data);
@@ -124,30 +135,10 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
     final isTabletVar = isTablet(context);
     final int columnas = isTabletVar ? 4 : 3; // hasta 3 por fila
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: InkWell(
-          child: Icon(
-            Icons.school,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-          onTap: () {
-            navegar(ProfesorLogIn(), context);
-          },
-        ),
-        title: Text(
-          'Seleccion alumno',
-          style: TextStyle(
-            fontSize: 20,
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        elevation: 0,
-      ),
-      body: FutureBuilder<List<Alumno>>(
+    return ScaffoldComunV2(
+      titulo: 'Seleccion de alumno',
+      subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
+      cuerpo: FutureBuilder<List<Alumno>>(
         future: _futureAlumnos,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

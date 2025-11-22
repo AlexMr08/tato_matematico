@@ -382,8 +382,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
                         ElevatedButton.icon(
                           onPressed: () {
-                            context.read<AlumnoHolder>().setAlumno(alumno);
-                            navegar(ConfigColor(), context);
+                            navegar(ConfigColor(alum: alumno), context);
                           },
                           icon: Icon(Icons.palette),
                           label: Text("Colores"),

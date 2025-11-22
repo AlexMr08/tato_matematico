@@ -291,8 +291,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                         : currentPageIndex]
                   : profesor.username),
         subtitulo: currentPageIndex != 3
-            ? (profesor.director ? "Administrador" : "Profesor") +
-                  " ${profesor.nombre}"
+            ? "${profesor.director ? "Administrador" : "Profesor"} ${profesor.nombre}"
             : null,
         funcionSalir: () {
           mostrarDialogoCerrarSesion(context).then((confirmed) {

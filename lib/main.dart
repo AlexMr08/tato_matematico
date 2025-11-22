@@ -5,6 +5,7 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/login/seleccionAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:tato_matematico/login/seleccionClase.dart';
 import 'package:tato_matematico/theme.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
@@ -61,7 +62,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tato Aventuras',
       theme: appTheme,
-      home: const SeleccionAlumno(),
+      home: SeleccionClase(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -81,6 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SeleccionAlumno();
+    return SeleccionClase();
   }
 }
