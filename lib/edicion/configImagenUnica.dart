@@ -179,83 +179,116 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   // ---------------------------------------------------
   Widget _buildPaso1Config() {
     final colorScheme = Theme.of(context).colorScheme;
+
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            // DROPDOWN MENU 1
-            const Text("1. ¿Cuántas imagenes se mostrarán en total?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<int>(
-              initialValue: _gridSize,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              items: const [
-                DropdownMenuItem(value: 4, child: Text("4 Imágenes (2x2)")),
-                DropdownMenuItem(value: 6, child: Text("6 Imágenes (2x3)")),
-                DropdownMenuItem(value: 9, child: Text("9 Imágenes (3x3)")),
-                DropdownMenuItem(value: 12, child: Text("12 Imágenes (3x4)")),
-              ],
-              onChanged: (v) => setState(() {
-                _gridSize = v!;
-                _selectedDistractoras.clear(); // Limpiar al cambiar de tamaño
-              }),
-            ),
+      child: Center( // 1. Centramos el bloque horizontalmente
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500), // 2. Limitamos ancho para tablets
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20), // Margen superior
 
-            const SizedBox(height: 30),
+                        // 1. SELECTOR DE TAMAÑO
+                        const Text("1. ¿Cuántas imágenes se mostrarán en total?",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<int>(
+                          initialValue: _gridSize,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: colorScheme.outlineVariant),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 4, child: Text("4 Imágenes (2x2)")),
+                            DropdownMenuItem(value: 6, child: Text("6 Imágenes (2x3)")),
+                            DropdownMenuItem(value: 9, child: Text("9 Imágenes (3x3)")),
+                            DropdownMenuItem(value: 12, child: Text("12 Imágenes (3x4)")),
+                          ],
+                          onChanged: (v) => setState(() {
+                            _gridSize = v!;
+                            _selectedDistractoras.clear();
+                          }),
+                        ),
 
-            // DROPDOWN MENU 2
-            const Text("2. ¿Cómo se eligen las imágenes incorrectas?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<bool>(
-              initialValue: _isRandom,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: true,
-                  child: Text("Aleatorias"),
+                        const SizedBox(height: 30),
+
+                        // 2. SELECTOR DE MODO
+                        const Text("2. ¿Cómo se eligen las imágenes incorrectas?",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<bool>(
+                          initialValue: _isRandom,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: colorScheme.outlineVariant),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: true, child: Text("Aleatorias")),
+                            DropdownMenuItem(value: false, child: Text("Seleccionar las incorrectas")),
+                          ],
+                          onChanged: (v) {
+                            setState(() {
+                              _isRandom = v!;
+                              _selectedDistractoras.clear();
+                            });
+                          },
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                          child: Text(
+                              _isRandom
+                                  ? "La aplicación rellenará las imágenes incorrectas al azar."
+                                  : "Deberás seleccionar las imagenes incorrectas manualmente.",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colorScheme.onSurface,
+                              )
+
+                          ),
+                        ),
+
+                        const SizedBox(height: 20), // Espacio extra al final del scroll
+                      ],
+                    ),
+                  ),
                 ),
-                DropdownMenuItem(
-                  value: false,
-                  child: Text("Seleccionar las incorrectas",)
+
+                // BLOQUE INFERIOR
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () => setState(() => _currentStep = 2),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primaryContainer,
+                      foregroundColor: colorScheme.onPrimaryContainer,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "CONTINUAR A SELECCIÓN",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 )
               ],
-              onChanged: (v) {
-                setState(() {
-                  _isRandom = v!;
-                  _selectedDistractoras.clear(); // Limpiar al cambiar de modo
-                });
-              },
             ),
-
-            const Spacer(),
-
-            // BOTON SIGUIENTE
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () => setState(() => _currentStep = 2),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primaryContainer,
-                  foregroundColor: colorScheme.onPrimaryContainer,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                child: const Text(
-                  "CONTINUAR A SELECCIONAR IMÁGENES",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            )
-          ],
+          ),
         ),
       ),
     );

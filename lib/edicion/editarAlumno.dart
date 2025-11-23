@@ -1,4 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +11,7 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
 import 'package:tato_matematico/edicion/configImagenUnica.dart';
 import 'package:tato_matematico/edicion/configSecuencia.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditarAlumno extends StatefulWidget{
   @override
@@ -24,6 +27,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   // Estado para controlar el modo de edicion
   bool _isEditingName = false;
   bool _isControllerInitialized = false;
+
+  // Mostrar carga si se esta cargando la imagen de perfil
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -101,6 +107,111 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     }
   }
 
+  Future<void> _cambiarImagen(ImageSource source, Alumno alumno) async{
+    try {
+      final ImagePicker picker = ImagePicker();
+
+      // Abrimos camara o galeria con optimizacion
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 800,    // Redimensionar 800px de ancho
+        maxHeight: 800,
+        imageQuality: 80, // Calidad JPEG al 80%
+      );
+
+      if (pickedFile == null) return; // Si no se selecciono ninguna imagen, salimos
+
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      File imageFile = File(pickedFile.path);
+
+      // Crear referencia en Firebase Storage
+      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube
+      String fileName = '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
+      Reference ref = FirebaseStorage.instance.ref().child('alumnos/$fileName');
+      
+      // 1. Subir el archivo al storage
+      await ref.putFile(imageFile);
+
+      // Obtener ruta gs://
+      String bucketName = FirebaseStorage.instance.bucket;
+      String gsUrl = "gs://$bucketName/alumnos/$fileName";
+
+      // 2. Actualizar Realtime Database
+      await _dbRef.child('tato/alumnos/${alumno.id}').update({
+        'imagen': gsUrl,
+      });
+
+      // 3. Actualizar el objeto alumno
+      alumno.imagen = gsUrl;
+      alumno.imagenLocal = imageFile.path;
+
+      // Limpiar cache
+      alumno.invalidarCachedImage();
+
+      // 4. Notificar cambios
+      if (mounted) {
+        context.read<AlumnoHolder>().setAlumno(alumno);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Imagen actualizada correctamente.'),
+            backgroundColor: Colors.green
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error subiendo imagen: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error al subir imagen: $e"))
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingImage = false);
+    }
+  }
+
+  void _mostrarMenuOrigen(BuildContext context, Alumno alumno) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                    leading: Icon(Icons.photo_library, color: colorScheme.primary),
+                    title: const Text('Galería'),
+                    onTap: () {
+                      Navigator.of(context).pop(); // Cerrar menú
+                      _cambiarImagen(ImageSource.gallery, alumno);
+                    }),
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: colorScheme.primary),
+                  title: const Text('Cámara'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // Cerrar menú
+                    _cambiarImagen(ImageSource.camera, alumno);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _guardarBarra(Alumno alumno) async {
     final nuevoNombre = posicionBarra;
 
@@ -155,21 +266,36 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                       flex: 1,
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 80,
-                            backgroundColor: colorScheme.primaryContainer,
-                            backgroundImage: alumno.cachedImage,
-                            child: alumno.cachedImage == null
-                                ? Icon(
-                              Icons.person,
-                              size: 80,
-                              color: colorScheme.onPrimaryContainer,
-                            )
-                                : null,
+                          //AVATAR
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 80,
+                                backgroundColor: colorScheme.primaryContainer,
+                                // Usamos la imagen cacheada que definimos en alumno.dart
+                                backgroundImage: alumno.cachedImage,
+                                child: alumno.cachedImage == null
+                                    ? Text(
+                                  // Lógica para obtener inicial: Si no está vacío, coge la primera letra
+                                  alumno.nombre.isNotEmpty ? alumno.nombre[0].toUpperCase() : '?',
+                                  style: TextStyle(
+                                    fontSize: 64, // Tamaño grande
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
+                                )
+                                    : null,
+                              ),
+                              // Si se está subiendo la foto, mostramos el spinner encima
+                              if (_isUploadingImage)
+                                const CircularProgressIndicator(),
+                            ],
                           ),
 
                           const SizedBox(height: 15),
 
+                          // NOMBRE
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 14.0),
                             child: Stack(
@@ -229,12 +355,14 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                             ),
                           ),
 
-
                           const SizedBox(height: 16),
 
+                          // BOTON CAMBIAR IMAGEN
                           ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: Icon(Icons.edit),
+                            onPressed: _isUploadingImage
+                              ? null
+                              : () => _mostrarMenuOrigen(context, alumno),
+                            icon: const Icon(Icons.cameraswitch_outlined),
                             label: Text("Cambiar Imagen"),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorScheme.primaryContainer,
