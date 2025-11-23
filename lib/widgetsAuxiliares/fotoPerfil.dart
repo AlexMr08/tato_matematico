@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tato_matematico/datos/profesor.dart'; // Tu modelo
+import 'package:tato_matematico/datos/profesor.dart';
 
 //Clase hecha con ayuda de IA
 class FotoPerfil extends StatefulWidget {

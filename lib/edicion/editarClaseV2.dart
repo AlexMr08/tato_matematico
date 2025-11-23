@@ -7,6 +7,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
 
+import '../auxFunc.dart';
+
 class EditarClaseV2 extends StatefulWidget {
   final Clase clase;
   final List<Alumno> allAlumnos;
@@ -14,7 +16,7 @@ class EditarClaseV2 extends StatefulWidget {
   const EditarClaseV2({
     super.key,
     required this.clase,
-    required this.allAlumnos
+    required this.allAlumnos,
   });
   @override
   State<EditarClaseV2> createState() => _EditarClaseV2State();
@@ -25,16 +27,24 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
   final DatabaseReference dbref = FirebaseDatabase.instance.ref();
   late List<Alumno> alumnos;
   String? profesorTutor;
+  String? anoSeleccionado;
   List<Profesor> _profesores = [];
+  final List<String> _anos = generarListaAnos();
 
   @override
   void initState() {
     super.initState();
     _nombreController = TextEditingController(text: widget.clase.nombre);
+    anoSeleccionado = widget.clase.ano;
+    if (!_anos.contains(anoSeleccionado)) {
+      _anos.add(anoSeleccionado!);
+      _anos.sort();
+    }
     alumnos = alumnosDeClase(widget.clase, widget.allAlumnos);
-    profesorTutor = widget.clase.idTutor.isNotEmpty ? widget.clase.idTutor : null;
+    profesorTutor = widget.clase.idTutor.isNotEmpty
+        ? widget.clase.idTutor
+        : null;
   }
-
 
   List<Alumno> alumnosDeClase(Clase clase, List<Alumno> allAlumnos) {
     return allAlumnos
@@ -91,23 +101,23 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                                 .child(widget.clase.id)
                                 .update({'alumnos': alumnosActualizados})
                                 .then((_) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Alumno añadido a la clase',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
                                   setState(() {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Alumno añadido a la clase',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                     widget.clase.alumnos.add(alumno.id);
                                     alumnos = alumnosDeClase(
                                       widget.clase,
                                       widget.allAlumnos,
                                     );
+                                    Navigator.of(context).pop(true);
                                   });
-                                  Navigator.of(context).pop(true);
                                 })
                                 .catchError((error) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -155,7 +165,6 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
   @override
   Widget build(BuildContext context) {
     _profesores = context.read<ProfesoresHolder>().profesores;
-    //profesorTutor = widget.clase.idTutor.isNotEmpty ? widget.clase.idTutor : null;
 
     return ScaffoldComunV2(
       titulo: "Editar Clase",
@@ -167,7 +176,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  width: 800,
+                  width: 500,
                   child: TextField(
                     controller: _nombreController,
                     decoration: const InputDecoration(
@@ -176,7 +185,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
 
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -220,9 +229,81 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                           });
                     }
                   },
-                  label: Text("Guardar"),
+                  label: Text("Guardar nombre"),
                   icon: const Icon(Icons.save),
                 ),
+
+                SizedBox(width: 24),
+
+                Text(
+                  'Año: ',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                DropdownButton<String>(
+                  value: anoSeleccionado,
+                  underline: Container(
+                    height: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  hint: const Text("Selecciona año"),
+                  items: _anos.map((ano) {
+                    return DropdownMenuItem(value: ano, child: Text(ano));
+                  }).toList(),
+                  onChanged: (nuevoId) async {
+                    setState(() => anoSeleccionado = nuevoId);
+                  },
+                ),
+                const SizedBox(width: 20),
+
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    foregroundColor: Theme.of(
+                      context,
+                    ).colorScheme.onPrimaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (anoSeleccionado != null &&
+                        anoSeleccionado != widget.clase.ano) {
+                      dbref
+                          .child('tato')
+                          .child('clases')
+                          .child(widget.clase.id)
+                          .update({'ano': anoSeleccionado})
+                          .then((_) {
+                            setState(() {
+                              widget.clase.ano = anoSeleccionado!;
+                              snackBarExito(
+                                context,
+                                'Año actualizado correctamente',
+                              );
+                            });
+                          })
+                          .catchError((error) {
+                            setState(() {
+                              snackBarError(
+                                context,
+                                'Error al actualizar el año: $error',
+                              );
+                            });
+                          });
+                    }
+                  },
+                  label: Text("Guardar año"),
+                  icon: const Icon(Icons.save),
+                ),
+
+                const SizedBox(width: 20),
               ],
             ),
           ),
@@ -239,7 +320,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
                 _profesores.isEmpty
                     ? const CircularProgressIndicator()
                     : DropdownButton<String>(
@@ -260,7 +341,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                           setState(() => profesorTutor = nuevoId);
                         },
                       ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
 
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -310,15 +391,16 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                   icon: const Icon(Icons.save),
                 ),
 
-                const SizedBox(width: 80),
+                const SizedBox(width: 24),
+
                 Text(
-                  'Número de alumnos en la clase: ${alumnos.length}',
+                  'Número de alumnos: ${alumnos.length}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(
@@ -353,7 +435,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
 
           Expanded(
             child: Scrollbar(

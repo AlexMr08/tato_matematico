@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/agregar/agregarClase.dart';
 import 'package:tato_matematico/agregar/agregarProfesor.dart';
 import 'package:tato_matematico/edicion/editarAlumno.dart';
 import 'package:tato_matematico/edicion/editarClaseV2.dart';
@@ -164,7 +165,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                   });*/
               }
               if (currentPageIndex == 2) {
-                //navegar(const AgregarClase(), context);
+                navegar(AgregarClase(allAlumnos: context.read<AlumnosHolder>().alumnos), context);
               }
             },
             label: Text("Añadir $texto"),
