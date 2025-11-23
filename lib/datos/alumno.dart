@@ -109,6 +109,11 @@ class Alumno {
     return _cachedImage;
   }
 
+  // Invalidar la imágen de caché para poder editarla
+  void invalidarCachedImage() {
+    _cachedImage = null;
+  }
+
   //Descarga una imagen de 10MB como maximo
   Future<void> descargarImagen(
     Directory tempDir, {
