@@ -96,7 +96,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                           return SizedBox.shrink(); // No mostrar el alumno si ya está en la clase
                         }
 
-                        return alumnos[index].widgetProfesor(context, () {
+                        return alumnos[index].widgetProfesorV2(onTap: () {
                           List<String> alumnosActualizados = List.from(
                             seleccionados,
                           );
@@ -117,7 +117,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                             );
                             Navigator.of(context).pop(true);
                           }
-                        }, Icon(Icons.add));
+                        }, icono: Icon(Icons.add));
                       },
                     ),
                   ),
@@ -302,7 +302,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                   reverse: false,
                   itemCount: alumnos.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return alumnos[index].widgetProfesor(context, () {
+                    return alumnos[index].widgetProfesorV2(onTap: () {
                       seleccionados.remove(alumnos[index].id);
                       setState(() {
                         alumnos = alumnosDeClase(
@@ -310,7 +310,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                           widget.allAlumnos,
                         );
                       });
-                    }, Icon(Icons.remove_circle));
+                    }, icono: Icon(Icons.remove_circle));
                   },
                 ),
               ),

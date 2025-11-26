@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/clase.dart';
@@ -6,17 +11,14 @@ import 'package:tato_matematico/edicion/editarClaseV2.dart';
 import 'package:tato_matematico/edicion/profesorEditarContrasena.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
+import 'package:tato_matematico/holders/profesorHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 class PerfilProfesor extends StatefulWidget {
   final Profesor profesor;
   final List<Clase> clases;
 
-  const PerfilProfesor({
-    super.key,
-    required this.profesor,
-    required this.clases,
-  });
+  PerfilProfesor({super.key, required this.profesor, required this.clases});
 
   @override
   State<PerfilProfesor> createState() => _PerfilProfesorState();
@@ -25,6 +27,9 @@ class PerfilProfesor extends StatefulWidget {
 class _PerfilProfesorState extends State<PerfilProfesor> {
   late TextEditingController _nameController;
   bool _isEditing = false;
+  bool _isUploadingImage = false;
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  late FotoPerfil foto;
 
   @override
   void initState() {
@@ -40,14 +45,17 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
 
   void _toggleEditing() {
     if (_isEditing) {
-      // Guardar: actualizar el nombre en el modelo local
-      setState(() {
-        widget.profesor.actualizarNombre(_nameController.text);
+      if(_nameController.text.trim().isNotEmpty){
+        setState(() {
+          widget.profesor.actualizarNombre(_nameController.text);
+          _isEditing = false;
+        });
+      }else{
+        snackBarError(context, 'El nombre no puede estar vacío.');
+        _nameController.text = widget.profesor.nombre;
         _isEditing = false;
-      });
+      }
       FocusScope.of(context).unfocus();
-
-      // Aquí puedes llamar a tu API o provider para persistir el cambio
     } else {
       setState(() {
         _isEditing = true;
@@ -58,7 +66,9 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
   @override
   Widget build(BuildContext context) {
     var alumnos = context.read<AlumnosHolder>().alumnos;
-
+    foto = FotoPerfil(
+        key: ValueKey(widget.profesor.imagen),
+        profesor: widget.profesor);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Column(
@@ -76,9 +86,9 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                   clipBehavior: Clip.hardEdge,
                   child: GestureDetector(
                     onTap: () {
-                      // acción al tocar el avatar (ej. cambiar imagen)
+                      _mostrarMenuOrigen(context, widget.profesor);
                     },
-                    child: FotoPerfil(profesor: widget.profesor)
+                    child: foto,
                   ),
                 ),
               ),
@@ -124,7 +134,10 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: () {
-                        navegar(ProfesorEditarContrasena(profesor: widget.profesor), context);
+                        navegar(
+                          ProfesorEditarContrasena(profesor: widget.profesor),
+                          context,
+                        );
                       },
                       icon: Icon(
                         Icons.edit,
@@ -176,7 +189,13 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return widget.clases[index].widgetClase(context, () {
-                  navegar(EditarClaseV2(clase: widget.clases[index], allAlumnos: alumnos), context);
+                  navegar(
+                    EditarClaseV2(
+                      clase: widget.clases[index],
+                      allAlumnos: alumnos,
+                    ),
+                    context,
+                  );
                 });
               },
             ),
@@ -184,5 +203,129 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
         ],
       ),
     );
+  }
+
+  void _mostrarMenuOrigen(BuildContext context, Profesor alumno) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.photo_library,
+                    color: colorScheme.primary,
+                  ),
+                  title: const Text('Galería'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // Cerrar menú
+                    _cambiarImagen(ImageSource.gallery, alumno);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: colorScheme.primary),
+                  title: const Text('Cámara'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // Cerrar menú
+                    _cambiarImagen(ImageSource.camera, alumno);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _cambiarImagen(ImageSource source, Profesor prof) async{
+    try {
+      final ImagePicker picker = ImagePicker();
+
+      // Abrimos camara o galeria con optimizacion
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 800,    // Redimensionar 800px de ancho
+        maxHeight: 800,
+        imageQuality: 80, // Calidad JPEG al 80%
+      );
+
+      if (pickedFile == null) return; // Si no se selecciono ninguna imagen, salimos
+
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      File imageFile = File(pickedFile.path);
+
+      // ---------------------------------------------------------
+      // 1. Borrar imagen anterior si existe para no acumular basura
+      // ---------------------------------------------------------
+      if (prof.imagen != null && prof.imagen!.isNotEmpty) {
+        try {
+          // Intentamos borrar la imagen antigua del Storage.
+          // refFromURL funciona con URLs gs:// y https://
+          await FirebaseStorage.instance.refFromURL(prof.imagen!).delete();
+        } catch (e) {
+          // Si falla (ej. no existe el archivo o no tiene permisos), solo logueamos y seguimos
+          print("No se pudo borrar la imagen anterior (quizás ya no existe): $e");
+        }
+      }
+
+      // ---------------------------------------------------------
+      // 2. Subir nueva imagen
+      // ---------------------------------------------------------
+      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube y local
+      String fileName = '${prof.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
+      Reference ref = FirebaseStorage.instance.ref().child('profesorado/$fileName');
+
+      await ref.putFile(imageFile);
+
+      // Obtener ruta gs://
+      String bucketName = FirebaseStorage.instance.bucket;
+      String gsUrl = "gs://$bucketName/profesorado/$fileName";
+
+      // 3. Actualizar Realtime Database
+      await _dbRef.child('tato/profesorado/${prof.id}').update({
+        'imagen': gsUrl,
+      });
+
+      // 4. Actualizar el objeto alumno
+      prof.imagen = gsUrl;
+      prof.imagenLocal = imageFile.path;
+
+      // Limpiar cache (aunque el setter de imagen ya lo hace, no está de más si no se usó el setter)
+      prof.invalidarCachedImage();
+
+      // 5. Notificar cambios
+      if (mounted) {
+        context.read<ProfesorHolder>().setProfesor(prof);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Imagen actualizada correctamente.'),
+              backgroundColor: Colors.green
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error subiendo imagen: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error al subir imagen: $e"))
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingImage = false);
+    }
   }
 }

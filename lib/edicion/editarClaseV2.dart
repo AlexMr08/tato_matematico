@@ -101,7 +101,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                           return SizedBox.shrink(); // No mostrar el alumno si ya está en la clase
                         }
 
-                        return alumnos[index].widgetProfesor(context, () {
+                        return alumnos[index].widgetProfesorV2(onTap: () {
                           List<String> alumnosActualizados = List.from(
                             widget.clase.alumnos,
                           );
@@ -141,7 +141,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                                   );
                                 });
                           }
-                        }, Icon(Icons.add));
+                        }, icono: Icon(Icons.add));
                       },
                     ),
                   ),
@@ -458,7 +458,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                   reverse: false,
                   itemCount: alumnos.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return alumnos[index].widgetProfesor(context, () {
+                    return alumnos[index].widgetProfesorV2( onTap: () {
                       List<String> alumnosActualizados = List.from(
                         widget.clase.alumnos,
                       );
@@ -494,7 +494,7 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                               ),
                             );
                           });
-                    }, Icon(Icons.remove_circle));
+                    }, icono: Icon(Icons.remove_circle));
                   },
                 ),
               ),

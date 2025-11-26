@@ -141,31 +141,46 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
       File imageFile = File(pickedFile.path);
 
-      // Crear referencia en Firebase Storage
-      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube
+      // ---------------------------------------------------------
+      // 1. Borrar imagen anterior si existe para no acumular basura
+      // ---------------------------------------------------------
+      if (alumno.imagen != null && alumno.imagen!.isNotEmpty) {
+        try {
+          // Intentamos borrar la imagen antigua del Storage.
+          // refFromURL funciona con URLs gs:// y https://
+          await FirebaseStorage.instance.refFromURL(alumno.imagen!).delete();
+        } catch (e) {
+          // Si falla (ej. no existe el archivo o no tiene permisos), solo logueamos y seguimos
+          print("No se pudo borrar la imagen anterior (quizás ya no existe): $e");
+        }
+      }
+
+      // ---------------------------------------------------------
+      // 2. Subir nueva imagen
+      // ---------------------------------------------------------
+      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube y local
       String fileName = '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
       Reference ref = FirebaseStorage.instance.ref().child('alumnos/$fileName');
-      
-      // 1. Subir el archivo al storage
+
       await ref.putFile(imageFile);
 
       // Obtener ruta gs://
       String bucketName = FirebaseStorage.instance.bucket;
       String gsUrl = "gs://$bucketName/alumnos/$fileName";
 
-      // 2. Actualizar Realtime Database
+      // 3. Actualizar Realtime Database
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
         'imagen': gsUrl,
       });
 
-      // 3. Actualizar el objeto alumno
+      // 4. Actualizar el objeto alumno
       alumno.imagen = gsUrl;
       alumno.imagenLocal = imageFile.path;
 
-      // Limpiar cache
+      // Limpiar cache (aunque el setter de imagen ya lo hace, no está de más si no se usó el setter)
       alumno.invalidarCachedImage();
 
-      // 4. Notificar cambios
+      // 5. Notificar cambios
       if (mounted) {
         context.read<AlumnoHolder>().setAlumno(alumno);
 
@@ -229,10 +244,10 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   void _guardarBarra(Alumno alumno) async {
     final nuevoNombre = posicionBarra;
 
-    if (nuevoNombre == alumno.nombre) {
-      // Si no hay cambios, simplemente salimos del modo edición.
-      return;
-    }
+    // if (nuevoNombre == alumno.nombre) {
+    //   // Si no hay cambios, simplemente salimos del modo edición.
+    //   return;
+    // }
     try {
       // Actualizamos la base de datos
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
@@ -288,6 +303,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                                 radius: 80,
                                 backgroundColor: colorScheme.primaryContainer,
                                 // Usamos la imagen cacheada que definimos en alumno.dart
+                                // Usamos key para forzar repintado si cambia la URL
+                                key: ValueKey(alumno.imagen),
                                 backgroundImage: alumno.cachedImage,
                                 child: alumno.cachedImage == null
                                     ? Text(

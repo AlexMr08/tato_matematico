@@ -166,18 +166,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               }
               if (currentPageIndex == 1) {
                 navegar(const AgregarProfesor(), context);
-                /*Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AgregarProfesor(),
-                    ),
-                  ).then((value) {
-                    if (value == true) {
-                      setState(() {
-                        _futureProfesores = _loadProfesores(profesorHolder);
-                      });
-                    }
-                  });*/
               }
               if (currentPageIndex == 2) {
                 navegar(AgregarClase(allAlumnos: context.read<AlumnosHolder>().alumnos), context);
