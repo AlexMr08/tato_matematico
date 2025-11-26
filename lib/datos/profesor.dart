@@ -132,7 +132,7 @@ class Profesor {
   }
 
   Widget widgetProfesorV2(BuildContext context, VoidCallback navegar) {
-    return _ProfesorCardInternal(profesor: this, onTap: navegar);
+    return _ProfesorCardInternal(key: ValueKey(imagen), profesor: this, onTap: navegar);
   }
 
   Widget widgetProfesor(BuildContext context, VoidCallback navegar) {
