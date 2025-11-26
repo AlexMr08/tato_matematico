@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
@@ -6,7 +7,9 @@ import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
+import 'package:tato_matematico/login/AlumnoLoginSecuencia.dart';
 import 'package:tato_matematico/login/alumnoLogin.dart';
+import 'package:tato_matematico/login/LoginConImagen.dart';
 
 class SeleccionAlumno extends StatefulWidget {
   final Clase clase;
@@ -14,6 +17,21 @@ class SeleccionAlumno extends StatefulWidget {
 
   @override
   State<SeleccionAlumno> createState() => _SeleccionAlumnoState();
+}
+
+//Se obtiene el tipo de login del alumno
+Future<String?> cargarTipoLogin(String alumnoId) async {
+  final snap = await FirebaseDatabase.instance
+      .ref()
+      .child("tato")
+      .child("login")
+      .child(alumnoId)
+      .child("tipoLogin")
+      .get();
+
+  if (!snap.exists || snap.value == null) return null;
+
+  return snap.value.toString();
 }
 
 class _SeleccionAlumnoState extends State<SeleccionAlumno> {
@@ -332,7 +350,16 @@ class GridAlumnos extends StatelessWidget {
         return alumno.widgetAlumnoV2(
           onTap: () {
             context.read<AlumnoHolder>().setAlumno(alumno);
-            navegar(AlumnoLogIn(), context);
+            cargarTipoLogin(alumno.id).then((tipo) {
+
+              if (tipo == "seleccionImagen") {
+                navegar(LoginConImagen(alumnoId: alumno.id), context);
+              } else if (tipo == "secuenciaImagenes"){
+                navegar(AlumnoLoginSecuencia(alumnoId: alumno.id), context);
+              } else if (tipo == "alfanumerica"){
+                navegar(AlumnoLogIn(), context);
+              }
+            });
           },
         );
       }
