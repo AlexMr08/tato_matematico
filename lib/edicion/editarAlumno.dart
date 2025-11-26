@@ -18,6 +18,20 @@ class EditarAlumno extends StatefulWidget{
   State<EditarAlumno> createState() => _EditarAlumnoState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Se ha cambiado el nombre sin problema, actualizandose en la base de datos
+  - Si no se edita el nombre, no se actualiza
+  - El cambio de contrasena alfanumerica funciona correctamente
+  - Se han probado todas las posiciones de la barra, y funcionan correctamente
+  - Se ha probado el cambio de color de un alumno en concreto y
+    se ha guardado y reflejeado correctamente.
+  - Se ha cambiado la imagen de perfil.
+
+  Queda pendiente:
+  - Probar configurar contrasenas imagen y secuencia imagen
+   */
+
 class _EditarAlumnoState extends State<EditarAlumno> {
   String tipoPassword = "alfanumerica";
   int posicionBarra = 0;

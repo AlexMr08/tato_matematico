@@ -270,6 +270,7 @@ class _AlumnViewCard extends StatefulWidget {
 
   @override
   State<_AlumnViewCard> createState() => _AlumnViewCardState();
+
 }
 
 class _AlumnViewCardState extends State<_AlumnViewCard> {

@@ -8,6 +8,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - No se puede crear una clase sin nombre
+  - Se puede crear una clase introduciendo como minimo el nombre.
+  - Se puede crear una clase con nombre y con tutor, pero sin alumnos
+  - Se puede crear una clase con nombre, tutor y alumnos.
+   */
+
 class AgregarClase extends StatefulWidget {
   final List<Alumno> allAlumnos;
 

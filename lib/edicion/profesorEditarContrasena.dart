@@ -14,6 +14,15 @@ class ProfesorEditarContrasena extends StatefulWidget {
   State<ProfesorEditarContrasena> createState() => _ProfesorEditarContrasenaState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se introduce contrasena ni confirmar, no se cambia
+  - Si se introduce contrasena pero no confirmar, no se cambia
+  - Si se introduce confirmar pero no contrasena, no se cambia
+  - Si se introducen contrasena y confirmar diferentes, no se cambia
+  - Si se introducen contrasena y confirmar iguales, se cambia
+   */
+
 class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();

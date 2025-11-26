@@ -19,6 +19,18 @@ class EditarClase extends StatefulWidget {
   State<EditarClase> createState() => _EditarClaseState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Se ha cambiado el nombre de la clase correctamente
+  - No se puede guardar si el campo del nombre de la clase esta vacio
+  - Al retroceder no se guardan los cambios
+  - Se puede cambiar la fecha correctamente, y cambia el orden del listado
+    de clases en base a ello
+  - Se puede cambiar el tutor sin problemas
+  - Se pueden anadir alumnos sin problemas
+  - Se pueden eliminar alumnos sin problemas
+   */
+
 class _EditarClaseState extends State<EditarClase> {
   late TextEditingController _nombreController;
   final DatabaseReference dbref = FirebaseDatabase.instance.ref();

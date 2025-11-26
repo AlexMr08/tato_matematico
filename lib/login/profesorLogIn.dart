@@ -20,6 +20,21 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  /*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se introduce usuario ni contrasena, no inicia sesion
+  - Si no se introduce contrasena y el usuario no es correcto, no inicia sesion
+  - Si no se introduce contrasena y el usuario es correcto, no inicia sesion
+  - Si se introduce contrasena y no usuario, no se inicia sesion
+  - Si se introducen usuario y contrasena incorrectas, no se inicia sesion
+  - Si se introducen usuario correcto y contrasena incorrecta, avisa de que
+    la contrasena no es correcta y no se inica sesion
+  - Si se introduce usuario incorrecto y una contrasena, se avisa de que el
+    usuario no existe y no se inicia sesion
+  - Si se introducen usuario y contrasena correctos, se inicia sesion
+    correctamente
+   */
+
   // Función para autenticar al profesor en la base de datos
   void autenticacionProfesor(String username, String password) async {
     // Validar que los campos no estén vacíos

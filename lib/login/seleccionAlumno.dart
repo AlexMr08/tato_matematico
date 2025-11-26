@@ -21,6 +21,17 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   int paginaActual = 0;
   final int itemsPorPagina = 12;
 
+  /*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si la clase no tiene alumnos, se indica que no hay alumnos
+  - Si la clase tiene alumnos, sale un listado de los mismos
+  - Al pulsar un alumno, se pasa al inicio de sesion de este
+  - Al pulsar la flecha de "Siguiente", se pasa a la siguiente parte de la
+    visualizacion de alumnos para clases con muchos alumnos
+  - Al pulsar la flecha de "Atras" se vuelve a la parte anterior de la
+    visualizacion de la clase.
+   */
+
   @override
   Widget build(BuildContext context) {
     AlumnosHolder ah = context.watch<AlumnosHolder>();

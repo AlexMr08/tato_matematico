@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 
 class AgregarAlumno extends StatefulWidget {
   const AgregarAlumno({super.key});
@@ -10,32 +12,69 @@ class AgregarAlumno extends StatefulWidget {
 
 class _AgregarAlumnoState extends State<AgregarAlumno> {
   final _nombreController = TextEditingController();
-  final _passwordController = TextEditingController();
 
+  /*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se pone un nombre, avisará de que se debe introducir un nombre
+  - Al crearlo, se anade correctamente a la base de datos
+
+  - Una vez creado, se prueba a iniciar sesion con la contrasena por defecto,
+    la cual estara documentada en su lugar correspondiente, y funciona bien.
+  - Se puede editar sin problema el usuario creado para personalizarlo
+   */
   Future<void> agregarAlumno() async {
     final nombre = _nombreController.text.trim();
-    final password = _passwordController.text.trim();
 
-    if (nombre.isEmpty || password.isEmpty) {
+    if (nombre.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor, completa todos los campos")),
+        const SnackBar(content: Text("Por favor, introduce el nombre")),
       );
       return;
     }
+
+    //En esta parte se establece una contrasena por defecto de "0000"
+    String contrasena_defecto = "0000";
+
+    //Se hace cifrado de la contrasena por Hash
+    var bytes = utf8.encode(contrasena_defecto);
+    var digest = sha256.convert(bytes);
+
+    String passwordHash = digest.toString();
+
+    //Se crea el alumno
 
     final dbRef = FirebaseDatabase.instance
         .ref()
         .child("tato")
         .child("alumnos");
 
-    await dbRef.push().set({"nombre": nombre, "pass": password});
+    final newAlumnoRef = dbRef.push();
+    await newAlumnoRef.set({
+      "nombre": nombre,
+    });
+
+    //Se crea la contrasena del alumno que por defecto es
+    // "0000" cifrada en Hash.
+
+    String id = newAlumnoRef.key!;
+
+    final dbRefpass = FirebaseDatabase.instance
+        .ref()
+        .child("tato")
+        .child("login");
+
+    await dbRefpass.child(id).set({
+      "alfanumerica": {
+          "hash": passwordHash
+      },
+      "tipoLogin": "alfanumerica",
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Alumno añadido correctamente")),
     );
 
     _nombreController.clear();
-    _passwordController.clear();
 
     Navigator.of(context).pop(true);
   }
@@ -70,22 +109,6 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
               ),
             ),
             const SizedBox(height: 10),
-
-            // Introducir Contraseña
-            const Text(
-              "Contraseña",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Introduce contraseña segura',
-              ),
-            ),
-            const SizedBox(height: 20),
 
             // Boton para añadir al alumno
             SizedBox(
