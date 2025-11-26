@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tato_matematico/alumnoScaffold.dart'; // Importar para usar getTextColorForBackground
 
 class Juego {
   String id;
@@ -16,43 +17,40 @@ class Juego {
   });
 
   Widget widgetJuego(BuildContext context, VoidCallback navegar, Color? color) {
+    final Color backgroundColor = color ?? Theme.of(context).colorScheme.primaryContainer;
+    final Color contentColor = getTextColorForBackground(backgroundColor);
+
     return InkWell(
       onTap: navegar,
-      //Boton
-      child: Container(
-        decoration: BoxDecoration(
-          color: color ?? Theme.of(context).colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(12),
+      child: Card(
+        color: backgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24), // Bordes más redondeados
         ),
+        elevation: 6,
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icono != null
-                    ? icono!
-                    : Icons.videogame_asset,
-                      size: 64,
-                      color: color != null
-                          ? color.computeLuminance() > 0.5
-                                ? Colors.black
-                                : Colors.white
-                          : Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-              SizedBox(height: 8),
-              Text(
-                nombre,
-                style: TextStyle(
-                  color: color != null
-                      ? color.computeLuminance() > 0.5
-                      ? Colors.black
-                      : Colors.white
-                      : Theme.of(context).colorScheme.onPrimaryContainer,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icono ?? Icons.videogame_asset,
+                  size: 90, // Icono mucho más grande
+                  color: contentColor,
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  nombre,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: contentColor,
+                    fontSize: 28, // Texto mucho más grande
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

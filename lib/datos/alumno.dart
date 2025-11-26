@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 
 class Alumno {
   String id;
@@ -16,6 +17,21 @@ class Alumno {
   bool _volverDerecha = false;
   int? posicionBarra;
   File? foto;
+  bool permisoAjustesJuego1;
+  bool permisoEstadisticasJuego1;
+  bool mostrarPuntuacionJuego1;
+  
+  // Ajustes de sonido Juego 1
+  String? vozJuego1;
+  double ttsRateJuego1;
+  double ttsVolumeJuego1;
+  double ttsPitchJuego1;
+  String sonidoAciertoJuego1;
+  bool sonidoAciertoActivadoJuego1;
+  String sonidoFalloJuego1;
+  bool sonidoFalloActivadoJuego1;
+
+  Juego1Settings juego1Settings;
 
   Alumno({
     required this.id,
@@ -24,9 +40,21 @@ class Alumno {
     Color? colorFondo,
     Color? colorBarraNav,
     Color? colorBotones,
+    this.permisoAjustesJuego1 = true,
+    this.permisoEstadisticasJuego1 = true,
+    this.mostrarPuntuacionJuego1 = true,
+    this.vozJuego1,
+    this.ttsRateJuego1 = 0.5,
+    this.ttsVolumeJuego1 = 1.0,
+    this.ttsPitchJuego1 = 1.0,
+    this.sonidoAciertoJuego1 = 'Pim',
+    this.sonidoAciertoActivadoJuego1 = true,
+    this.sonidoFalloJuego1 = 'Pton',
+    this.sonidoFalloActivadoJuego1 = true,
+    Juego1Settings? juego1Settings,
     volverDerecha,
     posicionBarra,
-  }) {
+  }) : juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
     if (volverDerecha != null) {
       _volverDerecha = volverDerecha;
     }
@@ -46,7 +74,7 @@ class Alumno {
 
   Color? get colorFondo => _colorFondo;
 
-  set colorFondo(Color color) {
+  set colorFondo(Color? color) {
     _colorFondo = color;
   }
 
@@ -58,13 +86,13 @@ class Alumno {
 
   Color? get colorBarraNav => _colorBarraNav;
 
-  set colorBarraNav(Color value) {
+  set colorBarraNav(Color? value) {
     _colorBarraNav = value;
   }
 
   Color? get colorBotones => _colorBotones;
 
-  set colorBotones(Color value) {
+  set colorBotones(Color? value) {
     _colorBotones = value;
   }
 
@@ -72,6 +100,7 @@ class Alumno {
   String toString() {
     return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $imagen, volverDerecha: $volverDerecha}';
   }
+
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
     Color? colorFondoLoc, colorBotonesLoc, colorNavLoc;
@@ -89,6 +118,16 @@ class Alumno {
       colorBotonesLoc = Color(hex);
     }
 
+    Juego1Settings? juego1Settings;
+    if (data['juego1Settings'] != null) {
+      final settingsMap = data['juego1Settings'] as Map<dynamic, dynamic>;
+      juego1Settings = Juego1Settings(
+        numeroOpciones: settingsMap['numeroOpciones'] ?? 4,
+        numeroMayor: settingsMap['numeroMayor'] ?? 10,
+        numeroMenor: settingsMap['numeroMenor'] ?? 0,
+      );
+    }
+
     return Alumno(
       id: id,
       nombre: data['nombre'] ?? 'Sin nombre',
@@ -98,6 +137,18 @@ class Alumno {
       colorBarraNav: colorNavLoc,
       colorBotones: colorBotonesLoc,
       posicionBarra: data['posicionBarra'],
+      permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
+      permisoEstadisticasJuego1: data['permisoEstadisticasJuego1'] ?? true,
+      mostrarPuntuacionJuego1: data['mostrarPuntuacionJuego1'] ?? true,
+      vozJuego1: data['vozJuego1'],
+      ttsRateJuego1: (data['ttsRateJuego1'] as num? ?? 0.5).toDouble(),
+      ttsVolumeJuego1: (data['ttsVolumeJuego1'] as num? ?? 1.0).toDouble(),
+      ttsPitchJuego1: (data['ttsPitchJuego1'] as num? ?? 1.0).toDouble(),
+      sonidoAciertoJuego1: data['sonidoAciertoJuego1'] ?? 'Pim',
+      sonidoAciertoActivadoJuego1: data['sonidoAciertoActivadoJuego1'] ?? true,
+      sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
+      sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
+      juego1Settings: juego1Settings,
     );
   }
 
@@ -109,12 +160,10 @@ class Alumno {
     return _cachedImage;
   }
 
-  // Invalidar la imágen de caché para poder editarla
   void invalidarCachedImage() {
     _cachedImage = null;
   }
 
-  //Descarga una imagen de 10MB como maximo
   Future<void> descargarImagen(
     Directory tempDir, {
     int maxBytes = 10 * 1024 * 1024,
@@ -136,7 +185,6 @@ class Alumno {
       final file = File('${tempDir.path}/${id}_avatar.jpg');
       await file.writeAsBytes(bytes, flush: true);
       imagenLocal = file.path;
-      //return await ref.getDownloadURL();
     } catch (e) {
       imagenLocal = '';
       return;
@@ -150,7 +198,6 @@ class Alumno {
       onTap: navegar,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          //El avatar ocupa 70% del ancho/alto de celda
           double size = ori == Orientation.portrait
               ? constraints.maxWidth * 0.7
               : constraints.maxHeight * 0.7;
@@ -189,8 +236,6 @@ class Alumno {
     ImageProvider? imageProvider;
     if (imagenLocal.isNotEmpty) {
       imageProvider = FileImage(File(imagenLocal));
-      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
-      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
     }
 
     return Card(
@@ -220,23 +265,18 @@ class Alumno {
   }
 
   Future<File?> obtenerImagen(Directory tempDir) async {
-    // 1. Caché en RAM: Si ya tenemos el archivo cargado en la variable, lo devolvemos.
     if (foto != null) return foto;
 
-    // 2. Caché en Disco: Si tenemos una ruta local guardada, verificamos si el archivo existe.
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
-        foto = archivoDisco; // Lo guardamos en RAM para la próxima
+        foto = archivoDisco;
         return foto;
       }
     }
 
-    // 3. Descarga: Si no está en RAM ni en Disco, intentamos descargar.
-    // Usamos tu método existente descargarImagen que ya maneja la lógica de Firebase
     await descargarImagen(tempDir);
 
-    // Verificamos si la descarga fue exitosa (tu método descargarImagen actualiza imagenLocal)
     if (imagenLocal.isNotEmpty) {
       final archivoRecienDescargado = File(imagenLocal);
       if (await archivoRecienDescargado.exists()) {
@@ -244,8 +284,6 @@ class Alumno {
         return foto;
       }
     }
-
-    // Si falló todo o no tiene imagen
     return null;
   }
 
@@ -261,7 +299,6 @@ class Alumno {
   }
 }
 
-//WIDGET HECHO CON COLABORACION DE GEMINI, AHORA ACTUALIZA EL SU ESTADO
 class _AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
@@ -285,8 +322,6 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
   Future<void> _cargarImagen() async {
     try {
       final tempDir = await getTemporaryDirectory();
-
-      // Llamamos al método del propio objeto alumno
       final archivo = await widget.alumno.obtenerImagen(tempDir);
 
       if (mounted) {
@@ -338,7 +373,7 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
                           image: DecorationImage(
                             image: FileImage(_imagenLocal!),
                             fit: BoxFit
-                                .cover, // 'cover' suele quedar mejor en círculos
+                                .cover, 
                           ),
                         ),
                       )
@@ -405,7 +440,6 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
     try {
       final tempDir = await getTemporaryDirectory();
 
-      // Llamamos al método del propio objeto alumno
       final archivo = await widget.alumno.obtenerImagen(tempDir);
 
       if (mounted) {
@@ -439,8 +473,6 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
     Alumno alum = widget.alumno;
     if (alum.imagenLocal.isNotEmpty) {
       imageProvider = FileImage(File(alum.imagenLocal));
-      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
-      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
     }
 
     return Card(
