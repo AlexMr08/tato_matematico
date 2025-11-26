@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
