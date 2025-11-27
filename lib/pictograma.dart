@@ -19,4 +19,7 @@ class Pictograma {
       categoria: data['categoria'] ?? 'General',
     );
   }
+
+  /// Helper para saber si es un pictograma válido o el fallback vacío
+  bool get isEmpty => id.isEmpty && url.isEmpty;
 }

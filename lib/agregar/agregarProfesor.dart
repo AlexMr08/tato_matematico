@@ -19,6 +19,24 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
   final _passwordController = TextEditingController();
   bool _esDirector = false;
 
+  /*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se introduce ningun campo, se avisara de ello y no se creara
+    el profesor nuevo.
+  - Si se pone el nombre pero no usuario ni contrasena, no se crea
+  - Si se pone el nombre y usuario pero no contrasena, no se crea
+  - Si se pone el nombre y contrasena pero no usuario, no se crea
+  - Si se pone usuario y contrasena, pero no nombre, no se crea
+  - Si se pone usuario, pero no nombre y contrasena, no se crea
+  - Si se pone contrasena, pero no nombre y usuario, no se crea
+  - Todas estas comprobaciones se han repetido con el check de director
+  - Si se introducen todos los campos, se crea correctamente un profesor
+  - Si se introducen todos los campos y se marca el check, se crea
+    correctamente un administrador/director
+  - Si se intenta crear una cuenta con un nombre de usuario ya existente,
+    se avisara de ello y no se creara la cuenta nueva
+   */
+
   Future<void> agregarProfesor() async {
     final nombre = _nombreController.text.trim();
     final username = _usernameController.text.trim();

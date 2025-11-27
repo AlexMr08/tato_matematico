@@ -8,7 +8,10 @@ import 'package:path_provider/path_provider.dart';
 class Alumno {
   String id;
   String nombre;
-  String? imagen;
+  
+  // Usamos un campo privado para controlar el setter
+  String? _imagen;
+  
   String imagenLocal = '';
   Color? _colorFondo;
   Color? _colorBarraNav;
@@ -20,13 +23,13 @@ class Alumno {
   Alumno({
     required this.id,
     required this.nombre,
-    required this.imagen,
+    required String? imagen, // Quitamos 'this.'
     Color? colorFondo,
     Color? colorBarraNav,
     Color? colorBotones,
     volverDerecha,
     posicionBarra,
-  }) {
+  }) : _imagen = imagen { // Inicializamos el campo privado
     if (volverDerecha != null) {
       _volverDerecha = volverDerecha;
     }
@@ -41,6 +44,19 @@ class Alumno {
     }
     if (posicionBarra != null) {
       this.posicionBarra = posicionBarra;
+    }
+  }
+  
+  // Getter y Setter para imagen
+  String? get imagen => _imagen;
+  
+  set imagen(String? value) {
+    if (_imagen != value) {
+      _imagen = value;
+      // Al cambiar la URL, invalidamos la caché en memoria
+      foto = null;
+      // Opcional: Invalidar imagenLocal si queremos forzar descarga
+      // imagenLocal = ''; 
     }
   }
 
@@ -70,7 +86,7 @@ class Alumno {
 
   @override
   String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $imagen, volverDerecha: $volverDerecha}';
+    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen, volverDerecha: $volverDerecha}';
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
@@ -109,29 +125,37 @@ class Alumno {
     return _cachedImage;
   }
 
+  // Invalidar la imágen de caché para poder editarla
+  void invalidarCachedImage() {
+    _cachedImage = null;
+    foto = null; // Limpiamos también la caché de archivo
+  }
+
   //Descarga una imagen de 10MB como maximo
   Future<void> descargarImagen(
     Directory tempDir, {
     int maxBytes = 10 * 1024 * 1024,
   }) async {
-    if (imagen == null || imagen!.isEmpty) {
+    if (_imagen == null || _imagen!.isEmpty) {
       imagenLocal = '';
       return;
     }
 
     try {
       final storage = FirebaseStorage.instance;
-      Reference ref = storage.refFromURL(imagen!);
+      Reference ref = storage.refFromURL(_imagen!);
       final Uint8List? bytes = await ref.getData(maxBytes);
       if (bytes == null) {
         imagenLocal = '';
         return;
       }
 
-      final file = File('${tempDir.path}/${id}_avatar.jpg');
+      // Usamos el nombre del archivo de Firebase (ej. timestamp_perfil.jpg) para evitar caché antiguo
+      String nombreArchivo = ref.name;
+      final file = File('${tempDir.path}/$nombreArchivo');
+      
       await file.writeAsBytes(bytes, flush: true);
       imagenLocal = file.path;
-      //return await ref.getDownloadURL();
     } catch (e) {
       imagenLocal = '';
       return;
@@ -184,8 +208,6 @@ class Alumno {
     ImageProvider? imageProvider;
     if (imagenLocal.isNotEmpty) {
       imageProvider = FileImage(File(imagenLocal));
-      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
-      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
     }
 
     return Card(
@@ -215,23 +237,21 @@ class Alumno {
   }
 
   Future<File?> obtenerImagen(Directory tempDir) async {
-    // 1. Caché en RAM: Si ya tenemos el archivo cargado en la variable, lo devolvemos.
+    // 1. Caché en RAM
     if (foto != null) return foto;
 
-    // 2. Caché en Disco: Si tenemos una ruta local guardada, verificamos si el archivo existe.
+    // 2. Caché en Disco
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
-        foto = archivoDisco; // Lo guardamos en RAM para la próxima
+        foto = archivoDisco;
         return foto;
       }
     }
 
-    // 3. Descarga: Si no está en RAM ni en Disco, intentamos descargar.
-    // Usamos tu método existente descargarImagen que ya maneja la lógica de Firebase
+    // 3. Descarga
     await descargarImagen(tempDir);
 
-    // Verificamos si la descarga fue exitosa (tu método descargarImagen actualiza imagenLocal)
     if (imagenLocal.isNotEmpty) {
       final archivoRecienDescargado = File(imagenLocal);
       if (await archivoRecienDescargado.exists()) {
@@ -240,31 +260,42 @@ class Alumno {
       }
     }
 
-    // Si falló todo o no tiene imagen
     return null;
   }
 
   Widget widgetAlumnoV2({required VoidCallback onTap}) {
-    return _AlumnViewCard(alumno: this, onTap: onTap);
+    // Usamos una Key basada en el ID para que Flutter sepa distinguir widgets
+    return _AlumnViewCard(
+      key: ValueKey(id), 
+      alumno: this, 
+      onTap: onTap
+    );
   }
 
-  Widget widgetProfesorV2({
-    required VoidCallback onTap,
-    required Icon icono,
-  }) {
-    return _TeacherViewCard(alumno: this, onTap: onTap, icono: icono,);
+  Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
+    // Usamos una Key basada en la imagen para forzar la reconstrucción si cambia la URL
+    return _TeacherViewCard(
+      key: ValueKey("${id}_${_imagen ?? ''}"), 
+      alumno: this, 
+      onTap: onTap, 
+      icono: icono
+    );
   }
 }
 
-//WIDGET HECHO CON COLABORACION DE GEMINI, AHORA ACTUALIZA EL SU ESTADO
 class _AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
-  const _AlumnViewCard({required this.alumno, required this.onTap});
+  const _AlumnViewCard({
+    Key? key,
+    required this.alumno, 
+    required this.onTap
+  }) : super(key: key);
 
   @override
   State<_AlumnViewCard> createState() => _AlumnViewCardState();
+
 }
 
 class _AlumnViewCardState extends State<_AlumnViewCard> {
@@ -277,11 +308,21 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
     _cargarImagen();
   }
 
+  @override
+  void didUpdateWidget(covariant _AlumnViewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.alumno.id != widget.alumno.id) {
+      setState(() {
+        _imagenLocal = null;
+        _cargando = true;
+      });
+      _cargarImagen();
+    }
+  }
+
   Future<void> _cargarImagen() async {
     try {
       final tempDir = await getTemporaryDirectory();
-
-      // Llamamos al método del propio objeto alumno
       final archivo = await widget.alumno.obtenerImagen(tempDir);
 
       if (mounted) {
@@ -332,24 +373,19 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
                           shape: BoxShape.circle,
                           image: DecorationImage(
                             image: FileImage(_imagenLocal!),
-                            fit: BoxFit
-                                .cover, // 'cover' suele quedar mejor en círculos
+                            fit: BoxFit.cover,
                           ),
                         ),
                       )
                     : CircleAvatar(
                         radius: 45,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer,
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                         child: Text(
                           _obtenerIniciales(widget.alumno.nombre),
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer,
+                            color: Theme.of(context).colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ),
@@ -380,7 +416,12 @@ class _TeacherViewCard extends StatefulWidget {
   final Icon icono;
   final VoidCallback onTap;
 
-  const _TeacherViewCard({required this.alumno, required this.onTap, required this.icono});
+  const _TeacherViewCard({
+    Key? key, // Añadido Key al constructor
+    required this.alumno,
+    required this.onTap,
+    required this.icono,
+  }) : super(key: key);
 
   @override
   State<_TeacherViewCard> createState() => _TeacherViewCardState();
@@ -389,18 +430,30 @@ class _TeacherViewCard extends StatefulWidget {
 class _TeacherViewCardState extends State<_TeacherViewCard> {
   File? _imagenLocal;
   bool _cargando = true;
+  // Guardamos la URL para detectar cambios si el objeto muta sin reconstrucción del widget
+  String? _lastImagenUrl;
 
   @override
   void initState() {
     super.initState();
+    _lastImagenUrl = widget.alumno.imagen;
     _cargarImagen();
+  }
+
+  @override
+  void didUpdateWidget(covariant _TeacherViewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Comparamos la URL actual con la última conocida por este Estado
+    if (widget.alumno.imagen != _lastImagenUrl) {
+      _lastImagenUrl = widget.alumno.imagen;
+      widget.alumno.invalidarCachedImage(); // Aseguramos que se limpie la caché
+      _cargarImagen();
+    }
   }
 
   Future<void> _cargarImagen() async {
     try {
       final tempDir = await getTemporaryDirectory();
-
-      // Llamamos al método del propio objeto alumno
       final archivo = await widget.alumno.obtenerImagen(tempDir);
 
       if (mounted) {
@@ -410,7 +463,6 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
         });
       }
     } catch (e) {
-      print("Error UI Alumno: $e");
       if (mounted) setState(() => _cargando = false);
     }
   }
@@ -431,11 +483,10 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
   @override
   Widget build(BuildContext context) {
     ImageProvider? imageProvider;
-    Alumno alum = widget.alumno;
-    if (alum.imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(alum.imagenLocal));
-      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
-      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
+    if (_imagenLocal != null) {
+      imageProvider = FileImage(_imagenLocal!);
+    } else if (widget.alumno.imagenLocal.isNotEmpty) {
+        imageProvider = FileImage(File(widget.alumno.imagenLocal));
     }
 
     return Card(
@@ -448,13 +499,13 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
           backgroundImage: imageProvider,
           child: imageProvider == null
               ? Text(
-            alum.nombre.isNotEmpty ? _obtenerIniciales(alum.nombre) : '?',
-            style: const TextStyle(fontSize: 20),
-          )
+                  widget.alumno.nombre.isNotEmpty ? _obtenerIniciales(widget.alumno.nombre) : '?',
+                  style: const TextStyle(fontSize: 20),
+                )
               : null,
         ),
         title: Text(
-          alum.nombre,
+          widget.alumno.nombre,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),

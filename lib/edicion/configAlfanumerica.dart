@@ -15,6 +15,21 @@ class ConfigAlfanumericaScreen extends StatefulWidget {
       _ConfigAlfanumericaScreenState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se introduce nada en ninguno de los campos, no se guardan los cambios
+  - Si se introduce en contrasena pero no se repite, no se guardan los cambios
+  - Si se introduce en repite, pero no en contrasena, no se guardan los cambios
+  - El boton de visualizar contrasena funciona correctamente
+  - Las funcionalidades anteriores se cumplen visualizando y sin
+    visualizar la contrasena y la repeticion.
+  - Si las contrasenas no son iguales, no se guardan los cambios
+  - Si las contrasenas son iguales, se guardan los cambios y se
+    actualiza la base de datos.
+  - Se ha probado a iniciar sesion de un alumno tras cambiarle la
+    contrasena, y se puede iniciar sin problemas.
+   */
+
 class _ConfigAlfanumericaScreenState extends State<ConfigAlfanumericaScreen> {
   // Controladores para el formulario de contraseña
   final TextEditingController _passwordController = TextEditingController();

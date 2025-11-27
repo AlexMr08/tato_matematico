@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsFlutterBinding.ensureInitialized();
-    bool tablet = isTablet(context);
+    bool tablet = isTabletV2();
     SystemChrome.setPreferredOrientations(
       tablet
           ? [
