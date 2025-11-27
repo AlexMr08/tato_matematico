@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tato_matematico/auxFunc.dart';
 
 import '../ScaffoldComun.dart';
 import 'package:tato_matematico/datos/profesor.dart';
@@ -11,15 +12,29 @@ class ProfesorEditarContrasena extends StatefulWidget {
   final Profesor profesor;
   const ProfesorEditarContrasena({super.key, required this.profesor});
   @override
-  State<ProfesorEditarContrasena> createState() => _ProfesorEditarContrasenaState();
+  State<ProfesorEditarContrasena> createState() =>
+      _ProfesorEditarContrasenaState();
 }
+
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se introduce contrasena ni confirmar, no se cambia
+  - Si se introduce contrasena pero no confirmar, no se cambia
+  - Si se introduce confirmar pero no contrasena, no se cambia
+  - Si se introducen contrasena y confirmar diferentes, no se cambia
+  - Si se introducen contrasena y confirmar iguales, se cambia
+   */
 
 class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   // Función para autenticar al profesor en la base de datos
-  void actualizarContrasena(String password1, String password2, String id) async {
+  void actualizarContrasena(
+    String password1,
+    String password2,
+    String id,
+  ) async {
     // Validar que los campos no estén vacíos
     if (password1.isEmpty || password2.isEmpty || password1 != password2) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -32,16 +47,27 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
     var dbref = FirebaseDatabase.instance
         .ref()
         .child("tato")
-        .child("profesorado").child(widget.profesor.id);
+        .child("profesorado")
+        .child(widget.profesor.id);
     DatabaseEvent event = await dbref.once();
 
     Map data = event.snapshot.value as Map;
 
     var hashHex = await _generarHash(data["salt"], password1);
 
-    await dbref.update({
-      "pass": hashHex,
-    });
+    await dbref
+        .update({"pass": hashHex})
+        .then((_) {
+          setState(() {
+            snackBarExito(context, "Contraseña actualizada correctamente");
+            Navigator.pop(context);
+          });
+        })
+        .catchError((error) {
+          setState(() {
+            snackBarError(context, "Error al actualizar la contraseña: $error");
+          });
+        });
   }
 
   @override
@@ -110,21 +136,23 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
                 const SizedBox(height: 20),
 
                 Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimary,
-                      ),
-                      onPressed: () {
-                        String username = usernameController.text.trim();
-                        String password = passwordController.text.trim();
-                        actualizarContrasena(username, password, widget.profesor.id);
-                      },
-                      child: const Text('Cambiar contraseña'),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
+                    onPressed: () {
+                      String username = usernameController.text.trim();
+                      String password = passwordController.text.trim();
+                      actualizarContrasena(
+                        username,
+                        password,
+                        widget.profesor.id,
+                      );
+                    },
+                    child: const Text('Cambiar contraseña'),
                   ),
+                ),
               ],
             ),
           ),
@@ -162,5 +190,4 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
 
     return hashHex;
   }
-
 }

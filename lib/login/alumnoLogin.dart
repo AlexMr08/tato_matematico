@@ -5,6 +5,8 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 
 class AlumnoLogIn extends StatefulWidget {
   const AlumnoLogIn({super.key});
@@ -15,6 +17,14 @@ class AlumnoLogIn extends StatefulWidget {
 class _AlumnoLogInState extends State<AlumnoLogIn> {
   late Alumno alumno;
   final TextEditingController passwordController = TextEditingController();
+
+  /*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no se introduce nada, pedira que se introduzca la contrasena
+  - Si se introduce una contrasena incorrecta avisara de ello y no iniciara
+    la sesion.
+  - Si se introduce la contrasena correcta, se iniciara la sesion del alumno.
+   */
 
   // Función para autenticar al profesor en la base de datos
   void autenticacionAlumno(String id, String password) async {
@@ -42,10 +52,27 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
       print("No existe un alumno con ese id");
     }
 
+    var dbrefp = FirebaseDatabase.instance
+        .ref()
+        .child("tato")
+        .child("login")
+        .child(id)
+        .child("alfanumerica");
+
+    DatabaseEvent eventp = await dbrefp.once();
+
+    //Maps para comprobar contrasena y datos alumno
+    Map passData = eventp.snapshot.value as Map;
     Map alumnoData = event.snapshot.value as Map;
 
-    // Verificar la contraseña
-    if (alumnoData["pass"] == password) {
+    //Verificar la contrasena
+    //Se hace Hash de la contrasena a comprobar
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+
+    String comprobarcontrasena = digest.toString();
+
+    if (passData["hash"] == comprobarcontrasena) {
       print("Ha iniciado sesion correctamente");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

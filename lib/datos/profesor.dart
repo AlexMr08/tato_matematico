@@ -10,7 +10,7 @@ class Profesor {
   String id;
   String nombre;
   String username;
-  String? imagen;
+  String? _imagen;
   String imagenLocal = '';
   bool director;
   File? foto;
@@ -18,10 +18,22 @@ class Profesor {
   Profesor({
     required this.id,
     required this.nombre,
-    required this.imagen,
+    required String? imagen,
     required this.username,
     required this.director,
-  });
+  }) : _imagen = imagen;
+
+  String? get imagen => _imagen;
+
+  set imagen(String? value) {
+    if (_imagen != value) {
+      _imagen = value;
+      // Al cambiar la URL, invalidamos la caché en memoria
+      foto = null;
+      // Opcional: Invalidar imagenLocal si queremos forzar descarga
+      // imagenLocal = '';
+    }
+  }
 
   @override
   String toString() {
@@ -38,29 +50,45 @@ class Profesor {
     );
   }
 
+  ImageProvider? _cachedImage;
+
+  ImageProvider? get cachedImage {
+    if (imagenLocal.isEmpty) return null;
+    _cachedImage ??= FileImage(File(imagenLocal));
+    return _cachedImage;
+  }
+
+  // Invalidar la imágen de caché para poder editarla
+  void invalidarCachedImage() {
+    _cachedImage = null;
+    foto = null; // Limpiamos también la caché de archivo
+  }
+
   //Descarga una imagen de 10MB como maximo
   Future<void> descargarImagen(
     Directory tempDir, {
     int maxBytes = 10 * 1024 * 1024,
   }) async {
-    if (imagen == null || imagen!.isEmpty) {
+    if (_imagen == null || _imagen!.isEmpty) {
       imagenLocal = '';
       return;
     }
 
     try {
       final storage = FirebaseStorage.instance;
-      Reference ref = storage.refFromURL(imagen!);
+      Reference ref = storage.refFromURL(_imagen!);
       final Uint8List? bytes = await ref.getData(maxBytes);
       if (bytes == null) {
         imagenLocal = '';
         return;
       }
 
-      final file = File('${tempDir.path}/${id}_avatar.jpg');
+      // Usamos el nombre del archivo de Firebase (ej. timestamp_perfil.jpg) para evitar caché antiguo
+      String nombreArchivo = ref.name;
+      final file = File('${tempDir.path}/$nombreArchivo');
+
       await file.writeAsBytes(bytes, flush: true);
       imagenLocal = file.path;
-      //return await ref.getDownloadURL();
     } catch (e) {
       imagenLocal = '';
       return;
@@ -104,7 +132,7 @@ class Profesor {
   }
 
   Widget widgetProfesorV2(BuildContext context, VoidCallback navegar) {
-    return _ProfesorCardInternal(profesor: this, onTap: navegar);
+    return _ProfesorCardInternal(key: ValueKey(imagen), profesor: this, onTap: navegar);
   }
 
   Widget widgetProfesor(BuildContext context, VoidCallback navegar) {
@@ -212,9 +240,11 @@ class _ProfesorCardInternalState extends State<_ProfesorCardInternal> {
           backgroundImage: imageProvider,
           child: imageProvider == null
               ? Text(
-            profe.nombre.isNotEmpty ? _obtenerIniciales(profe.nombre) : '?',
-            style: const TextStyle(fontSize: 20),
-          )
+                  profe.nombre.isNotEmpty
+                      ? _obtenerIniciales(profe.nombre)
+                      : '?',
+                  style: const TextStyle(fontSize: 20),
+                )
               : null,
         ),
         title: Text(

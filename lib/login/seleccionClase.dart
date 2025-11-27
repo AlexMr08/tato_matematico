@@ -11,6 +11,13 @@ class SeleccionClase extends StatefulWidget {
   State<SeleccionClase> createState() => _SeleccionClaseState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Si no hubiera clases creadas, se avisa de ello
+  - Si hay clases creadas, sale un listado de estas
+  - Si se pulsa en el boton correspondiente, se accede a la clase seleccionada
+   */
+
 class _SeleccionClaseState extends State<SeleccionClase> {
 
   @override

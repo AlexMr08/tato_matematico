@@ -3,10 +3,17 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
+
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - No se puede crear una clase sin nombre
+  - Se puede crear una clase introduciendo como minimo el nombre.
+  - Se puede crear una clase con nombre y con tutor, pero sin alumnos
+  - Se puede crear una clase con nombre, tutor y alumnos.
+   */
 
 class AgregarClase extends StatefulWidget {
   final List<Alumno> allAlumnos;
@@ -89,7 +96,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                           return SizedBox.shrink(); // No mostrar el alumno si ya está en la clase
                         }
 
-                        return alumnos[index].widgetProfesor(context, () {
+                        return alumnos[index].widgetProfesorV2(onTap: () {
                           List<String> alumnosActualizados = List.from(
                             seleccionados,
                           );
@@ -110,7 +117,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                             );
                             Navigator.of(context).pop(true);
                           }
-                        }, Icon(Icons.add));
+                        }, icono: Icon(Icons.add));
                       },
                     ),
                   ),
@@ -295,7 +302,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                   reverse: false,
                   itemCount: alumnos.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return alumnos[index].widgetProfesor(context, () {
+                    return alumnos[index].widgetProfesorV2(onTap: () {
                       seleccionados.remove(alumnos[index].id);
                       setState(() {
                         alumnos = alumnosDeClase(
@@ -303,7 +310,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                           widget.allAlumnos,
                         );
                       });
-                    }, Icon(Icons.remove_circle));
+                    }, icono: Icon(Icons.remove_circle));
                   },
                 ),
               ),

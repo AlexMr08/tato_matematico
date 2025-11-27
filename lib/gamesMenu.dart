@@ -15,6 +15,15 @@ class GamesMenu extends StatefulWidget {
   State<GamesMenu> createState() => _GamesMenuState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - De momento, al pulsar en los juegos no lleva a nada (no estan implementados)
+  - Al pulsar volver, sale la interfaz de confirmar la accion
+  - Si en la interfaz de confirmar salir pulsas que no, no cierra sesion
+  - Si en la interfaz de confirmar salir pulsas que si, cierra sesion
+  - Si se pulsa ajustes, se accede directamente a los ajustes de colores
+   */
+
 class _GamesMenuState extends State<GamesMenu> {
   late Alumno alumno;
   late final List<Juego> listaJuegos = [

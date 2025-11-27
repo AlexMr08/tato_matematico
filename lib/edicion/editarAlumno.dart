@@ -18,6 +18,20 @@ class EditarAlumno extends StatefulWidget {
   State<EditarAlumno> createState() => _EditarAlumnoState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Se ha cambiado el nombre sin problema, actualizandose en la base de datos
+  - Si no se edita el nombre, no se actualiza
+  - El cambio de contrasena alfanumerica funciona correctamente
+  - Se han probado todas las posiciones de la barra, y funcionan correctamente
+  - Se ha probado el cambio de color de un alumno en concreto y
+    se ha guardado y reflejeado correctamente.
+  - Se ha cambiado la imagen de perfil.
+
+  Queda pendiente:
+  - Probar configurar contrasenas imagen y secuencia imagen
+   */
+
 class _EditarAlumnoState extends State<EditarAlumno> {
   String tipoPassword = "alfanumerica";
   int posicionBarra = 0;
@@ -130,33 +144,46 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
       File imageFile = File(pickedFile.path);
 
-      // Crear referencia en Firebase Storage
-      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube
-      String fileName =
-          '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
-      Reference ref =
-          FirebaseStorage.instance.ref().child('alumnos/$fileName');
+      // ---------------------------------------------------------
+      // 1. Borrar imagen anterior si existe para no acumular basura
+      // ---------------------------------------------------------
+      if (alumno.imagen != null && alumno.imagen!.isNotEmpty) {
+        try {
+          // Intentamos borrar la imagen antigua del Storage.
+          // refFromURL funciona con URLs gs:// y https://
+          await FirebaseStorage.instance.refFromURL(alumno.imagen!).delete();
+        } catch (e) {
+          // Si falla (ej. no existe el archivo o no tiene permisos), solo logueamos y seguimos
+          print("No se pudo borrar la imagen anterior (quizás ya no existe): $e");
+        }
+      }
 
-      // 1. Subir el archivo al storage
+      // ---------------------------------------------------------
+      // 2. Subir nueva imagen
+      // ---------------------------------------------------------
+      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube y local
+      String fileName = '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
+      Reference ref = FirebaseStorage.instance.ref().child('alumnos/$fileName');
+
       await ref.putFile(imageFile);
 
       // Obtener ruta gs://
       String bucketName = FirebaseStorage.instance.bucket;
       String gsUrl = "gs://$bucketName/alumnos/$fileName";
 
-      // 2. Actualizar Realtime Database
+      // 3. Actualizar Realtime Database
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
         'imagen': gsUrl,
       });
 
-      // 3. Actualizar el objeto alumno
+      // 4. Actualizar el objeto alumno
       alumno.imagen = gsUrl;
       alumno.imagenLocal = imageFile.path;
 
-      // Limpiar cache
+      // Limpiar cache (aunque el setter de imagen ya lo hace, no está de más si no se usó el setter)
       alumno.invalidarCachedImage();
 
-      // 4. Notificar cambios
+      // 5. Notificar cambios
       if (mounted) {
         context.read<AlumnoHolder>().setAlumno(alumno);
 
@@ -218,10 +245,10 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   void _guardarBarra(Alumno alumno) async {
     final nuevoValor = posicionBarra;
 
-    if (nuevoValor == alumno.posicionBarra) {
-      // Si no hay cambios, simplemente salimos del modo edición.
-      return;
-    }
+    // if (nuevoNombre == alumno.nombre) {
+    //   // Si no hay cambios, simplemente salimos del modo edición.
+    //   return;
+    // }
     try {
       // Actualizamos la base de datos
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
@@ -250,7 +277,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
         permiso: valor,
       });
-      
+
       if (mounted) {
         // Actualizamos el estado local
         if (permiso == 'permisoAjustesJuego1') {

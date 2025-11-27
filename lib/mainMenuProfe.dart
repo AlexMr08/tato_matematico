@@ -24,6 +24,21 @@ class MainMenuProfe extends StatefulWidget {
   State<MainMenuProfe> createState() => _MainMenuProfeState();
 }
 
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Al buscar en la barra de alumnos, actualiza el listado correctamente
+  - Al buscar en la barra de profesores, actualiza el listado correctamente
+  - Al buscar en la barra de clases, actualiza el listado correctamente
+  - Al pulsar en Alumnos, Profesores, Clases y Perfil redirige a las pestanas
+    que corresponden.
+  - Los botones de anadir alumno, profesor y clase funcionan correctamente
+  - Se puede acceder a la edicion de alumno
+  - Se puede acceder a la edicion de clases
+  - Al cambiar el nombre del profesor, se actualiza correctamente en la base
+    de datos.
+  - Se puede editar la contrasena del profesor
+   */
+
 class _MainMenuProfeState extends State<MainMenuProfe> {
   int currentPageIndex = 0;
   bool esDirector = true;
@@ -151,18 +166,6 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               }
               if (currentPageIndex == 1) {
                 navegar(const AgregarProfesor(), context);
-                /*Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AgregarProfesor(),
-                    ),
-                  ).then((value) {
-                    if (value == true) {
-                      setState(() {
-                        _futureProfesores = _loadProfesores(profesorHolder);
-                      });
-                    }
-                  });*/
               }
               if (currentPageIndex == 2) {
                 navegar(AgregarClase(allAlumnos: context.read<AlumnosHolder>().alumnos), context);

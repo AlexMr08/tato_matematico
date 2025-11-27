@@ -6,21 +6,28 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 
+// Asumo que tienes una clase Juego1Settings en el path especificado
+// y que la clase Alumno se está definiendo aquí.
+
 class Alumno {
   String id;
   String nombre;
-  String? imagen;
+
+  // Versión FINAL: Usamos un campo privado para controlar el setter y el cambio de caché
+  String? _imagen;
+
   String imagenLocal = '';
   Color? _colorFondo;
   Color? _colorBarraNav;
   Color? _colorBotones;
   bool _volverDerecha = false;
   int? posicionBarra;
+  // Versión FINAL: Usamos File? foto para la caché en memoria/disco
   File? foto;
   bool permisoAjustesJuego1;
   bool permisoEstadisticasJuego1;
   bool mostrarPuntuacionJuego1;
-  
+
   // Ajustes de sonido Juego 1
   String? vozJuego1;
   double ttsRateJuego1;
@@ -36,7 +43,8 @@ class Alumno {
   Alumno({
     required this.id,
     required this.nombre,
-    required this.imagen,
+    // Versión FINAL: Quitamos 'this.' para que sea solo un parámetro y lo asignamos al inicializador
+    required String? imagen,
     Color? colorFondo,
     Color? colorBarraNav,
     Color? colorBotones,
@@ -54,7 +62,11 @@ class Alumno {
     Juego1Settings? juego1Settings,
     volverDerecha,
     posicionBarra,
-  }) : juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
+    // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
+  }) : _imagen = imagen,
+        juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
+
+    // El cuerpo del constructor permanece igual
     if (volverDerecha != null) {
       _volverDerecha = volverDerecha;
     }
@@ -72,6 +84,19 @@ class Alumno {
     }
   }
 
+  // Versión FINAL: Getter y Setter para imagen que limpia la caché (foto) al cambiar la URL
+  String? get imagen => _imagen;
+
+  set imagen(String? value) {
+    if (_imagen != value) {
+      _imagen = value;
+      // Al cambiar la URL, invalidamos la caché en memoria y disco
+      foto = null;
+      // imagenLocal = ''; // Opcional: Si queremos forzar la descarga, lo dejamos comentado por ahora.
+    }
+  }
+
+  // Getters y Setters para colores y volverDerecha (Tomados de la versión de la izquierda, son idénticos a los de la final)
   Color? get colorFondo => _colorFondo;
 
   set colorFondo(Color? color) {
@@ -98,24 +123,35 @@ class Alumno {
 
   @override
   String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $imagen, volverDerecha: $volverDerecha}';
+    // Usamos _imagen en lugar de imagen, ya que es el campo real
+    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen, volverDerecha: $volverDerecha}';
   }
 
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
     Color? colorFondoLoc, colorBotonesLoc, colorNavLoc;
     if (data['colorFondo'] != null) {
-      int hex = int.parse(data['colorFondo']!, radix: 16);
-      colorFondoLoc = Color(hex);
+      // Manejo de null con operador de nulidad seguro
+      final colorStr = data['colorFondo'] as String?;
+      if (colorStr != null) {
+        int hex = int.parse(colorStr, radix: 16);
+        colorFondoLoc = Color(hex);
+      }
     }
     if (data['colorBarraNav'] != null) {
-      int hex = int.parse(data['colorBarraNav']!, radix: 16);
-      colorNavLoc = Color(hex);
+      final colorStr = data['colorBarraNav'] as String?;
+      if (colorStr != null) {
+        int hex = int.parse(colorStr, radix: 16);
+        colorNavLoc = Color(hex);
+      }
     }
 
     if (data['colorBotones'] != null) {
-      int hex = int.parse(data['colorBotones']!, radix: 16);
-      colorBotonesLoc = Color(hex);
+      final colorStr = data['colorBotones'] as String?;
+      if (colorStr != null) {
+        int hex = int.parse(colorStr, radix: 16);
+        colorBotonesLoc = Color(hex);
+      }
     }
 
     Juego1Settings? juego1Settings;
@@ -152,37 +188,45 @@ class Alumno {
     );
   }
 
+  // Cache para widgetProfesor/widgetAlumno
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
     if (imagenLocal.isEmpty) return null;
+    // La versión FINAL añade el null-aware operator para inicializar una sola vez
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
 
+  // Versión FINAL: Limpia la caché de ImageProvider y del archivo File? foto
   void invalidarCachedImage() {
     _cachedImage = null;
+    foto = null; // Limpiamos también la caché de archivo
   }
 
   Future<void> descargarImagen(
-    Directory tempDir, {
-    int maxBytes = 10 * 1024 * 1024,
-  }) async {
-    if (imagen == null || imagen!.isEmpty) {
+      Directory tempDir, {
+        int maxBytes = 10 * 1024 * 1024,
+      }) async {
+    // Usamos _imagen que es el campo privado y real
+    if (_imagen == null || _imagen!.isEmpty) {
       imagenLocal = '';
       return;
     }
 
     try {
       final storage = FirebaseStorage.instance;
-      Reference ref = storage.refFromURL(imagen!);
+      Reference ref = storage.refFromURL(_imagen!);
       final Uint8List? bytes = await ref.getData(maxBytes);
       if (bytes == null) {
         imagenLocal = '';
         return;
       }
 
-      final file = File('${tempDir.path}/${id}_avatar.jpg');
+      // Versión FINAL: Usa el nombre del archivo de Firebase para evitar la caché antigua del sistema
+      String nombreArchivo = ref.name;
+      final file = File('${tempDir.path}/$nombreArchivo');
+
       await file.writeAsBytes(bytes, flush: true);
       imagenLocal = file.path;
     } catch (e) {
@@ -190,6 +234,37 @@ class Alumno {
       return;
     }
   }
+
+  // Lógica de obtención de imagen mejorada
+  Future<File?> obtenerImagen(Directory tempDir) async {
+    // 1. Caché en RAM (File? foto)
+    if (foto != null) return foto;
+
+    // 2. Caché en Disco (imagenLocal)
+    if (imagenLocal.isNotEmpty) {
+      final archivoDisco = File(imagenLocal);
+      if (await archivoDisco.exists()) {
+        foto = archivoDisco;
+        return foto;
+      }
+    }
+
+    // 3. Descarga
+    await descargarImagen(tempDir);
+
+    if (imagenLocal.isNotEmpty) {
+      final archivoRecienDescargado = File(imagenLocal);
+      if (await archivoRecienDescargado.exists()) {
+        foto = archivoRecienDescargado;
+        return foto;
+      }
+    }
+
+    return null;
+  }
+
+  // --- Widgets deprecados (widgetAlumno, widgetProfesor) ---
+  // Mantenidos por si acaso, pero las versiones V2 con State mejoran la gestión de caché/carga.
 
   Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
     var ori = MediaQuery.of(context).orientation;
@@ -212,9 +287,9 @@ class Alumno {
                   backgroundImage: cachedImage,
                   child: cachedImage == null
                       ? Text(
-                          nombre.isNotEmpty ? nombre[0] : '?',
-                          style: TextStyle(fontSize: size * 0.4),
-                        )
+                    nombre.isNotEmpty ? nombre[0] : '?',
+                    style: TextStyle(fontSize: size * 0.4),
+                  )
                       : null,
                 ),
               ),
@@ -248,9 +323,9 @@ class Alumno {
           backgroundImage: imageProvider,
           child: imageProvider == null
               ? Text(
-                  nombre.isNotEmpty ? nombre[0] : '?',
-                  style: const TextStyle(fontSize: 20),
-                )
+            nombre.isNotEmpty ? nombre[0] : '?',
+            style: const TextStyle(fontSize: 20),
+          )
               : null,
         ),
         title: Text(
@@ -264,49 +339,45 @@ class Alumno {
     );
   }
 
-  Future<File?> obtenerImagen(Directory tempDir) async {
-    if (foto != null) return foto;
-
-    if (imagenLocal.isNotEmpty) {
-      final archivoDisco = File(imagenLocal);
-      if (await archivoDisco.exists()) {
-        foto = archivoDisco;
-        return foto;
-      }
-    }
-
-    await descargarImagen(tempDir);
-
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
-    return null;
-  }
+  // --- Widgets V2 (usando State) ---
 
   Widget widgetAlumnoV2({required VoidCallback onTap}) {
-    return _AlumnViewCard(alumno: this, onTap: onTap);
+    // Versión FINAL: Añade ValueKey para que Flutter distinga los widgets cuando la lista cambia
+    return _AlumnViewCard(
+        key: ValueKey(id),
+        alumno: this,
+        onTap: onTap
+    );
   }
 
-  Widget widgetProfesorV2({
-    required VoidCallback onTap,
-    required Icon icono,
-  }) {
-    return _TeacherViewCard(alumno: this, onTap: onTap, icono: icono,);
+  Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
+    // Versión FINAL: Añade ValueKey basada en el ID y la URL de la imagen para forzar reconstrucción si cambia la imagen
+    return _TeacherViewCard(
+        key: ValueKey("${id}_${_imagen ?? ''}"),
+        alumno: this,
+        onTap: onTap,
+        icono: icono
+    );
   }
 }
+
+// -----------------------------------------------------------------------------
+// --- _AlumnViewCard (StatefulWidget) ---
+// -----------------------------------------------------------------------------
 
 class _AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
-  const _AlumnViewCard({required this.alumno, required this.onTap});
+  const _AlumnViewCard({
+    Key? key, // Versión FINAL: Se añade Key
+    required this.alumno,
+    required this.onTap
+  }) : super(key: key); // Versión FINAL: Se usa Key
 
   @override
   State<_AlumnViewCard> createState() => _AlumnViewCardState();
+
 }
 
 class _AlumnViewCardState extends State<_AlumnViewCard> {
@@ -319,9 +390,23 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
     _cargarImagen();
   }
 
+  // Versión FINAL: didUpdateWidget para recargar la imagen si el Alumno ha cambiado (ej. en una lista)
+  @override
+  void didUpdateWidget(covariant _AlumnViewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.alumno.id != widget.alumno.id) {
+      setState(() {
+        _imagenLocal = null;
+        _cargando = true;
+      });
+      _cargarImagen();
+    }
+  }
+
   Future<void> _cargarImagen() async {
     try {
       final tempDir = await getTemporaryDirectory();
+      // Llama a la lógica centralizada en la clase Alumno
       final archivo = await widget.alumno.obtenerImagen(tempDir);
 
       if (mounted) {
@@ -343,6 +428,7 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
     if (palabras.isNotEmpty) {
       iniciales += palabras[0][0];
       if (palabras.length > 1) {
+        // Se mantiene la lógica de obtener las dos primeras iniciales si existen
         iniciales += palabras[1][0];
       }
     }
@@ -366,33 +452,28 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
                     ? const Center(child: CircularProgressIndicator())
                     : _imagenLocal != null
                     ? Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: FileImage(_imagenLocal!),
-                            fit: BoxFit
-                                .cover, 
-                          ),
-                        ),
-                      )
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: FileImage(_imagenLocal!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
                     : CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer,
-                        child: Text(
-                          _obtenerIniciales(widget.alumno.nombre),
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                      ),
+                  radius: 45,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  child: Text(
+                    _obtenerIniciales(widget.alumno.nombre),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
               ),
             ),
             Padding(
@@ -415,12 +496,21 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
   }
 }
 
+// -----------------------------------------------------------------------------
+// --- _TeacherViewCard (StatefulWidget) ---
+// -----------------------------------------------------------------------------
+
 class _TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
 
-  const _TeacherViewCard({required this.alumno, required this.onTap, required this.icono});
+  const _TeacherViewCard({
+    Key? key, // Versión FINAL: Se añade Key
+    required this.alumno,
+    required this.onTap,
+    required this.icono,
+  }) : super(key: key); // Versión FINAL: Se usa Key
 
   @override
   State<_TeacherViewCard> createState() => _TeacherViewCardState();
@@ -429,17 +519,44 @@ class _TeacherViewCard extends StatefulWidget {
 class _TeacherViewCardState extends State<_TeacherViewCard> {
   File? _imagenLocal;
   bool _cargando = true;
+  // Versión FINAL: Guarda la URL para detectar si el objeto Alumno ha mutado
+  String? _lastImagenUrl;
 
   @override
   void initState() {
     super.initState();
+    // Versión FINAL: Inicializa la última URL
+    _lastImagenUrl = widget.alumno.imagen;
     _cargarImagen();
+  }
+
+  // Versión FINAL: didUpdateWidget para recargar la imagen si la URL en el objeto Alumno ha cambiado
+  @override
+  void didUpdateWidget(covariant _TeacherViewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.alumno.imagen != _lastImagenUrl) {
+      _lastImagenUrl = widget.alumno.imagen;
+      widget.alumno.invalidarCachedImage(); // Aseguramos que se limpie la caché central
+      // Forzamos la recarga
+      setState(() {
+        _imagenLocal = null;
+        _cargando = true;
+      });
+      _cargarImagen();
+    } else if (oldWidget.alumno.id != widget.alumno.id) {
+      // Si el objeto Alumno es diferente (aunque la URL sea la misma, por si acaso)
+      setState(() {
+        _imagenLocal = null;
+        _cargando = true;
+      });
+      _cargarImagen();
+    }
   }
 
   Future<void> _cargarImagen() async {
     try {
       final tempDir = await getTemporaryDirectory();
-
+      // Llama a la lógica centralizada en la clase Alumno
       final archivo = await widget.alumno.obtenerImagen(tempDir);
 
       if (mounted) {
@@ -449,7 +566,6 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
         });
       }
     } catch (e) {
-      print("Error UI Alumno: $e");
       if (mounted) setState(() => _cargando = false);
     }
   }
@@ -470,9 +586,11 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
   @override
   Widget build(BuildContext context) {
     ImageProvider? imageProvider;
-    Alumno alum = widget.alumno;
-    if (alum.imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(alum.imagenLocal));
+    // Versión FINAL: Prioriza _imagenLocal (cargado por el State) y luego la caché del modelo (imagenLocal)
+    if (_imagenLocal != null) {
+      imageProvider = FileImage(_imagenLocal!);
+    } else if (widget.alumno.imagenLocal.isNotEmpty) {
+      imageProvider = FileImage(File(widget.alumno.imagenLocal));
     }
 
     return Card(
@@ -485,13 +603,13 @@ class _TeacherViewCardState extends State<_TeacherViewCard> {
           backgroundImage: imageProvider,
           child: imageProvider == null
               ? Text(
-            alum.nombre.isNotEmpty ? _obtenerIniciales(alum.nombre) : '?',
+            widget.alumno.nombre.isNotEmpty ? _obtenerIniciales(widget.alumno.nombre) : '?',
             style: const TextStyle(fontSize: 20),
           )
               : null,
         ),
         title: Text(
-          alum.nombre,
+          widget.alumno.nombre,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
