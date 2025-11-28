@@ -1,0 +1,337 @@
+import 'dart:math';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:provider/provider.dart';
+import 'package:tato_matematico/auxFunc.dart'; // Importar para la función de color
+import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:tato_matematico/juegos/juego_1/juego_1_ajustes_screen.dart';
+
+class Juego1Settings {
+  int numeroOpciones;
+  int numeroMayor;
+  int numeroMenor;
+
+  Juego1Settings({
+    required this.numeroOpciones,
+    required this.numeroMayor,
+    required this.numeroMenor,
+  });
+
+  Map<String, int> toMap() {
+    return {
+      'numeroOpciones': numeroOpciones,
+      'numeroMayor': numeroMayor,
+      'numeroMenor': numeroMenor,
+    };
+  }
+}
+
+class Juego1Screen extends StatefulWidget {
+  const Juego1Screen({Key? key}) : super(key: key);
+
+  @override
+  _Juego1ScreenState createState() => _Juego1ScreenState();
+}
+
+class _Juego1ScreenState extends State<Juego1Screen> {
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  final FlutterTts _flutterTts = FlutterTts();
+  late Alumno _alumno;
+  int _puntuacion = 0;
+
+  late Juego1Settings _settings;
+  late int _numeroAAdivinar;
+  late List<int> _opciones = [];
+  int? _numeroSeleccionado;
+  bool _isLoading = true;
+  bool _mostrarPuntuacion = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _setupTts() async {
+    _alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
+    await _flutterTts.setLanguage("es-ES");
+    await _flutterTts.setSpeechRate(_alumno.ttsRateJuego1);
+    await _flutterTts.setVolume(_alumno.ttsVolumeJuego1);
+    await _flutterTts.setPitch(_alumno.ttsPitchJuego1);
+    if (_alumno.vozJuego1 != null) {
+      await _flutterTts.setVoice({"name": _alumno.vozJuego1!});
+    }
+  }
+
+  Future<void> _speak(String text) async {
+    await _flutterTts.speak(text);
+  }
+
+  Future<void> _loadInitialData() async {
+    final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno;
+    if (alumno == null) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+    _alumno = alumno;
+    _settings = _alumno.juego1Settings;
+    _mostrarPuntuacion = _alumno.mostrarPuntuacionJuego1;
+    
+    await _setupTts();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      _generarNuevoJuego();
+    }
+  }
+
+  void _generarNuevoJuego() {
+    if (_isLoading) return;
+
+    final random = Random();
+    _numeroAAdivinar =
+        _settings.numeroMenor + random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
+
+    final Set<int> opcionesTemporales = {_numeroAAdivinar};
+    while (opcionesTemporales.length <
+        min(_settings.numeroOpciones, (_settings.numeroMayor - _settings.numeroMenor + 1))) {
+      final nuevaOpcion =
+          _settings.numeroMenor + random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
+      opcionesTemporales.add(nuevaOpcion);
+    }
+
+    setState(() {
+      _opciones = opcionesTemporales.toList()..shuffle();
+      _numeroSeleccionado = null;
+    });
+
+    _speak(_numeroAAdivinar.toString());
+  }
+
+  void _aceptarRespuesta() {
+    if (_numeroSeleccionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, selecciona un número.'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.fromLTRB(20, 20, 20, 100),
+        ),
+      );
+      return;
+    }
+
+    bool esCorrecto = _numeroSeleccionado == _numeroAAdivinar;
+
+    if (esCorrecto && _alumno.sonidoAciertoActivadoJuego1) {
+      // TODO: Play sound
+    } else if (!esCorrecto && _alumno.sonidoFalloActivadoJuego1) {
+      // TODO: Play sound
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(esCorrecto ? '¡Correcto!' : 'Incorrecto. El número era $_numeroAAdivinar.'),
+        backgroundColor: esCorrecto ? Colors.green : Colors.red,
+        duration: const Duration(milliseconds: 800),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+      ),
+    );
+
+    if (esCorrecto) {
+      setState(() {
+        _puntuacion++;
+      });
+    }
+
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (mounted) {
+        _generarNuevoJuego();
+      }
+    });
+  }
+
+  void _navegarAjustes() async {
+    final resultado = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => Juego1AjustesScreen(
+          initialSettings: _settings,
+          initialMostrarPuntuacion: _mostrarPuntuacion),
+    ));
+
+    if (resultado is Map && mounted) {
+      final newSettings = resultado['settings'] as Juego1Settings?;
+      final newMostrarPuntuacion = resultado['mostrarPuntuacion'] as bool?;
+
+      if (newSettings != null && newMostrarPuntuacion != null) {
+        try {
+          await _dbRef
+              .child('tato/alumnos/${_alumno.id}/juego1Settings')
+              .set(newSettings.toMap());
+          await _dbRef
+              .child('tato/alumnos/${_alumno.id}')
+              .update({'mostrarPuntuacionJuego1': newMostrarPuntuacion});
+
+          setState(() {
+            _settings = newSettings;
+            _mostrarPuntuacion = newMostrarPuntuacion;
+            _puntuacion = 0;
+          });
+          _generarNuevoJuego();
+
+        } catch (e) {
+          // Handle error
+        }
+      }
+    } else if (resultado == true && mounted) {
+      await _loadInitialData();
+    }
+  }
+
+  List<BottomNavigationBarItem> _buildBottomNavBarItems(Color textColor) {
+    final items = <BottomNavigationBarItem>[
+      BottomNavigationBarItem(icon: Icon(Icons.arrow_back, color: textColor), label: 'Volver'),
+    ];
+    if (_alumno.permisoAjustesJuego1) {
+      items.add(BottomNavigationBarItem(icon: Icon(Icons.settings, color: textColor), label: 'Ajustes'));
+    }
+    if (_alumno.permisoEstadisticasJuego1) {
+      items.add(BottomNavigationBarItem(icon: Icon(Icons.bar_chart, color: textColor), label: 'Estadísticas'));
+    }
+    return items;
+  }
+
+  void _onBottomNavItemTapped(int index) {
+    if (index == 0) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    int currentIndex = 1;
+    if (_alumno.permisoAjustesJuego1) {
+      if (index == currentIndex) {
+        _navegarAjustes();
+        return;
+      }
+      currentIndex++;
+    }
+    if (_alumno.permisoEstadisticasJuego1) {
+      if (index == currentIndex) {
+        // TODO: Navigate to statistics screen
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final Color navColor = _alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+    final Color buttonColor = _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
+    final Color navTextColor = getTextColorForBackground(navColor);
+    final Color buttonTextColor = getTextColorForBackground(buttonColor);
+
+    final buttonStyle = ElevatedButton.styleFrom(
+        backgroundColor: buttonColor,
+        foregroundColor: buttonTextColor,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    );
+
+    return Scaffold(
+      backgroundColor: _alumno.colorFondo,
+      appBar: AppBar(
+        title: Text('Juego 1', style: TextStyle(color: navTextColor)),
+        backgroundColor: navColor,
+        automaticallyImplyLeading: false,
+        iconTheme: IconThemeData(color: navTextColor),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (_mostrarPuntuacion)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('Puntuación: $_puntuacion', style: Theme.of(context).textTheme.headlineMedium),
+            ),
+          ElevatedButton.icon(
+            style: buttonStyle,
+            onPressed: () => _speak(_numeroAAdivinar.toString()),
+            icon: const Icon(Icons.volume_up),
+            label: const Text('Volver a escuchar'),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 250, // Aumenta el tamaño máximo
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  childAspectRatio: 1.2, // Proporción más ancha
+                ),
+                itemCount: _opciones.length,
+                itemBuilder: (context, index) {
+                  final numero = _opciones[index];
+                  final bool isSelected = numero == _numeroSeleccionado;
+                  final Color cardColor = isSelected 
+                    ? Color.alphaBlend(Colors.white.withOpacity(0.4), buttonColor)
+                    : buttonColor;
+
+                  return GestureDetector(
+                    onTap: () => setState(() => _numeroSeleccionado = numero),
+                    child: Card(
+                      color: cardColor,
+                      elevation: isSelected ? 12 : 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                          width: 3,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          numero.toString(),
+                          style: TextStyle(
+                            fontSize: 48, // Texto de número mucho más grande
+                            fontWeight: FontWeight.bold,
+                            color: getTextColorForBackground(cardColor),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              style: buttonStyle,
+              onPressed: _aceptarRespuesta,
+              child: const Text('Aceptar'),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: navColor,
+        items: _buildBottomNavBarItems(navTextColor),
+        onTap: _onBottomNavItemTapped,
+        selectedItemColor: navTextColor,
+        unselectedItemColor: navTextColor.withOpacity(0.7),
+        selectedFontSize: 14,
+        unselectedFontSize: 14,
+      ),
+    );
+  }
+}

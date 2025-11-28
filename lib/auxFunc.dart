@@ -1,6 +1,98 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
+// --- Función de utilidad para el color del texto ---
+Color getTextColorForBackground(Color backgroundColor) {
+  return backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+}
+
+Future<bool?> mostrarDialogoSiNoAlumno(
+  BuildContext context,
+  String titulo,
+  String contenido,
+) async {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(titulo),
+        content: Text(contenido),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+        ),
+        actionsAlignment:
+            MainAxisAlignment.spaceEvenly, // Distribuye el espacio
+        actions: <Widget>[
+          // ----------------- BOTÓN NO -----------------
+          Material(
+            elevation: 5,
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.red.shade50,
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pop(false);
+              },
+              borderRadius: BorderRadius.circular(15),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/no.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "No",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ----------------- BOTÓN SI -----------------
+          Material(
+            elevation: 5,
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.green.shade50,
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pop(true);
+              },
+              borderRadius: BorderRadius.circular(15),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/si.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "Si",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 bool isTablet(BuildContext context) {
   final size = MediaQuery.of(context).size;
   final orientation = MediaQuery.of(context).orientation;
