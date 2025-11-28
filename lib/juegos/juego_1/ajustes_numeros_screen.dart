@@ -133,8 +133,8 @@ class _AjustesNumerosScreenState extends State<AjustesNumerosScreen> {
                 label: 'Número de opciones:',
                 value: _numeroOpciones,
                 min: 1,
-                max: 12,
-                divisions: 11,
+                max: 10,
+                divisions: 9,
                 textColor: textColor,
                 onChanged: (value) {
                   setState(() {
