@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/alumnoScaffold.dart'; // Importar para usar getTextColorForBackground
+import 'package:tato_matematico/auxFunc.dart'; // Importar para usar getTextColorForBackground
 
 class Juego {
   String id;

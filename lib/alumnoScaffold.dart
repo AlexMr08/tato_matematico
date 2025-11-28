@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 
 // --- Función de utilidad para el color del texto ---
 enum PosicionBarra { arriba, abajo, izquierda, derecha }
-
-Color getTextColorForBackground(Color backgroundColor) {
-  return backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-}
 
 class AlumnoScaffold extends StatelessWidget {
   final Widget child;
@@ -72,34 +69,35 @@ class AlumnoScaffold extends StatelessWidget {
     final Color navColor = alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
 
     final List<Widget> botones = [
-      if (alumno.volverDerecha == false) 
+      //if (alumno.volverDerecha == false)
         _BotonNav(
           icon: Icons.arrow_back,
           label: "Volver",
           onTap: onVolver,
           color: navColor,
         ),
-      if (hasAjustes) 
+      hasAjustes ?
         _BotonNav(
           icon: Icons.settings,
           label: "Ajustes",
           onTap: onAjustes,
           color: navColor,
-        ),
-      if (hasEstadisticas)
+        ): SizedBox(),
+      hasEstadisticas ?
         _BotonNav(
           icon: Icons.bar_chart,
           label: "Estadísticas",
           onTap: onEstadisticas,
           color: navColor,
-        ),
-      if (alumno.volverDerecha == true)
+        ): SizedBox(),
+      /*if (alumno.volverDerecha == true)
        _BotonNav(
           icon: Icons.arrow_back,
           label: "Volver",
           onTap: onVolver,
           color: navColor,
         ),
+       */
     ];
 
     return Container(
@@ -162,5 +160,3 @@ class _BotonNav extends StatelessWidget {
     );
   }
 }
-
-// ... (el resto del código del diálogo permanece igual)

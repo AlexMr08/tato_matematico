@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/alumnoScaffold.dart';
 import 'package:tato_matematico/auxFunc.dart'; // Importar para la función de color
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
@@ -78,7 +79,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     _alumno = alumno;
     _settings = _alumno.juego1Settings;
     _mostrarPuntuacion = _alumno.mostrarPuntuacionJuego1;
-    
+
     await _setupTts();
 
     if (mounted) {
@@ -94,13 +95,18 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
     final random = Random();
     _numeroAAdivinar =
-        _settings.numeroMenor + random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
+        _settings.numeroMenor +
+        random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
 
     final Set<int> opcionesTemporales = {_numeroAAdivinar};
     while (opcionesTemporales.length <
-        min(_settings.numeroOpciones, (_settings.numeroMayor - _settings.numeroMenor + 1))) {
+        min(
+          _settings.numeroOpciones,
+          (_settings.numeroMayor - _settings.numeroMenor + 1),
+        )) {
       final nuevaOpcion =
-          _settings.numeroMenor + random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
+          _settings.numeroMenor +
+          random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
       opcionesTemporales.add(nuevaOpcion);
     }
 
@@ -135,7 +141,11 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(esCorrecto ? '¡Correcto!' : 'Incorrecto. El número era $_numeroAAdivinar.'),
+        content: Text(
+          esCorrecto
+              ? '¡Correcto!'
+              : 'Incorrecto. El número era $_numeroAAdivinar.',
+        ),
         backgroundColor: esCorrecto ? Colors.green : Colors.red,
         duration: const Duration(milliseconds: 800),
         behavior: SnackBarBehavior.floating,
@@ -157,11 +167,14 @@ class _Juego1ScreenState extends State<Juego1Screen> {
   }
 
   void _navegarAjustes() async {
-    final resultado = await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => Juego1AjustesScreen(
+    final resultado = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Juego1AjustesScreen(
           initialSettings: _settings,
-          initialMostrarPuntuacion: _mostrarPuntuacion),
-    ));
+          initialMostrarPuntuacion: _mostrarPuntuacion,
+        ),
+      ),
+    );
 
     if (resultado is Map && mounted) {
       final newSettings = resultado['settings'] as Juego1Settings?;
@@ -172,9 +185,9 @@ class _Juego1ScreenState extends State<Juego1Screen> {
           await _dbRef
               .child('tato/alumnos/${_alumno.id}/juego1Settings')
               .set(newSettings.toMap());
-          await _dbRef
-              .child('tato/alumnos/${_alumno.id}')
-              .update({'mostrarPuntuacionJuego1': newMostrarPuntuacion});
+          await _dbRef.child('tato/alumnos/${_alumno.id}').update({
+            'mostrarPuntuacionJuego1': newMostrarPuntuacion,
+          });
 
           setState(() {
             _settings = newSettings;
@@ -182,7 +195,6 @@ class _Juego1ScreenState extends State<Juego1Screen> {
             _puntuacion = 0;
           });
           _generarNuevoJuego();
-
         } catch (e) {
           // Handle error
         }
@@ -194,13 +206,26 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
   List<BottomNavigationBarItem> _buildBottomNavBarItems(Color textColor) {
     final items = <BottomNavigationBarItem>[
-      BottomNavigationBarItem(icon: Icon(Icons.arrow_back, color: textColor), label: 'Volver'),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.arrow_back, color: textColor),
+        label: 'Volver',
+      ),
     ];
     if (_alumno.permisoAjustesJuego1) {
-      items.add(BottomNavigationBarItem(icon: Icon(Icons.settings, color: textColor), label: 'Ajustes'));
+      items.add(
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings, color: textColor),
+          label: 'Ajustes',
+        ),
+      );
     }
     if (_alumno.permisoEstadisticasJuego1) {
-      items.add(BottomNavigationBarItem(icon: Icon(Icons.bar_chart, color: textColor), label: 'Estadísticas'));
+      items.add(
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bar_chart, color: textColor),
+          label: 'Estadísticas',
+        ),
+      );
     }
     return items;
   }
@@ -232,33 +257,52 @@ class _Juego1ScreenState extends State<Juego1Screen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final Color navColor = _alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
-    final Color buttonColor = _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
-    final Color navTextColor = getTextColorForBackground(navColor);
+    final Color navColor =
+        _alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+    final Color buttonColor =
+        _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
+    final Color fondoColor =
+        _alumno.colorFondo ?? Theme.of(context).colorScheme.surface;
+    final Color backgroundTextColor = getTextColorForBackground(fondoColor);
     final Color buttonTextColor = getTextColorForBackground(buttonColor);
 
     final buttonStyle = ElevatedButton.styleFrom(
-        backgroundColor: buttonColor,
-        foregroundColor: buttonTextColor,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      backgroundColor: buttonColor,
+      foregroundColor: buttonTextColor,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     );
 
-    return Scaffold(
-      backgroundColor: _alumno.colorFondo,
-      appBar: AppBar(
-        title: Text('Juego 1', style: TextStyle(color: navTextColor)),
-        backgroundColor: navColor,
-        automaticallyImplyLeading: false,
-        iconTheme: IconThemeData(color: navTextColor),
-      ),
-      body: Column(
+    PosicionBarra posicionBarra = switch (_alumno.posicionBarra) {
+      0 => PosicionBarra.arriba,
+      1 => PosicionBarra.abajo,
+      2 => PosicionBarra.izquierda,
+      3 => PosicionBarra.derecha,
+      _ => PosicionBarra.abajo,
+    };
+
+    return AlumnoScaffold(
+      posicion: posicionBarra,
+      alumno: _alumno,
+      onVolver: () {},
+      onAjustes: () {},
+      onEstadisticas: () {},
+      hasAjustes: _alumno.permisoAjustesJuego1,
+      hasEstadisticas: _alumno.permisoEstadisticasJuego1,
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           if (_mostrarPuntuacion)
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text('Puntuación: $_puntuacion', style: Theme.of(context).textTheme.headlineMedium),
+              child: Text(
+                'Puntuación: $_puntuacion',
+                style: TextStyle(
+                  color: backgroundTextColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ElevatedButton.icon(
             style: buttonStyle,
@@ -281,9 +325,9 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                 itemBuilder: (context, index) {
                   final numero = _opciones[index];
                   final bool isSelected = numero == _numeroSeleccionado;
-                  final Color cardColor = isSelected 
-                    ? Color.alphaBlend(Colors.white.withOpacity(0.4), buttonColor)
-                    : buttonColor;
+                  final Color cardColor = isSelected
+                      ? Color.alphaBlend(Colors.white, buttonColor)
+                      : buttonColor;
 
                   return GestureDetector(
                     onTap: () => setState(() => _numeroSeleccionado = numero),
@@ -293,7 +337,9 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.transparent,
                           width: 3,
                         ),
                       ),
@@ -303,7 +349,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                           style: TextStyle(
                             fontSize: 48, // Texto de número mucho más grande
                             fontWeight: FontWeight.bold,
-                            color: getTextColorForBackground(cardColor),
+                            color: buttonTextColor,
                           ),
                         ),
                       ),
@@ -322,15 +368,6 @@ class _Juego1ScreenState extends State<Juego1Screen> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: navColor,
-        items: _buildBottomNavBarItems(navTextColor),
-        onTap: _onBottomNavItemTapped,
-        selectedItemColor: navTextColor,
-        unselectedItemColor: navTextColor.withOpacity(0.7),
-        selectedFontSize: 14,
-        unselectedFontSize: 14,
       ),
     );
   }
