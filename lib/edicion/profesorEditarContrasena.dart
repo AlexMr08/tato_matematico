@@ -4,6 +4,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import '../ScaffoldComun.dart';
 import 'package:tato_matematico/datos/profesor.dart';
@@ -136,11 +137,8 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
                 const SizedBox(height: 20),
 
                 Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
+                  child: BotonSinIcono(
+                    texto: "Cambiar contraseña",
                     onPressed: () {
                       String username = usernameController.text.trim();
                       String password = passwordController.text.trim();
@@ -150,7 +148,6 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
                         widget.profesor.id,
                       );
                     },
-                    child: const Text('Cambiar contraseña'),
                   ),
                 ),
               ],

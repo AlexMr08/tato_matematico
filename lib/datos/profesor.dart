@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 class Profesor {
   String id;
@@ -185,49 +186,10 @@ class _ProfesorCardInternal extends StatefulWidget {
 }
 
 class _ProfesorCardInternalState extends State<_ProfesorCardInternal> {
-  File? _imagenLocal;
-  bool _cargando = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _cargarImagen();
-  }
-
-  Future<void> _cargarImagen() async {
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final archivo = await widget.profesor.obtenerImagen(tempDir);
-      if (mounted) {
-        setState(() {
-          _imagenLocal = archivo;
-          _cargando = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _cargando = false);
-    }
-  }
-
-  String _obtenerIniciales(String nombre) {
-    if (nombre.isEmpty) return "";
-    List<String> palabras = nombre.trim().split(" ");
-    String iniciales = "";
-    if (palabras.isNotEmpty) {
-      iniciales += palabras[0][0];
-      if (palabras.length > 1) iniciales += palabras[1][0];
-    }
-    return iniciales.toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider? imageProvider;
-    Profesor profe = widget.profesor;
-    if (profe.imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(profe.imagenLocal));
-    }
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: 2,
@@ -235,17 +197,12 @@ class _ProfesorCardInternalState extends State<_ProfesorCardInternal> {
       child: ListTile(
         onTap: widget.onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: imageProvider,
-          child: imageProvider == null
-              ? Text(
-                  profe.nombre.isNotEmpty
-                      ? _obtenerIniciales(profe.nombre)
-                      : '?',
-                  style: const TextStyle(fontSize: 20),
-                )
-              : null,
+        leading: FotoPerfil(
+          key: ValueKey(widget.profesor.imagen),
+          nombre: widget.profesor.nombre,
+          idUnico: widget.profesor.imagen ?? widget.profesor.id,
+          onObtenerImagen: widget.profesor.obtenerImagen,
+          radio: 28,
         ),
         title: Text(
           widget.profesor.nombre,

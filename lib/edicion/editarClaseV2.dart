@@ -6,6 +6,7 @@ import 'package:tato_matematico/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import '../auxFunc.dart';
 
@@ -101,69 +102,54 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                           return SizedBox.shrink(); // No mostrar el alumno si ya está en la clase
                         }
 
-                        return alumnos[index].widgetProfesorV2(onTap: () {
-                          List<String> alumnosActualizados = List.from(
-                            widget.clase.alumnos,
-                          );
-                          if (!alumnosActualizados.contains(alumno.id)) {
-                            alumnosActualizados.add(alumno.id);
-                            dbref
-                                .child('tato')
-                                .child('clases')
-                                .child(widget.clase.id)
-                                .update({'alumnos': alumnosActualizados})
-                                .then((_) {
-                                  setState(() {
+                        return alumnos[index].widgetProfesorV2(
+                          onTap: () {
+                            List<String> alumnosActualizados = List.from(
+                              widget.clase.alumnos,
+                            );
+                            if (!alumnosActualizados.contains(alumno.id)) {
+                              alumnosActualizados.add(alumno.id);
+                              dbref
+                                  .child('tato')
+                                  .child('clases')
+                                  .child(widget.clase.id)
+                                  .update({'alumnos': alumnosActualizados})
+                                  .then((_) {
+                                    setState(() {
+                                      widget.clase.alumnos.add(alumno.id);
+                                      alumnos = alumnosDeClase(
+                                        widget.clase,
+                                        widget.allAlumnos,
+                                      );
+                                      Navigator.of(context).pop(true);
+                                    });
+                                  })
+                                  .catchError((error) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text(
-                                          'Alumno añadido a la clase',
+                                          'Error al añadir el alumno: $error',
                                         ),
-                                        backgroundColor: Colors.green,
-                                        duration: Duration(seconds: 2),
                                       ),
                                     );
-                                    widget.clase.alumnos.add(alumno.id);
-                                    alumnos = alumnosDeClase(
-                                      widget.clase,
-                                      widget.allAlumnos,
-                                    );
-                                    Navigator.of(context).pop(true);
                                   });
-                                })
-                                .catchError((error) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Error al añadir el alumno: $error',
-                                      ),
-                                    ),
-                                  );
-                                });
-                          }
-                        }, icono: Icon(Icons.add));
+                            }
+                          },
+                          icono: Icon(Icons.add),
+                        );
                       },
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 Center(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.primaryContainer,
-                      foregroundColor: Theme.of(
-                        context,
-                      ).colorScheme.onPrimaryContainer,
-                    ),
-                    child: const Text('Cancelar'),
+                  child: BotonSinIcono(
+                    texto: "Cancelar",
+                    vertPadding: 12,
+                    horiPadding: 24,
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
                   ),
                 ),
               ],
@@ -198,51 +184,11 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                   ),
                 ),
                 const SizedBox(width: 12),
-
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                    foregroundColor: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    String nuevoNombre = _nombreController.text.trim();
-                    if (nuevoNombre.isNotEmpty) {
-                      dbref
-                          .child('tato')
-                          .child('clases')
-                          .child(widget.clase.id)
-                          .update({'nombre': nuevoNombre})
-                          .then((_) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Clase actualizada correctamente',
-                                ),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          })
-                          .catchError((error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Error al actualizar la clase: $error',
-                                ),
-                              ),
-                            );
-                          });
-                    }
-                  },
-                  label: Text("Guardar nombre"),
-                  icon: const Icon(Icons.save),
+                BotonConIcono(
+                  icono: Icons.save,
+                  radio: 16,
+                  texto: "Guardar nombre",
+                  onPressed: guardarNombre,
                 ),
 
                 SizedBox(width: 24),
@@ -271,50 +217,12 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                   },
                 ),
                 const SizedBox(width: 20),
-
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                    foregroundColor: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (anoSeleccionado != null &&
-                        anoSeleccionado != widget.clase.ano) {
-                      dbref
-                          .child('tato')
-                          .child('clases')
-                          .child(widget.clase.id)
-                          .update({'ano': anoSeleccionado})
-                          .then((_) {
-                            setState(() {
-                              widget.clase.ano = anoSeleccionado!;
-                              snackBarExito(
-                                context,
-                                'Año actualizado correctamente',
-                              );
-                            });
-                          })
-                          .catchError((error) {
-                            setState(() {
-                              snackBarError(
-                                context,
-                                'Error al actualizar el año: $error',
-                              );
-                            });
-                          });
-                    }
-                  },
-                  label: Text("Guardar año"),
-                  icon: const Icon(Icons.save),
+                BotonConIcono(
+                  icono: Icons.save,
+                  radio: 16,
+                  texto: "Guardar año",
+                  onPressed: guardarAno,
                 ),
-
                 const SizedBox(width: 20),
               ],
             ),
@@ -354,55 +262,12 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                         },
                       ),
                 const SizedBox(width: 12),
-
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                    foregroundColor: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (profesorTutor != null) {
-                      dbref
-                          .child('tato')
-                          .child('clases')
-                          .child(widget.clase.id)
-                          .update({'id_tutor': profesorTutor})
-                          .then((_) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Tutor actualizado correctamente',
-                                ),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                            setState(() {
-                              widget.clase.idTutor = profesorTutor!;
-                            });
-                          })
-                          .catchError((error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Error al actualizar el tutor: $error',
-                                ),
-                              ),
-                            );
-                          });
-                    }
-                  },
-                  label: Text("Guardar Tutor"),
-                  icon: const Icon(Icons.save),
+                BotonConIcono(
+                  icono: Icons.save,
+                  radio: 16,
+                  texto: "Guardar tutor",
+                  onPressed: guardarTutor,
                 ),
-
                 const SizedBox(width: 24),
 
                 Text(
@@ -413,18 +278,10 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                    foregroundColor: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                BotonConIcono(
+                  icono: Icons.add,
+                  radio: 16,
+                  texto: "Añadir alumno",
                   onPressed: () async {
                     bool? resultado = await mostrarModalAlumnos(
                       context,
@@ -440,8 +297,6 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                       });
                     }
                   },
-                  label: Text("Añadir Alumno"),
-                  icon: const Icon(Icons.add),
                 ),
               ],
             ),
@@ -458,43 +313,39 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
                   reverse: false,
                   itemCount: alumnos.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return alumnos[index].widgetProfesorV2( onTap: () {
-                      List<String> alumnosActualizados = List.from(
-                        widget.clase.alumnos,
-                      );
-                      alumnosActualizados.remove(alumnos[index].id);
+                    return alumnos[index].widgetProfesorV2(
+                      onTap: () {
+                        List<String> alumnosActualizados = List.from(
+                          widget.clase.alumnos,
+                        );
+                        alumnosActualizados.remove(alumnos[index].id);
 
-                      dbref
-                          .child('tato')
-                          .child('clases')
-                          .child(widget.clase.id)
-                          .update({'alumnos': alumnosActualizados})
-                          .then((_) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Alumno eliminado de la clase'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                            setState(() {
-                              widget.clase.alumnos.remove(alumnos[index].id);
-                            });
-                            alumnos = alumnosDeClase(
-                              widget.clase,
-                              widget.allAlumnos,
-                            );
-                          })
-                          .catchError((error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Error al eliminar el alumno: $error',
+                        dbref
+                            .child('tato')
+                            .child('clases')
+                            .child(widget.clase.id)
+                            .update({'alumnos': alumnosActualizados})
+                            .then((_) {
+                              setState(() {
+                                widget.clase.alumnos.remove(alumnos[index].id);
+                              });
+                              alumnos = alumnosDeClase(
+                                widget.clase,
+                                widget.allAlumnos,
+                              );
+                            })
+                            .catchError((error) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Error al eliminar el alumno: $error',
+                                  ),
                                 ),
-                              ),
-                            );
-                          });
-                    }, icono: Icon(Icons.remove_circle));
+                              );
+                            });
+                      },
+                      icono: Icon(Icons.remove_circle),
+                    );
                   },
                 ),
               ),
@@ -503,5 +354,72 @@ class _EditarClaseV2State extends State<EditarClaseV2> {
         ],
       ),
     );
+  }
+
+  Future<void> guardarNombre() async {
+    String nuevoNombre = _nombreController.text.trim();
+    if (nuevoNombre.isNotEmpty) {
+      dbref
+          .child('tato')
+          .child('clases')
+          .child(widget.clase.id)
+          .update({'nombre': nuevoNombre})
+          .then((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Clase actualizada correctamente'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          })
+          .catchError((error) {
+            if (mounted) {
+              snackBarError(context, 'Error al actualizar la clase: $error');
+            }
+          });
+    }
+  }
+
+  Future<void> guardarAno() async {
+    if (anoSeleccionado != null && anoSeleccionado != widget.clase.ano) {
+      dbref
+          .child('tato')
+          .child('clases')
+          .child(widget.clase.id)
+          .update({'ano': anoSeleccionado})
+          .then((_) {
+            setState(() {
+              widget.clase.ano = anoSeleccionado!;
+              snackBarExito(context, 'Año actualizado correctamente');
+            });
+          })
+          .catchError((error) {
+            setState(() {
+              snackBarError(context, 'Error al actualizar el año: $error');
+            });
+          });
+    }
+  }
+
+  Future<void> guardarTutor() async {
+    if (profesorTutor != null) {
+      dbref
+          .child('tato')
+          .child('clases')
+          .child(widget.clase.id)
+          .update({'id_tutor': profesorTutor})
+          .then((_) {
+            if (mounted) {
+              snackBarExito(context, 'Tutor actualizado correctamente');
+              widget.clase.idTutor = profesorTutor!;
+            }
+          })
+          .catchError((error) {
+            if (mounted) {
+              snackBarError(context, 'Error al actualizar el tutor: $error');
+            }
+          });
+    }
   }
 }

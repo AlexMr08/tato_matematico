@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:crypto/crypto.dart';
+import 'package:tato_matematico/auxFunc.dart';
 import 'dart:convert';
+
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 class AgregarAlumno extends StatefulWidget {
   const AgregarAlumno({super.key});
@@ -26,9 +29,7 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
     final nombre = _nombreController.text.trim();
 
     if (nombre.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor, introduce el nombre")),
-      );
+      snackBarAviso(context, "Por favor, introduce el nombre");
       return;
     }
 
@@ -49,9 +50,7 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
         .child("alumnos");
 
     final newAlumnoRef = dbRef.push();
-    await newAlumnoRef.set({
-      "nombre": nombre,
-    });
+    await newAlumnoRef.set({"nombre": nombre});
 
     //Se crea la contrasena del alumno que por defecto es
     // "0000" cifrada en Hash.
@@ -64,15 +63,11 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
         .child("login");
 
     await dbRefpass.child(id).set({
-      "alfanumerica": {
-          "hash": passwordHash
-      },
+      "alfanumerica": {"hash": passwordHash},
       "tipoLogin": "alfanumerica",
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Alumno añadido correctamente")),
-    );
+    snackBarExito(context, "Alumno añadido correctamente");
 
     _nombreController.clear();
 
@@ -83,7 +78,7 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Añadir Alumno"),
+        title: const Text("Añadir alumno"),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -113,24 +108,13 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
             // Boton para añadir al alumno
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  foregroundColor: Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer,
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              child: BotonSinIcono(
+                texto: "Añadir alumno",
                 onPressed: agregarAlumno,
-                child: const Text(
-                  "Añadir Alumno",
-                  style: TextStyle(fontSize: 18),
-                ),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                vertPadding: 14,
+                radius: 14,
               ),
             ),
           ],

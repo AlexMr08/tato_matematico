@@ -12,6 +12,7 @@ import 'package:tato_matematico/edicion/configAlfanumerica.dart';
 import 'package:tato_matematico/edicion/configImagenUnica.dart';
 import 'package:tato_matematico/edicion/configSecuencia.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 class EditarAlumno extends StatefulWidget {
   @override
@@ -91,9 +92,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   void _guardarNombre(Alumno alumno) async {
     final nuevoNombre = _nombreController.text.trim();
     if (nuevoNombre.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El nombre no puede estar vacío.')),
-      );
+      snackBarAviso(context, 'El nombre no puede estar vacío.');
       return;
     }
     if (nuevoNombre == alumno.nombre) {
@@ -111,13 +110,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       alumno.nombre = nuevoNombre;
       context.read<AlumnoHolder>().setAlumno(alumno);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nombre actualizado correctamente.')),
-      );
+      snackBarExito(context, 'Nombre actualizado correctamente.');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar el nombre: $e')),
-      );
+      snackBarError(context, 'Error al actualizar el nombre: $e');
     } finally {
       // Salimos del modo edición
       setState(() => _isEditingName = false);
@@ -136,7 +131,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
         imageQuality: 80, // Calidad JPEG al 80%
       );
 
-      if (pickedFile == null) return; // Si no se selecciono ninguna imagen, salimos
+      if (pickedFile == null)
+        return; // Si no se selecciono ninguna imagen, salimos
 
       setState(() {
         _isUploadingImage = true;
@@ -154,7 +150,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
           await FirebaseStorage.instance.refFromURL(alumno.imagen!).delete();
         } catch (e) {
           // Si falla (ej. no existe el archivo o no tiene permisos), solo logueamos y seguimos
-          print("No se pudo borrar la imagen anterior (quizás ya no existe): $e");
+          print(
+            "No se pudo borrar la imagen anterior (quizás ya no existe): $e",
+          );
         }
       }
 
@@ -162,7 +160,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       // 2. Subir nueva imagen
       // ---------------------------------------------------------
       // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube y local
-      String fileName = '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
+      String fileName =
+          '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
       Reference ref = FirebaseStorage.instance.ref().child('alumnos/$fileName');
 
       await ref.putFile(imageFile);
@@ -172,9 +171,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       String gsUrl = "gs://$bucketName/alumnos/$fileName";
 
       // 3. Actualizar Realtime Database
-      await _dbRef.child('tato/alumnos/${alumno.id}').update({
-        'imagen': gsUrl,
-      });
+      await _dbRef.child('tato/alumnos/${alumno.id}').update({'imagen': gsUrl});
 
       // 4. Actualizar el objeto alumno
       alumno.imagen = gsUrl;
@@ -186,18 +183,12 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       // 5. Notificar cambios
       if (mounted) {
         context.read<AlumnoHolder>().setAlumno(alumno);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Imagen actualizada correctamente.'),
-              backgroundColor: Colors.green),
-        );
+        snackBarExito(context, 'Imagen actualizada correctamente.');
       }
     } catch (e) {
       print("Error subiendo imagen: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error al subir imagen: $e")));
+        snackBarError(context, "Error al subir imagen: $e");
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
@@ -220,12 +211,16 @@ class _EditarAlumnoState extends State<EditarAlumno> {
             child: Wrap(
               children: <Widget>[
                 ListTile(
-                    leading: Icon(Icons.photo_library, color: colorScheme.primary),
-                    title: const Text('Galería'),
-                    onTap: () {
-                      Navigator.of(context).pop(); // Cerrar menú
-                      _cambiarImagen(ImageSource.gallery, alumno);
-                    }),
+                  leading: Icon(
+                    Icons.photo_library,
+                    color: colorScheme.primary,
+                  ),
+                  title: const Text('Galería'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // Cerrar menú
+                    _cambiarImagen(ImageSource.gallery, alumno);
+                  },
+                ),
                 ListTile(
                   leading: Icon(Icons.camera_alt, color: colorScheme.primary),
                   title: const Text('Cámara'),
@@ -257,26 +252,27 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
       // Actualizamos el estado local
       alumno.posicionBarra = nuevoValor;
-      context.read<AlumnoHolder>().setAlumno(alumno);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Posicion de la barra actualizada correctamente.')),
-      );
+      if (mounted) {
+        context.read<AlumnoHolder>().setAlumno(alumno);
+        snackBarExito(
+          context,
+          "Posicion de la barra actualizada correctamente.",
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Error al actualizar la posicion de la barra: $e')),
-      );
+      if (mounted) {
+        snackBarError(
+          context,
+          "Error al actualizar la posicion de la barra: $e",
+        );
+      }
     }
   }
 
   // --- NUEVA FUNCIÓN PARA GUARDAR PERMISOS DEL JUEGO ---
   void _guardarPermisoJuego1(Alumno alumno, String permiso, bool valor) async {
     try {
-      await _dbRef.child('tato/alumnos/${alumno.id}').update({
-        permiso: valor,
-      });
+      await _dbRef.child('tato/alumnos/${alumno.id}').update({permiso: valor});
 
       if (mounted) {
         // Actualizamos el estado local
@@ -286,19 +282,11 @@ class _EditarAlumnoState extends State<EditarAlumno> {
           alumno.permisoEstadisticasJuego1 = valor;
         }
         context.read<AlumnoHolder>().setAlumno(alumno);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Permiso actualizado.'),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        snackBarExito(context, "Permiso actualizado.");
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar el permiso: $e')),
-        );
+        snackBarError(context, 'Error al guardar el permiso: $e');
       }
     }
   }
@@ -306,13 +294,20 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Consumer<AlumnoHolder>(builder: (context, alumnoHolder, child) {
-      final Alumno? alumno = alumnoHolder.alumno;
-      if (alumno == null) {
-        // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.
-        return Scaffold(body: Center(child: CircularProgressIndicator()));
-      }
-      return ScaffoldComun(
+
+    return Consumer<AlumnoHolder>(
+      builder: (context, alumnoHolder, child) {
+        final Alumno? alumno = alumnoHolder.alumno;
+        if (alumno == null) {
+          // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        var onPressed = _isUploadingImage
+            ? null
+            : () => _mostrarMenuOrigen(context, alumno);
+
+        return ScaffoldComun(
           titulo: 'Editar Alumno',
           subtitulo: alumno.nombre,
           funcionSalir: () {
@@ -366,78 +361,72 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 14.0),
                           child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 40.0),
-                                  child: Center(
-                                    child: _isEditingName
-                                        ? TextFormField(
-                                            controller: _nombreController,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold),
-                                            decoration:
-                                                const InputDecoration(
-                                              isDense: true,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 4),
-                                              border: OutlineInputBorder(),
-                                            ),
-                                            onFieldSubmitted: (_) =>
-                                                _guardarNombre(alumno),
-                                          )
-                                        : Text(
-                                            // Usamos el controlador para mostrar el nombre, asegurando consistencia
-                                            _nombreController.text,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                  ),
+                            alignment: Alignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40.0,
                                 ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      icon: Icon(
-                                        _isEditingName
-                                            ? Icons.save_alt_outlined
-                                            : Icons.edit_outlined,
-                                        color: colorScheme.primary,
-                                      ),
-                                      onPressed: () {
-                                        if (_isEditingName) {
-                                          _guardarNombre(alumno);
-                                        } else {
-                                          setState(() {
-                                            _isEditingName = true;
-                                          });
-                                        }
-                                      }),
-                                )
-                              ]),
+                                child: Center(
+                                  child: _isEditingName
+                                      ? TextFormField(
+                                          controller: _nombreController,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 4,
+                                                ),
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          onFieldSubmitted: (_) =>
+                                              _guardarNombre(alumno),
+                                        )
+                                      : Text(
+                                          // Usamos el controlador para mostrar el nombre, asegurando consistencia
+                                          _nombreController.text,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: BotonIcono(
+                                  icono: _isEditingName
+                                      ? Icons.save_alt_outlined
+                                      : Icons.edit_outlined,
+                                  onPressed: () {
+                                    if (_isEditingName) {
+                                      _guardarNombre(alumno);
+                                    } else {
+                                      setState(() {
+                                        _isEditingName = true;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
 
                         const SizedBox(height: 16),
 
                         // BOTON CAMBIAR IMAGEN
-                        ElevatedButton.icon(
-                          onPressed: _isUploadingImage
-                              ? null
-                              : () => _mostrarMenuOrigen(context, alumno),
-                          icon: const Icon(Icons.cameraswitch_outlined),
-                          label: Text("Cambiar Imagen"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primaryContainer,
-                            foregroundColor: colorScheme.onPrimaryContainer,
-                          ),
+                        BotonConIcono(
+                          icono: Icons.cameraswitch_outlined,
+                          texto: "Cambiar Imagen",
+                          onPressed: onPressed,
                         ),
                       ],
                     ),
@@ -454,7 +443,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                         const Text(
                           "Tipo de Contraseña",
                           style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         SizedBox(
@@ -488,27 +479,13 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                         SizedBox(
                           width: double.infinity,
                           height: 50,
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                _irAConfiguracion(context, alumno),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colorScheme.primaryContainer,
-                              foregroundColor: colorScheme.onPrimaryContainer,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15)),
-                              elevation: 4,
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("CONFIGURAR CONTRASEÑA",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold)),
-                                SizedBox(width: 10),
-                                Icon(Icons.arrow_forward_ios)
-                              ],
-                            ),
+                          child: BotonConIcono(
+                            icono: Icons.arrow_forward_ios,
+                            radio: 16,
+                            iconAlignment: IconAlignment.end,
+                            fontSize: 18,
+                            texto: "Configurar contraseña",
+                            onPressed: () => _irAConfiguracion(context, alumno),
                           ),
                         ),
                       ],
@@ -525,7 +502,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                         const Text(
                           "Ajustes Accesibilidad",
                           style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         SizedBox(height: 16),
                         Row(
@@ -561,32 +540,22 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                                 ),
                               ),
                             ),
-                            IconButton(
-                                padding: EdgeInsets.zero,
-                                icon: Icon(
-                                  Icons.save_alt_outlined,
-                                  color: colorScheme.primary,
-                                ),
-                                onPressed: () {
-                                  _guardarBarra(alumno);
-                                }),
+                            BotonIcono(
+                              icono: Icons.save_alt_outlined,
+                              onPressed: () {
+                                _guardarBarra(alumno);
+                              },
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        ElevatedButton.icon(
+                        BotonConIcono(
+                          icono: Icons.palette,
+                          radio: 16,
+                          texto: "Colores",
                           onPressed: () {
                             navegar(ConfigColor(alum: alumno), context);
                           },
-                          icon: Icon(Icons.palette),
-                          label: Text("Colores"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primaryContainer,
-                            foregroundColor: colorScheme.onPrimaryContainer,
-                            minimumSize: Size(120, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
                         ),
                         const SizedBox(height: 16),
                         // --- NUEVO WIDGET PARA AJUSTES DEL JUEGO 1 ---
@@ -604,7 +573,13 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                                   children: [
                                     Icon(Icons.extension),
                                     SizedBox(width: 8),
-                                    Text("Juego 1", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      "Juego 1",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 Divider(),
@@ -613,7 +588,11 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                                   value: alumno.permisoAjustesJuego1,
                                   onChanged: (bool value) {
                                     setState(() {
-                                      _guardarPermisoJuego1(alumno, 'permisoAjustesJuego1', value);
+                                      _guardarPermisoJuego1(
+                                        alumno,
+                                        'permisoAjustesJuego1',
+                                        value,
+                                      );
                                     });
                                   },
                                 ),
@@ -622,22 +601,28 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                                   value: alumno.permisoEstadisticasJuego1,
                                   onChanged: (bool value) {
                                     setState(() {
-                                      _guardarPermisoJuego1(alumno, 'permisoEstadisticasJuego1', value);
+                                      _guardarPermisoJuego1(
+                                        alumno,
+                                        'permisoEstadisticasJuego1',
+                                        value,
+                                      );
                                     });
                                   },
                                 ),
                               ],
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ));
-    });
+          ),
+        );
+      },
+    );
   }
 }
 

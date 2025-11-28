@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 // Asumo que tienes una clase Juego1Settings en el path especificado
 // y que la clase Alumno se está definiendo aquí.
@@ -381,59 +382,6 @@ class _AlumnViewCard extends StatefulWidget {
 }
 
 class _AlumnViewCardState extends State<_AlumnViewCard> {
-  File? _imagenLocal;
-  bool _cargando = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _cargarImagen();
-  }
-
-  // Versión FINAL: didUpdateWidget para recargar la imagen si el Alumno ha cambiado (ej. en una lista)
-  @override
-  void didUpdateWidget(covariant _AlumnViewCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.alumno.id != widget.alumno.id) {
-      setState(() {
-        _imagenLocal = null;
-        _cargando = true;
-      });
-      _cargarImagen();
-    }
-  }
-
-  Future<void> _cargarImagen() async {
-    try {
-      final tempDir = await getTemporaryDirectory();
-      // Llama a la lógica centralizada en la clase Alumno
-      final archivo = await widget.alumno.obtenerImagen(tempDir);
-
-      if (mounted) {
-        setState(() {
-          _imagenLocal = archivo;
-          _cargando = false;
-        });
-      }
-    } catch (e) {
-      print("Error UI Alumno: $e");
-      if (mounted) setState(() => _cargando = false);
-    }
-  }
-
-  String _obtenerIniciales(String nombre) {
-    if (nombre.isEmpty) return "";
-    List<String> palabras = nombre.trim().split(" ");
-    String iniciales = "";
-    if (palabras.isNotEmpty) {
-      iniciales += palabras[0][0];
-      if (palabras.length > 1) {
-        // Se mantiene la lógica de obtener las dos primeras iniciales si existen
-        iniciales += palabras[1][0];
-      }
-    }
-    return iniciales.toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,31 +396,12 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: _cargando
-                    ? const Center(child: CircularProgressIndicator())
-                    : _imagenLocal != null
-                    ? Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: FileImage(_imagenLocal!),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                )
-                    : CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(
-                    _obtenerIniciales(widget.alumno.nombre),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
+                child: FotoPerfil(
+                  key: ValueKey(widget.alumno.imagen),
+                  nombre: widget.alumno.nombre,
+                  idUnico: widget.alumno.imagen ?? widget.alumno.id,
+                  onObtenerImagen: widget.alumno.obtenerImagen,
+                  radio: 56,
                 ),
               ),
             ),
@@ -517,96 +446,20 @@ class _TeacherViewCard extends StatefulWidget {
 }
 
 class _TeacherViewCardState extends State<_TeacherViewCard> {
-  File? _imagenLocal;
-  bool _cargando = true;
-  // Versión FINAL: Guarda la URL para detectar si el objeto Alumno ha mutado
-  String? _lastImagenUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    // Versión FINAL: Inicializa la última URL
-    _lastImagenUrl = widget.alumno.imagen;
-    _cargarImagen();
-  }
-
-  // Versión FINAL: didUpdateWidget para recargar la imagen si la URL en el objeto Alumno ha cambiado
-  @override
-  void didUpdateWidget(covariant _TeacherViewCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.alumno.imagen != _lastImagenUrl) {
-      _lastImagenUrl = widget.alumno.imagen;
-      widget.alumno.invalidarCachedImage(); // Aseguramos que se limpie la caché central
-      // Forzamos la recarga
-      setState(() {
-        _imagenLocal = null;
-        _cargando = true;
-      });
-      _cargarImagen();
-    } else if (oldWidget.alumno.id != widget.alumno.id) {
-      // Si el objeto Alumno es diferente (aunque la URL sea la misma, por si acaso)
-      setState(() {
-        _imagenLocal = null;
-        _cargando = true;
-      });
-      _cargarImagen();
-    }
-  }
-
-  Future<void> _cargarImagen() async {
-    try {
-      final tempDir = await getTemporaryDirectory();
-      // Llama a la lógica centralizada en la clase Alumno
-      final archivo = await widget.alumno.obtenerImagen(tempDir);
-
-      if (mounted) {
-        setState(() {
-          _imagenLocal = archivo;
-          _cargando = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _cargando = false);
-    }
-  }
-
-  String _obtenerIniciales(String nombre) {
-    if (nombre.isEmpty) return "";
-    List<String> palabras = nombre.trim().split(" ");
-    String iniciales = "";
-    if (palabras.isNotEmpty) {
-      iniciales += palabras[0][0];
-      if (palabras.length > 1) {
-        iniciales += palabras[1][0];
-      }
-    }
-    return iniciales.toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider? imageProvider;
-    // Versión FINAL: Prioriza _imagenLocal (cargado por el State) y luego la caché del modelo (imagenLocal)
-    if (_imagenLocal != null) {
-      imageProvider = FileImage(_imagenLocal!);
-    } else if (widget.alumno.imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(widget.alumno.imagenLocal));
-    }
-
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: imageProvider,
-          child: imageProvider == null
-              ? Text(
-            widget.alumno.nombre.isNotEmpty ? _obtenerIniciales(widget.alumno.nombre) : '?',
-            style: const TextStyle(fontSize: 20),
-          )
-              : null,
+        leading: FotoPerfil(
+          key: ValueKey(widget.alumno.imagen ?? widget.alumno.id),
+          nombre: widget.alumno.nombre,
+          idUnico: widget.alumno.imagen ?? widget.alumno.id,
+          onObtenerImagen: widget.alumno.obtenerImagen,
+          radio: 28,
         ),
         title: Text(
           widget.alumno.nombre,

@@ -14,6 +14,7 @@ import 'package:tato_matematico/perfilProfesor.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/agregar/agregarAlumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import 'datos/alumno.dart';
 import 'holders/profesorHolder.dart';
@@ -137,29 +138,12 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
             ),
           ),
 
-          const SizedBox(width: 250),
+          const SizedBox(),
 
-          // IconButton.filled(
-          //   style: IconButton.styleFrom(
-          //     backgroundColor: const Color.fromARGB(255, 95, 255, 149),
-          //     foregroundColor: Colors.black,
-          //     shape: const CircleBorder(),
-          //     padding: EdgeInsets.zero,
-          //   ),
-          //   iconSize: 28,
-          //   onPressed: () {
-          //     navegar(AgregarProfesor(), context);
-          //   },
-          //   icon: const Icon(Icons.add),
-          // ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+          BotonConIcono(
+            icono: Icons.add,
+            radio: 16,
+            texto: "Añadir $texto",
             onPressed: () {
               if (currentPageIndex == 0) {
                 navegar(const AgregarAlumno(), context);
@@ -168,11 +152,14 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 navegar(const AgregarProfesor(), context);
               }
               if (currentPageIndex == 2) {
-                navegar(AgregarClase(allAlumnos: context.read<AlumnosHolder>().alumnos), context);
+                navegar(
+                  AgregarClase(
+                    allAlumnos: context.read<AlumnosHolder>().alumnos,
+                  ),
+                  context,
+                );
               }
             },
-            label: Text("Añadir $texto"),
-            icon: const Icon(Icons.add),
           ),
         ],
       ),
@@ -255,11 +242,11 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
       },
       child: ScaffoldComunV2(
         titulo: (currentPageIndex != 3
-                  ? titulos[!profesor.director &&
-                            (currentPageIndex == 1 || currentPageIndex == 2)
-                        ? currentPageIndex + 1
-                        : currentPageIndex]
-                  : profesor.username),
+            ? titulos[!profesor.director &&
+                      (currentPageIndex == 1 || currentPageIndex == 2)
+                  ? currentPageIndex + 1
+                  : currentPageIndex]
+            : profesor.username),
         subtitulo: currentPageIndex != 3
             ? "${profesor.director ? "Administrador" : "Profesor"} ${profesor.nombre}"
             : null,
@@ -317,12 +304,15 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 reverse: false,
                 itemCount: _alumnosFiltrados.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return _alumnosFiltrados[index].widgetProfesorV2(onTap: () {
-                    context.read<AlumnoHolder>().setAlumno(
-                      _alumnosFiltrados[index],
-                    );
-                    navegar(EditarAlumno(), context);
-                  }, icono: Icon(Icons.edit));
+                  return _alumnosFiltrados[index].widgetProfesorV2(
+                    onTap: () {
+                      context.read<AlumnoHolder>().setAlumno(
+                        _alumnosFiltrados[index],
+                      );
+                      navegar(EditarAlumno(), context);
+                    },
+                    icono: Icon(Icons.edit),
+                  );
                 },
               ),
 
@@ -369,7 +359,13 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     itemCount: _clasesFiltradas.length,
                     itemBuilder: (BuildContext context, int index) {
                       return _clasesFiltradas[index].widgetClase(context, () {
-                        navegar(EditarClaseV2(clase: _clasesFiltradas[index], allAlumnos: _alumnos), context);
+                        navegar(
+                          EditarClaseV2(
+                            clase: _clasesFiltradas[index],
+                            allAlumnos: _alumnos,
+                          ),
+                          context,
+                        );
                       });
                     },
                   );

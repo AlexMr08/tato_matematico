@@ -6,6 +6,129 @@ Color getTextColorForBackground(Color backgroundColor) {
   return backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
 }
 
+Future<bool?> mostrarDialogoSiNoAlumnoV2(
+  BuildContext context,
+  String titulo,
+  String contenido,
+) async {
+  return showGeneralDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: "Cerrar",
+    barrierColor: Colors
+        .black54, // Fondo oscurecido detrás (aunque no se verá si es fullscreen)
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return Scaffold(
+        // Color de fondo del diálogo a pantalla completa
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Título grande
+                  Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  // Contenido
+                  Text(
+                    contenido,
+                    style: const TextStyle(fontSize: 24),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 60), // Espacio antes de los botones
+                  // Botones Si/No
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // ----------------- BOTÓN NO -----------------
+                      Material(
+                        elevation:
+                            8, // Un poco más de elevación al ser fullscreen
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.red.shade50,
+                        child: InkWell(
+                          onTap: () => Navigator.of(context).pop(false),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(
+                              24.0,
+                            ), // Más padding para hacerlo masivo
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  'assets/images/no.png',
+                                  width: 120, // Imagen más grande
+                                  height: 120,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "No",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28, // Texto más grande
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // ----------------- BOTÓN SI -----------------
+                      Material(
+                        elevation: 8,
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.green.shade50,
+                        child: InkWell(
+                          onTap: () => Navigator.of(context).pop(true),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  'assets/images/si.png',
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Si",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 Future<bool?> mostrarDialogoSiNoAlumno(
   BuildContext context,
   String titulo,
@@ -108,10 +231,7 @@ bool isTablet(BuildContext context) {
 }
 
 void navegar(Widget nuevo, BuildContext context) {
-  Navigator.push(
-    context,
-    MaterialPageRoute<void>(builder: (context) => nuevo),
-  );
+  Navigator.push(context, MaterialPageRoute<void>(builder: (context) => nuevo));
 }
 
 /// Devuelve true si el dispositivo es una tablet (umbral 600dp en el lado más corto).
@@ -121,20 +241,23 @@ bool isTabletV2() {
   final dispatcher = ui.PlatformDispatcher.instance;
 
   // Obtiene la primera vista disponible (compatible con multi‑view)
-  final ui.FlutterView view =
-  dispatcher.views.isNotEmpty ? dispatcher.views.first : (dispatcher.implicitView!);
+  final ui.FlutterView view = dispatcher.views.isNotEmpty
+      ? dispatcher.views.first
+      : (dispatcher.implicitView!);
 
   final double logicalWidth = view.physicalSize.width / view.devicePixelRatio;
   final double logicalHeight = view.physicalSize.height / view.devicePixelRatio;
-  final double shortestSide = logicalWidth < logicalHeight ? logicalWidth : logicalHeight;
+  final double shortestSide = logicalWidth < logicalHeight
+      ? logicalWidth
+      : logicalHeight;
 
   return shortestSide >= 600.0;
 }
 
-
 extension HexColor on Color {
   /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
-  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
+  String toHex({bool leadingHashSign = true}) =>
+      '${leadingHashSign ? '#' : ''}'
       '${alpha.toRadixString(16).padLeft(2, '0')}'
       '${red.toRadixString(16).padLeft(2, '0')}'
       '${green.toRadixString(16).padLeft(2, '0')}'
@@ -167,23 +290,19 @@ String obtenerAnoAcademico() {
   }
 }
 
-void snackBarError(BuildContext context, String mensaje){
+void snackBarError(BuildContext context, String mensaje) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
         mensaje,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onError,
-        ),
+        style: TextStyle(color: Theme.of(context).colorScheme.onError),
       ),
-      backgroundColor: Theme.of(
-        context,
-      ).colorScheme.error,
+      backgroundColor: Theme.of(context).colorScheme.error,
     ),
   );
 }
 
-void snackBarExito(BuildContext context, String mensaje){
+void snackBarExito(BuildContext context, String mensaje) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
@@ -192,9 +311,13 @@ void snackBarExito(BuildContext context, String mensaje){
           color: Theme.of(context).colorScheme.onPrimaryContainer,
         ),
       ),
-      backgroundColor: Theme.of(
-        context,
-      ).colorScheme.primaryContainer,
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
     ),
   );
+}
+
+void snackBarAviso(BuildContext context, String mensaje) {
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(SnackBar(content: Text(mensaje)));
 }

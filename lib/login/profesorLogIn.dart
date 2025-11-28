@@ -4,6 +4,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import '../ScaffoldComun.dart';
 import '../holders/profesorHolder.dart';
@@ -163,19 +164,13 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                 Center(
                   child: SizedBox(
                     width: 150,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimary,
-                      ),
+                    child: BotonSinIcono(
+                      texto: "Iniciar sesión",
                       onPressed: () {
                         String username = usernameController.text.trim();
                         String password = passwordController.text.trim();
                         autenticacionProfesor(username, password);
                       },
-                      child: const Text('Iniciar sesión'),
                     ),
                   ),
                 ),
@@ -204,8 +199,8 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
     final nonce = await SecretKey(saltBytes);
 
     final secretKey = await pbkdf2.deriveKey(
-        secretKey: SecretKey(utf8.encode(password)),
-        nonce: await nonce.extractBytes(),
+      secretKey: SecretKey(utf8.encode(password)),
+      nonce: await nonce.extractBytes(),
     );
 
     final hashBytes = await secretKey.extractBytes();
@@ -216,5 +211,4 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
 
     return hashHex;
   }
-
 }

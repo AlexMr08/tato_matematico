@@ -12,6 +12,7 @@ import 'package:tato_matematico/edicion/profesorEditarContrasena.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
 import 'package:tato_matematico/holders/profesorHolder.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 class PerfilProfesor extends StatefulWidget {
@@ -45,12 +46,12 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
 
   void _toggleEditing() {
     if (_isEditing) {
-      if(_nameController.text.trim().isNotEmpty){
+      if (_nameController.text.trim().isNotEmpty) {
         setState(() {
           widget.profesor.actualizarNombre(_nameController.text);
           _isEditing = false;
         });
-      }else{
+      } else {
         snackBarError(context, 'El nombre no puede estar vacío.');
         _nameController.text = widget.profesor.nombre;
         _isEditing = false;
@@ -67,13 +68,18 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
   Widget build(BuildContext context) {
     var alumnos = context.read<AlumnosHolder>().alumnos;
     foto = FotoPerfil(
-        key: ValueKey(widget.profesor.imagen),
-        profesor: widget.profesor);
+      key: ValueKey(widget.profesor.imagen),
+      nombre: widget.profesor.nombre,
+      idUnico: widget.profesor.imagen ?? widget.profesor.id,
+      onObtenerImagen: widget.profesor.obtenerImagen,
+      radio: 28,
+    );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: 8,),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -122,51 +128,22 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                                 ),
                               ),
 
-                        IconButton(
-                          icon: Icon(
-                            _isEditing ? Icons.check : Icons.edit,
-                            size: 20,
-                          ),
+                        BotonIcono(
+                          icono: _isEditing ? Icons.save : Icons.edit,
                           onPressed: _toggleEditing,
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    ElevatedButton.icon(
+                    BotonConIcono(
+                      icono: Icons.edit,
+                      texto: "Cambiar contraseña",
                       onPressed: () {
                         navegar(
                           ProfesorEditarContrasena(profesor: widget.profesor),
                           context,
                         );
                       },
-                      icon: Icon(
-                        Icons.edit,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                      label: Text(
-                        'Editar contraseña',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimaryContainer,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        elevation: 0,
-                      ),
                     ),
                   ],
                 ),
@@ -186,7 +163,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
             child: ListView.separated(
               padding: EdgeInsets.zero,
               itemCount: widget.clases.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 0),
               itemBuilder: (context, index) {
                 return widget.clases[index].widgetClase(context, () {
                   navegar(
@@ -247,19 +224,20 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
     );
   }
 
-  Future<void> _cambiarImagen(ImageSource source, Profesor prof) async{
+  Future<void> _cambiarImagen(ImageSource source, Profesor prof) async {
     try {
       final ImagePicker picker = ImagePicker();
 
       // Abrimos camara o galeria con optimizacion
       final XFile? pickedFile = await picker.pickImage(
         source: source,
-        maxWidth: 800,    // Redimensionar 800px de ancho
+        maxWidth: 800, // Redimensionar 800px de ancho
         maxHeight: 800,
         imageQuality: 80, // Calidad JPEG al 80%
       );
 
-      if (pickedFile == null) return; // Si no se selecciono ninguna imagen, salimos
+      if (pickedFile == null)
+        return; // Si no se selecciono ninguna imagen, salimos
 
       setState(() {
         _isUploadingImage = true;
@@ -277,7 +255,9 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
           await FirebaseStorage.instance.refFromURL(prof.imagen!).delete();
         } catch (e) {
           // Si falla (ej. no existe el archivo o no tiene permisos), solo logueamos y seguimos
-          print("No se pudo borrar la imagen anterior (quizás ya no existe): $e");
+          print(
+            "No se pudo borrar la imagen anterior (quizás ya no existe): $e",
+          );
         }
       }
 
@@ -285,8 +265,11 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
       // 2. Subir nueva imagen
       // ---------------------------------------------------------
       // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube y local
-      String fileName = '${prof.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
-      Reference ref = FirebaseStorage.instance.ref().child('profesorado/$fileName');
+      String fileName =
+          '${prof.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
+      Reference ref = FirebaseStorage.instance.ref().child(
+        'profesorado/$fileName',
+      );
 
       await ref.putFile(imageFile);
 
@@ -309,20 +292,11 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
       // 5. Notificar cambios
       if (mounted) {
         context.read<ProfesorHolder>().setProfesor(prof);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Imagen actualizada correctamente.'),
-              backgroundColor: Colors.green
-          ),
-        );
+        snackBarExito(context, "Imagen actualizada correctamente.");
       }
     } catch (e) {
-      print("Error subiendo imagen: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error al subir imagen: $e"))
-        );
+        snackBarError(context, "Error al subir imagen: $e");
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);

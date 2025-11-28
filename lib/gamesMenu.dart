@@ -78,7 +78,7 @@ class _GamesMenuState extends State<GamesMenu> {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
-        mostrarDialogoSiNoAlumno(context, "Salir", "¿Seguro que quieres salir?").then((
+        mostrarDialogoSiNoAlumnoV2(context, "Salir", "¿Seguro que quieres salir?").then((
           confirmed,
         ) {
           salirFunc(confirmed, alumnoHolder, navigator);
@@ -90,11 +90,19 @@ class _GamesMenuState extends State<GamesMenu> {
         hasEstadisticas: true,
         hasAjustes: true,
         onVolver: () {
-          mostrarDialogoSiNoAlumno(
+
+          final currentFocus = FocusScope.of(context).focusedChild;
+
+          mostrarDialogoSiNoAlumnoV2(
             context,
             "Salir",
             "¿Seguro que quieres salir?",
           ).then((confirmed) {
+
+            if (confirmed != true && currentFocus != null) {
+              currentFocus.requestFocus();
+            }
+
             salirFunc(confirmed, alumnoHolder, navigator);
           });
         },

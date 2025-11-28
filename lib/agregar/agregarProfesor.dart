@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:cryptography/cryptography.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 class AgregarProfesor extends StatefulWidget {
   const AgregarProfesor({super.key});
@@ -188,24 +189,14 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
             // Boton para añadir al profesor
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  foregroundColor: Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer,
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              child: BotonSinIcono(
+                texto: "Añadir profesor",
                 onPressed: agregarProfesor,
-                child: const Text(
-                  "Añadir Profesor",
-                  style: TextStyle(fontSize: 18),
-                ),
+                horiPadding: 24,
+                vertPadding: 14,
+                fontSize: 18,
+                radius: 14,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
