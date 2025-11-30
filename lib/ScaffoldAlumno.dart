@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 
-// --- Función de utilidad para el color del texto ---
 enum PosicionBarra { arriba, abajo, izquierda, derecha }
 
-class AlumnoScaffold extends StatelessWidget {
+/// **Nombre de la Clase: `AlumnoScaffold`**
+///
+/// **Descripción:** Clase que genera el Scaffold común para las pantallas del alumno,
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
+class ScaffoldAlumno extends StatelessWidget {
   final Widget child;
   final PosicionBarra posicion;
   final Alumno alumno;
@@ -15,7 +26,7 @@ class AlumnoScaffold extends StatelessWidget {
   final bool hasAjustes;
   final bool hasEstadisticas;
 
-  const AlumnoScaffold({
+  const ScaffoldAlumno({
     super.key,
     required this.child,
     required this.posicion,

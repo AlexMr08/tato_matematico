@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Widget que crea un Scaffold personalizado para las pantallas comunes
 
+@Deprecated("Usar ScaffoldComunV2 en su lugar")
 class ScaffoldComun extends StatelessWidget {
   final String titulo;
   final NavigationBar? navBar;

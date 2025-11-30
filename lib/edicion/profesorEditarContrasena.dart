@@ -8,6 +8,18 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 
+/// **Nombre de la Clase: `ProfesorEditarContrasena`**
+///
+/// **Descripción:** clase que permite cambiar la contraseña de un profesor.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class ProfesorEditarContrasena extends StatefulWidget {
   final Profesor profesor;
   const ProfesorEditarContrasena({super.key, required this.profesor});

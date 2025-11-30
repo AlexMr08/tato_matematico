@@ -7,6 +7,8 @@ import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:tato_matematico/login/seleccionAlumno.dart';
 
 class SeleccionClase extends StatefulWidget {
+  const SeleccionClase({super.key});
+
   @override
   State<SeleccionClase> createState() => _SeleccionClaseState();
 }

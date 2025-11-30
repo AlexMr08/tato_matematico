@@ -4,6 +4,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 
+/// **Nombre de la Clase: `ProfesorHolder`**
+///
+/// **Descripción:** Clase que permite gestionar el estado de el profesor que ha iniciado sesion en la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class ProfesorHolder extends ChangeNotifier {
   Profesor? profesor;
   StreamSubscription<DatabaseEvent>? _perfilSubscription;

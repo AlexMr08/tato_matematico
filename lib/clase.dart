@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
 
+/// **Nombre de la Clase: `Clase`**
+///
+/// **Descripción:** Clase encargada de representar una clase escolar con sus atributos y métodos asociados.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Andrés Ignacio Mardones Domcke
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class Clase {
   String id;
   String nombre;
@@ -54,7 +66,10 @@ class Clase {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         subtitle: Text('Año $ano | ${alumnos.length} alumnos'),
-        trailing: IconButton(icon: const Icon(Icons.edit), onPressed: onPressed),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: onPressed,
+        ),
         onTap: null,
       ),
     );

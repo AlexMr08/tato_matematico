@@ -1,20 +1,30 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:tato_matematico/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
+
+/// **Nombre de la Clase: `ConfigImagenUnicaScreen`**
+///
+/// **Descripción:** clase que permite configurar el login de selección de imagen única para un alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class ConfigImagenUnicaScreen extends StatefulWidget {
   final Alumno alumno;
 
-  const ConfigImagenUnicaScreen({
-    super.key,
-    required this.alumno,
-  });
+  const ConfigImagenUnicaScreen({super.key, required this.alumno});
 
   @override
-  State<ConfigImagenUnicaScreen> createState() => _ConfigImagenUnicaScreenState();
+  State<ConfigImagenUnicaScreen> createState() =>
+      _ConfigImagenUnicaScreenState();
 }
 
 class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
@@ -25,15 +35,15 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   int _currentStep = 1; // 1: Elegir Configuracion, 2: Elegir Imagenes
 
   // PARAMETROS PARA LA CONFIGURACION
-  int _gridSize = 6;            // Tamaño del grid
-  bool _isRandom = true;        // Imagenes distractoras aleatorias
+  int _gridSize = 6; // Tamaño del grid
+  bool _isRandom = true; // Imagenes distractoras aleatorias
 
   // PARAMETROS PARA LA SELECCION
-  String? _selectedCorrectImageId;      // ID imagen correcta
-  Map<String, bool> _selectedDistractoras = {}; // IDs imagenes distractoras
+  String? _selectedCorrectImageId; // ID imagen correcta
+  final Map<String, bool> _selectedDistractoras = {}; // IDs imagenes distractoras
 
   // DATOS DE LA BIBLIOTECA DE PICTOGRAMAS
-  List<Pictograma> _biblioteca =  [];
+  List<Pictograma> _biblioteca = [];
   bool _isLoadingLibrary = true;
   bool _isSaving = false;
 
@@ -47,10 +57,15 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   /// Cargar la biblioteca de imagenes desde firebase
   Future<void> _cargarBiblioteca() async {
     try {
-      final snapshot = await _dbRef.child('tato').child('bibliotecaImagenes').get();
+      final snapshot = await _dbRef
+          .child('tato')
+          .child('bibliotecaImagenes')
+          .get();
 
       if (snapshot.exists && snapshot.value != null) {
-        final data = Map<String, dynamic>.from(snapshot.value as Map<dynamic, dynamic>);
+        final data = Map<String, dynamic>.from(
+          snapshot.value as Map<dynamic, dynamic>,
+        );
 
         final listaTemp = <Pictograma>[];
 
@@ -72,7 +87,7 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
   }
 
   /// Metodo para guardar la configuracion del login en firebase
-  Future<void> _guardarConfiguracion () async {
+  Future<void> _guardarConfiguracion() async {
     setState(() => _isSaving = true);
 
     try {
@@ -89,20 +104,25 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
         "secuenciaImagenes": null,
       };
 
-      await _dbRef.child('tato').child('login').child(widget.alumno.id).set(loginConfig);
+      await _dbRef
+          .child('tato')
+          .child('login')
+          .child(widget.alumno.id)
+          .set(loginConfig);
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Login guardado correctamente"),
-              backgroundColor: Colors.green
-          )
+        const SnackBar(
+          content: Text("Login guardado correctamente"),
+          backgroundColor: Colors.green,
+        ),
       );
       Navigator.pop(context); // Volver a editar alumno
-    }
-    catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -140,10 +160,10 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
           _selectedDistractoras[img.id] = true;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text("Grid lleno. Deselecciona alguna para cambiarla."),
-                  duration: Duration(seconds: 1)
-              )
+            const SnackBar(
+              content: Text("Grid lleno. Deselecciona alguna para cambiarla."),
+              duration: Duration(seconds: 1),
+            ),
           );
         }
       }
@@ -152,16 +172,11 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldComun(
+    return ScaffoldComunV2(
       titulo: widget.alumno.nombre,
-      subtitulo: _currentStep == 1 ? "Ajustes del Grid" : "Selección de Imágenes",
-      funcionSalir: () {
-        if (_currentStep == 2) {
-          setState(() => _currentStep = 1);
-        } else {
-          Navigator.pop(context);
-        }
-      },
+      subtitulo: _currentStep == 1
+          ? "Ajustes del Grid"
+          : "Selección de Imágenes",
       cuerpo: Column(
         children: [
           // MOSTRAR FASE 1 O FASE 2
@@ -181,9 +196,12 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Expanded(
-      child: Center( // 1. Centramos el bloque horizontalmente
+      child: Center(
+        // 1. Centramos el bloque horizontalmente
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500), // 2. Limitamos ancho para tablets
+          constraints: const BoxConstraints(
+            maxWidth: 500,
+          ), // 2. Limitamos ancho para tablets
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -194,24 +212,42 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 20), // Margen superior
-
                         // 1. SELECTOR DE TAMAÑO
-                        const Text("1. ¿Cuántas imágenes se mostrarán en total?",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "1. ¿Cuántas imágenes se mostrarán en total?",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<int>(
                           initialValue: _gridSize,
                           decoration: InputDecoration(
                             border: const OutlineInputBorder(),
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: colorScheme.outlineVariant),
+                              borderSide: BorderSide(
+                                color: colorScheme.outlineVariant,
+                              ),
                             ),
                           ),
                           items: const [
-                            DropdownMenuItem(value: 4, child: Text("4 Imágenes (2x2)")),
-                            DropdownMenuItem(value: 6, child: Text("6 Imágenes (2x3)")),
-                            DropdownMenuItem(value: 9, child: Text("9 Imágenes (3x3)")),
-                            DropdownMenuItem(value: 12, child: Text("12 Imágenes (3x4)")),
+                            DropdownMenuItem(
+                              value: 4,
+                              child: Text("4 Imágenes (2x2)"),
+                            ),
+                            DropdownMenuItem(
+                              value: 6,
+                              child: Text("6 Imágenes (2x3)"),
+                            ),
+                            DropdownMenuItem(
+                              value: 9,
+                              child: Text("9 Imágenes (3x3)"),
+                            ),
+                            DropdownMenuItem(
+                              value: 12,
+                              child: Text("12 Imágenes (3x4)"),
+                            ),
                           ],
                           onChanged: (v) => setState(() {
                             _gridSize = v!;
@@ -222,20 +258,33 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                         const SizedBox(height: 30),
 
                         // 2. SELECTOR DE MODO
-                        const Text("2. ¿Cómo se eligen las imágenes incorrectas?",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "2. ¿Cómo se eligen las imágenes incorrectas?",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<bool>(
                           initialValue: _isRandom,
                           decoration: InputDecoration(
                             border: const OutlineInputBorder(),
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: colorScheme.outlineVariant),
+                              borderSide: BorderSide(
+                                color: colorScheme.outlineVariant,
+                              ),
                             ),
                           ),
                           items: const [
-                            DropdownMenuItem(value: true, child: Text("Aleatorias")),
-                            DropdownMenuItem(value: false, child: Text("Seleccionar las incorrectas")),
+                            DropdownMenuItem(
+                              value: true,
+                              child: Text("Aleatorias"),
+                            ),
+                            DropdownMenuItem(
+                              value: false,
+                              child: Text("Seleccionar las incorrectas"),
+                            ),
                           ],
                           onChanged: (v) {
                             setState(() {
@@ -248,18 +297,19 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0, left: 4.0),
                           child: Text(
-                              _isRandom
-                                  ? "La aplicación rellenará las imágenes incorrectas al azar."
-                                  : "Deberás seleccionar las imagenes incorrectas manualmente.",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: colorScheme.onSurface,
-                              )
-
+                            _isRandom
+                                ? "La aplicación rellenará las imágenes incorrectas al azar."
+                                : "Deberás seleccionar las imagenes incorrectas manualmente.",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         ),
 
-                        const SizedBox(height: 20), // Espacio extra al final del scroll
+                        const SizedBox(
+                          height: 20,
+                        ), // Espacio extra al final del scroll
                       ],
                     ),
                   ),
@@ -282,10 +332,13 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                     ),
                     child: const Text(
                       "CONTINUAR A SELECCIÓN",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -307,7 +360,9 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
     bool hayCorrecta = _selectedCorrectImageId != null;
 
     // Comprobacion para guardar
-    bool listoParaGuardar = hayCorrecta && (_isRandom || distractoresActuales == distractoresNecesarios);
+    bool listoParaGuardar =
+        hayCorrecta &&
+        (_isRandom || distractoresActuales == distractoresNecesarios);
 
     return Expanded(
       child: Column(
@@ -319,12 +374,18 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             child: Column(
               children: [
                 // HUECO IMAGEN CORRECTA
-                const Text("IMAGEN CORRECTA (CONTRASEÑA)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const Text(
+                  "IMAGEN CORRECTA (CONTRASEÑA)",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
                 const SizedBox(height: 5),
                 InkWell(
-                  onTap: hayCorrecta ? () => setState(() => _selectedCorrectImageId = null) : null,
+                  onTap: hayCorrecta
+                      ? () => setState(() => _selectedCorrectImageId = null)
+                      : null,
                   child: Container(
-                    width: 80, height: 80,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(
@@ -332,23 +393,33 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                         width: hayCorrecta ? 4 : 2,
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [if(hayCorrecta) BoxShadow(color: Colors.green.withValues(alpha: 0.2), blurRadius: 5)]
+                      boxShadow: [
+                        if (hayCorrecta)
+                          BoxShadow(
+                            color: Colors.green.withValues(alpha: 0.2),
+                            blurRadius: 5,
+                          ),
+                      ],
                     ),
                     child: hayCorrecta
-                      ? _previewImagen(_selectedCorrectImageId!)
-                      : const Icon(Icons.lock_outline, size: 40, color: Colors.grey),
-                  )
-
+                        ? _previewImagen(_selectedCorrectImageId!)
+                        : const Icon(
+                            Icons.lock_outline,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                  ),
                 ),
 
                 // HUECOS IMAGENES DISTRACTORAS (si es manual)
                 if (!_isRandom) ...[
                   const SizedBox(height: 10),
-                  Text("DISTRACTORES ($distractoresActuales / $distractoresNecesarios)",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12
-                      )
+                  Text(
+                    "DISTRACTORES ($distractoresActuales / $distractoresNecesarios)",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
 
                   const SizedBox(height: 5),
@@ -367,30 +438,42 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                         }
 
                         return InkWell(
-                          onTap: id != null ? () => setState(() => _selectedDistractoras.remove(id)) : null,
+                          onTap: id != null
+                              ? () => setState(
+                                  () => _selectedDistractoras.remove(id),
+                                )
+                              : null,
                           child: Container(
-                            width: 50, height: 50,
+                            width: 50,
+                            height: 50,
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               border: Border.all(
-                                color: id != null ? Colors.red : Colors.grey[300]!,
+                                color: id != null
+                                    ? Colors.red
+                                    : Colors.grey[300]!,
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: id != null
-                              ? _previewImagen(id)
-                              : const Icon(Icons.add, color: Colors.grey)
+                                ? _previewImagen(id)
+                                : const Icon(Icons.add, color: Colors.grey),
                           ),
                         );
-
                       },
                     ),
-                  )
+                  ),
                 ] else
                   const Padding(
                     padding: EdgeInsets.all(8.0),
-                    child: Text("El resto de imágenes serán aleatorias.", style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
+                    child: Text(
+                      "El resto de imágenes serán aleatorias.",
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -403,64 +486,71 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             child: _isLoadingLibrary
                 ? const Center(child: CircularProgressIndicator())
                 : _biblioteca.isEmpty
-                  ? const Center(child: Text("No hay imágenes en la biblioteca"))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(8),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                ? const Center(child: Text("No hay imágenes en la biblioteca"))
+                : GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4, // 4 columnas
                           crossAxisSpacing: 8,
-                          mainAxisSpacing: 8
-                      ),
-                      itemCount: _biblioteca.length,
-                      itemBuilder: (context, index) {
-                        final picto = _biblioteca[index];
-                        bool esCorrecta = _selectedCorrectImageId == picto.id;
-                        bool esDistractor = _selectedDistractoras.containsKey(picto.id);
+                          mainAxisSpacing: 8,
+                        ),
+                    itemCount: _biblioteca.length,
+                    itemBuilder: (context, index) {
+                      final picto = _biblioteca[index];
+                      bool esCorrecta = _selectedCorrectImageId == picto.id;
+                      bool esDistractor = _selectedDistractoras.containsKey(
+                        picto.id,
+                      );
 
-                        return InkWell(
-                          onTap: () => _manejarClickImagen(picto),
-                          child: Stack(
-                            children: [
-                              // La Imagen
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: esCorrecta
+                      return InkWell(
+                        onTap: () => _manejarClickImagen(picto),
+                        child: Stack(
+                          children: [
+                            // La Imagen
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: esCorrecta
                                     ? Border.all(color: Colors.green, width: 4)
                                     : esDistractor
-                                      ? Border.all(color: Colors.red, width: 3)
-                                      : null,
+                                    ? Border.all(color: Colors.red, width: 3)
+                                    : null,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                // USAMOS WIDGET CON CACHE
+                                child: ImagenStorage(
+                                  rutaGs: picto.url,
+                                  fit: BoxFit.cover,
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  // USAMOS WIDGET CON CACHE
-                                  child: ImagenStorage(
-                                    rutaGs: picto.url,
-                                    fit: BoxFit.cover,
+                              ),
+                            ),
+                            // Indicador visual (Check o X)
+                            if (esCorrecta || esDistractor)
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    esCorrecta
+                                        ? Icons.check_circle
+                                        : Icons.remove_circle,
+                                    color: esCorrecta
+                                        ? Colors.green
+                                        : Colors.red,
+                                    size: 20,
                                   ),
                                 ),
                               ),
-                              // Indicador visual (Check o X)
-                              if (esCorrecta || esDistractor)
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle
-                                    ),
-                                    child: Icon(
-                                      esCorrecta ? Icons.check_circle : Icons.remove_circle,
-                                      color: esCorrecta ? Colors.green : Colors.red,
-                                      size: 20,
-                                    ),
-                                  ),
-                                )
-                            ],
-                          ),
-                        );
-                      },
+                          ],
+                        ),
+                      );
+                    },
                   ),
           ),
 
@@ -469,19 +559,26 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             width: double.infinity,
             height: 60,
             child: ElevatedButton(
-              onPressed: listoParaGuardar && !_isSaving ? _guardarConfiguracion : null,
+              onPressed: listoParaGuardar && !_isSaving
+                  ? _guardarConfiguracion
+                  : null,
               style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primaryContainer,
-                  foregroundColor: colorScheme.onPrimaryContainer,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero)
+                backgroundColor: colorScheme.primaryContainer,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
               ),
               child: _isSaving
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(listoParaGuardar ? "GUARDAR CONFIGURACION" : "SELECCIONA LAS IMÁGENES...",
-                        style: const TextStyle(fontWeight: FontWeight.bold)
-                  ),
+                  : Text(
+                      listoParaGuardar
+                          ? "GUARDAR CONFIGURACION"
+                          : "SELECCIONA LAS IMÁGENES...",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
             ),
-          )
+          ),
         ],
       ),
     );

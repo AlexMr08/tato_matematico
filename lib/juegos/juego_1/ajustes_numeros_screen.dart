@@ -10,10 +10,10 @@ class AjustesNumerosScreen extends StatefulWidget {
   final bool initialMostrarPuntuacion;
 
   const AjustesNumerosScreen({
-    Key? key,
+    super.key,
     required this.initialSettings,
     required this.initialMostrarPuntuacion,
-  }) : super(key: key);
+  });
 
   @override
   _AjustesNumerosScreenState createState() => _AjustesNumerosScreenState();

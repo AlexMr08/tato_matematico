@@ -1,9 +1,21 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:tato_matematico/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
+
+/// **Nombre de la Clase: `ConfigSecuenciaScreen`**
+///
+/// **Descripción:** clase que permite configurar la secuencia de imagenes para la contraseña
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class ConfigSecuenciaScreen extends StatefulWidget {
   final Alumno alumno;
@@ -150,10 +162,10 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldComun(
+    return ScaffoldComunV2(
       titulo: widget.alumno.nombre,
       subtitulo: _currentStep == 1 ? "Ajustes de Secuencia" : "Definir Orden",
-      funcionSalir: () {
+      funcionLeading: () {
         if (_currentStep == 2) {
           setState(() => _currentStep = 1);
         } else {

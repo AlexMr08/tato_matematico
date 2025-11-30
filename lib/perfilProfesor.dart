@@ -15,12 +15,26 @@ import 'package:tato_matematico/holders/profesorHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
+/// **Nombre de la Clase: `PerfilProfesor`**
+///
+/// **Descripción:** Clase que muestra el perfil de un profesor,
+/// permitiendo editar su nombre, su foto de perfil y su contraseña.
+/// Ademas, permite ver sus clases asociadas.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class PerfilProfesor extends StatefulWidget {
   final Profesor profesor;
   final List<Clase> clases;
   final bool propio;
 
-  PerfilProfesor({
+  const PerfilProfesor({
     super.key,
     required this.profesor,
     required this.clases,
@@ -171,11 +185,11 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
             child: ListView.separated(
               padding: EdgeInsets.zero,
               itemCount: widget.clases.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 0),
+              separatorBuilder: (_, _) => const SizedBox(height: 0),
               itemBuilder: (context, index) {
                 return widget.clases[index].widgetClase(context, () {
                   navegar(
-                    EditarClaseV2(
+                    EditarClase(
                       clase: widget.clases[index],
                       allAlumnos: alumnos,
                     ),
@@ -244,8 +258,9 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
         imageQuality: 80, // Calidad JPEG al 80%
       );
 
-      if (pickedFile == null)
+      if (pickedFile == null) {
         return; // Si no se selecciono ninguna imagen, salimos
+      }
 
       setState(() {
         _isUploadingImage = true;

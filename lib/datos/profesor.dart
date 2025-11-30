@@ -5,6 +5,18 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
+/// **Nombre de la Clase: `Profesor`**
+///
+/// **Descripción:** clase que representa a un profesor en el sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class Profesor {
   String id;
   String nombre;
@@ -115,8 +127,6 @@ class Profesor {
       }
     }
 
-    // C. Si no, descargar de Firebase (aquí llamas a tu lógica de descarga existente)
-    // Asumo que tienes un método 'descargarImagen' que baja el archivo y actualiza 'imagenLocal'
     await descargarImagen(tempDir);
 
     // Verificar si se descargó bien
@@ -137,18 +147,29 @@ class Profesor {
       onTap: navegar,
     );
   }
-
 }
+
+/// **Nombre de la Clase: `_ProfesorCardInternal`**
+///
+/// **Descripción:** clase que gestiona como se muestra la tarjeta de un profesor.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class _ProfesorCardInternal extends StatefulWidget {
   final Profesor profesor;
   final VoidCallback onTap;
 
   const _ProfesorCardInternal({
-    Key? key,
+    super.key,
     required this.profesor,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<_ProfesorCardInternal> createState() => _ProfesorCardInternalState();

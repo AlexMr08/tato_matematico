@@ -5,6 +5,18 @@ import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/perfilProfesor.dart';
 import '../holders/clasesHolder.dart';
 
+/// **Nombre de la Clase: `EditarProfesor`**
+///
+/// **Descripción:** Clase que permite editar los datos de un profesor existente en la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se creo la clase para modificar los datos de un profesor
+///
+
 class EditarProfesor extends StatefulWidget {
   final Profesor profesor;
 

@@ -6,6 +6,18 @@ import 'dart:convert';
 
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
+/// **Nombre de la Clase: `AgregarAlumno`**
+///
+/// **Descripción:** clase que permite agregar un nuevo alumno al sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class AgregarAlumno extends StatefulWidget {
   const AgregarAlumno({super.key});
 
@@ -67,11 +79,11 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
       "tipoLogin": "alfanumerica",
     });
 
-    snackBarExito(context, "Alumno añadido correctamente");
-
-    _nombreController.clear();
-
-    Navigator.of(context).pop(true);
+    if (mounted) {
+      snackBarExito(context, "Alumno añadido correctamente");
+      _nombreController.clear();
+      Navigator.of(context).pop(true);
+    }
   }
 
   @override

@@ -1,5 +1,17 @@
 import "package:flutter/material.dart";
 
+/// **Nombre de la Clase: `MaterialTheme`**
+///
+/// **Descripción:** Clase que define los temas de Material Design 3 para la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class MaterialTheme {
   final TextTheme textTheme;
 
@@ -344,7 +356,7 @@ class MaterialTheme {
        bodyColor: colorScheme.onSurface,
        displayColor: colorScheme.onSurface,
      ),
-     scaffoldBackgroundColor: colorScheme.background,
+     scaffoldBackgroundColor: colorScheme.surface,
      canvasColor: colorScheme.surface,
   );
 

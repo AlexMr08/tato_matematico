@@ -2,6 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+/// **Nombre de la Clase: `ImagenStorage`**
+///
+/// **Descripción:** Clase encargada de permitir la carga y visualización
+/// de imágenes almacenadas en Firebase Storage utilizando una ruta GS.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class ImagenStorage extends StatefulWidget {
   final String rutaGs;
   final double? alto;

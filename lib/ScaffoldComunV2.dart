@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Widget que crea un Scaffold personalizado para las pantallas comunes
+/// **Nombre de la Clase: `ScaffoldComunV2`**
+///
+/// **Descripción:** Clase que genera un Scaffold personalizado con AppBar y cuerpo definido por el usuario.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class ScaffoldComunV2 extends StatelessWidget {
   final String titulo;
@@ -26,7 +36,7 @@ class ScaffoldComunV2 extends StatelessWidget {
     this.funcionLeading,
     this.header,
     this.subtitulo,
-    this.iconoLeading
+    this.iconoLeading,
   });
 
   /// Construye el widget Scaffold con AppBar y cuerpo personalizado
@@ -35,14 +45,15 @@ class ScaffoldComunV2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: iconoLeading != null ?
-        InkWell(
-          onTap: funcionLeading,
-          child: Icon(
-            iconoLeading,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-        ): null,
+        leading: iconoLeading != null
+            ? InkWell(
+                onTap: funcionLeading,
+                child: Icon(
+                  iconoLeading,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              )
+            : null,
         title: Column(
           spacing: 4,
           children: [
@@ -52,12 +63,12 @@ class ScaffoldComunV2 extends StatelessWidget {
             ),
             ?subtitulo != null
                 ? Text(
-              subtitulo!,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            )
+                    subtitulo!,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
                 : null,
           ],
         ),

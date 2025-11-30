@@ -3,12 +3,24 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 
+/// **Nombre de la Clase: `ProfesoresHolder`**
+///
+/// **Descripción:** Clase que permite gestionar el estado de todos los profesores almacenados en la base de datos en tiempo real.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class ProfesoresHolder extends ChangeNotifier {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
-  List<Profesor> _profesores = [];
+  final List<Profesor> _profesores = [];
   bool _isLoading = true;
-  bool _isInit = false;
+  final bool _isInit = false;
 
   bool get isLoading => _isLoading;
   bool get isInit => _isInit;

@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/configColorAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/alumnoScaffold.dart';
+import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'juego.dart';
-import 'colorPicker.dart';
+
+/// **Nombre de la Clase: `GamesMenu**
+///
+/// **Descripción:** clase que permite cambiar distintos colores de la interfaz de un alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha cambiado la ruta de los ajustes
+///
 
 class GamesMenu extends StatefulWidget {
-  GamesMenu({super.key});
+  const GamesMenu({super.key});
   @override
   State<GamesMenu> createState() => _GamesMenuState();
 }
@@ -77,19 +89,20 @@ class _GamesMenuState extends State<GamesMenu> {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
-        mostrarDialogoSiNoAlumnoV2(context, "Salir", "¿Seguro que quieres salir?").then((
-          confirmed,
-        ) {
+        mostrarDialogoSiNoAlumnoV2(
+          context,
+          "Salir",
+          "¿Seguro que quieres salir?",
+        ).then((confirmed) {
           salirFunc(confirmed, alumnoHolder, navigator);
         });
       },
-      child: AlumnoScaffold(
+      child: ScaffoldAlumno(
         alumno: alumno,
         posicion: posicionBarra,
         hasEstadisticas: true,
         hasAjustes: true,
         onVolver: () {
-
           final currentFocus = FocusScope.of(context).focusedChild;
 
           mostrarDialogoSiNoAlumnoV2(
@@ -97,7 +110,6 @@ class _GamesMenuState extends State<GamesMenu> {
             "Salir",
             "¿Seguro que quieres salir?",
           ).then((confirmed) {
-
             if (confirmed != true && currentFocus != null) {
               currentFocus.requestFocus();
             }
@@ -106,7 +118,7 @@ class _GamesMenuState extends State<GamesMenu> {
           });
         },
         onAjustes: () {
-          navegar(ConfigColor(alum: alumno), context);
+          navegar(ConfigColorAlumno(alum: alumno), context);
         },
         onEstadisticas: () {},
         child: Padding(

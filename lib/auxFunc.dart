@@ -219,7 +219,6 @@ Future<bool?> mostrarDialogoSiNoAlumno(
 bool isTablet(BuildContext context) {
   final size = MediaQuery.of(context).size;
   final orientation = MediaQuery.of(context).orientation;
-  print('Tamaño: ${size.height}, Orientación: $orientation');
 
   // Tablet real: ancho grande incluso en vertical
   if (orientation == Orientation.portrait && size.width >= 600) return true;

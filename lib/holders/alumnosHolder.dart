@@ -4,6 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/clase.dart';
 
+/// **Nombre de la Clase: `AlumnosHolder`**
+///
+/// **Descripción:** Clase que permite gestionar el estado de todos los alumnos almacenados en la base de datos en tiempo real.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class AlumnosHolder extends ChangeNotifier {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 

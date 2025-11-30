@@ -8,6 +8,18 @@ import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
+/// **Nombre de la Clase: `AgregarClase`**
+///
+/// **Descripción:** clase que permite agregar una nueva clase al sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 /*
   Se han hecho pruebas unitarias para asegurar que funciona correctamente:
   - No se puede crear una clase sin nombre

@@ -12,7 +12,6 @@ import 'package:tato_matematico/splashScreen.dart';
 import 'package:tato_matematico/theme.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
-
 import 'holders/profesorHolder.dart';
 
 Future<void> main() async {

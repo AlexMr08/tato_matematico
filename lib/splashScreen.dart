@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
 import 'package:tato_matematico/holders/clasesHolder.dart';
-import 'package:tato_matematico/login/seleccionClase.dart'; // O tu pantalla principal real
+import 'package:tato_matematico/login/seleccionClase.dart';
+
+/// **Nombre de la Clase: `SplashScreen`**
+///
+/// **Descripción:** Clase que se encarga de mostrar una pantalla de bienvenida mientras se cargan los datos iniciales de la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Pequeños cambios en como se maneja la carga
+///
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -15,8 +27,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Opcional: Forzar un tiempo mínimo de splash para que no sea un parpadeo feo
-    // si el internet es muy rápido.
   }
 
   @override
@@ -25,21 +35,15 @@ class _SplashScreenState extends State<SplashScreen> {
     final clasesHolder = context.watch<ClasesHolder>();
     final alumnosHolder = context.watch<AlumnosHolder>();
 
-    // final alumnoHolder = context.watch<AlumnoHolder>(); // Descomenta si también quieres esperar a los alumnos
-
     // 2. Verificamos si siguen cargando
-    bool cargando = clasesHolder.isLoading && alumnosHolder.isLoading;
-    // bool cargando = clasesHolder.isLoading || alumnoHolder.isLoading;
+    bool cargando = clasesHolder.isLoading || alumnosHolder.isLoading;
 
     // 3. Si ya terminaron, navegamos a la pantalla principal
-    // Usamos addPostFrameCallback para evitar navegar durante el build
     if (!cargando) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Navegar reemplazando para que no puedan volver al Splash
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (_) => SeleccionClase()), // Tu pantalla inicial real
-        );
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => SeleccionClase()));
       });
     }
 
@@ -51,11 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Tu logo
-            Image.asset(
-              'assets/images/logo.webp', // Asegúrate de tener esta imagen
-              width: 150,
-              height: 150,
-            ),
+            Image.asset('assets/images/logo.webp', width: 200, height: 200),
             const SizedBox(height: 30),
             // Indicador de carga
             const CircularProgressIndicator(),
@@ -63,9 +63,9 @@ class _SplashScreenState extends State<SplashScreen> {
             const Text(
               "Cargando contenido...",
               style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
               ),
             ),
           ],

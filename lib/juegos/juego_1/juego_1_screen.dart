@@ -3,7 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/alumnoScaffold.dart';
+import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart'; // Importar para la función de color
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
@@ -226,7 +226,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
       _ => PosicionBarra.abajo,
     };
 
-    return AlumnoScaffold(
+    return ScaffoldAlumno(
       posicion: posicionBarra,
       alumno: _alumno,
       onVolver: () {},

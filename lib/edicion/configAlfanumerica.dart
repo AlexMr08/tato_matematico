@@ -2,8 +2,20 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/ScaffoldComun.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
+
+/// **Nombre de la Clase: `ConfigAlfanumericaScreen`**
+///
+/// **Descripción:** clase que permite configurar la contraseña alfanumérica de un alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class ConfigAlfanumericaScreen extends StatefulWidget {
   final Alumno alumno;
@@ -118,10 +130,9 @@ class _ConfigAlfanumericaScreenState extends State<ConfigAlfanumericaScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ScaffoldComun(
+    return ScaffoldComunV2(
       titulo: widget.alumno.nombre,
       subtitulo: "Contraseña Alfanumérica",
-      funcionSalir: () => Navigator.pop(context),
       cuerpo: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/auxFunc.dart'; // Importar para usar getTextColorForBackground
+import 'package:tato_matematico/auxFunc.dart';
+
+/// **Nombre de la Clase: `Juego**
+///
+/// **Descripción:** clase que representa un juego dentro de la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se han añadido la descripcion y metadatos de control
+///
 
 class Juego {
   String id;
@@ -17,7 +29,8 @@ class Juego {
   });
 
   Widget widgetJuego(BuildContext context, VoidCallback navegar, Color? color) {
-    final Color backgroundColor = color ?? Theme.of(context).colorScheme.primaryContainer;
+    final Color backgroundColor =
+        color ?? Theme.of(context).colorScheme.primaryContainer;
     final Color contentColor = getTextColorForBackground(backgroundColor);
 
     return InkWell(

@@ -3,9 +3,22 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:cryptography/cryptography.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
+
+/// **Nombre de la Clase: `AgregarProfesor`**
+///
+/// **Descripción:** clase que permite agregar un nuevo profesor al sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class AgregarProfesor extends StatefulWidget {
   const AgregarProfesor({super.key});
@@ -61,9 +74,9 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
         .equalTo(username)
         .once();
     if (snapshot.snapshot.value != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ese nombre de usuario ya existe")),
-      );
+      if(mounted){
+        snackBarAviso(context, "Ese nombre de usuario ya existe");
+      }
       return;
     }
 
@@ -116,9 +129,8 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldComun(
+    return ScaffoldComunV2(
       titulo: "Añadir profesor",
-      funcionSalir: () => {Navigator.pop(context)},
       cuerpo: SingleChildScrollView(
         padding: EdgeInsets.all(20.0),
         child: Column(

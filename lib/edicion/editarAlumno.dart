@@ -2,10 +2,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/ScaffoldComun.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/colorPicker.dart';
+import 'package:tato_matematico/configColorProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
@@ -14,7 +14,21 @@ import 'package:tato_matematico/edicion/configSecuencia.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
+/// **Nombre de la Clase: `EditarAlumno`**
+///
+/// **Descripción:** clase que permite editar los datos de un alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class EditarAlumno extends StatefulWidget {
+  const EditarAlumno({super.key});
+
   @override
   State<EditarAlumno> createState() => _EditarAlumnoState();
 }
@@ -131,8 +145,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
         imageQuality: 80, // Calidad JPEG al 80%
       );
 
-      if (pickedFile == null)
+      if (pickedFile == null) {
         return; // Si no se selecciono ninguna imagen, salimos
+      }
 
       setState(() {
         _isUploadingImage = true;
@@ -307,12 +322,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
             ? null
             : () => _mostrarMenuOrigen(context, alumno);
 
-        return ScaffoldComun(
+        return ScaffoldComunV2(
           titulo: 'Editar Alumno',
           subtitulo: alumno.nombre,
-          funcionSalir: () {
-            Navigator.pop(context);
-          },
           cuerpo: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -512,7 +524,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<int>(
-                                value: posicionBarra,
+                                initialValue: posicionBarra,
                                 items: const [
                                   DropdownMenuItem(
                                     value: 0,
@@ -554,7 +566,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                           radio: 16,
                           texto: "Colores",
                           onPressed: () {
-                            navegar(ConfigColor(alum: alumno), context);
+                            navegar(ConfigColorProfesor(alum: alumno), context);
                           },
                         ),
                         const SizedBox(height: 16),

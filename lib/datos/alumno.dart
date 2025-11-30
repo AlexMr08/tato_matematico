@@ -8,6 +8,18 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 // Asumo que tienes una clase Juego1Settings en el path especificado
 // y que la clase Alumno se está definiendo aquí.
 
+/// **Nombre de la Clase: `Alumno`**
+///
+/// **Descripción:** clase que representa a un alumno en el sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class Alumno {
   String id;
   String nombre;
@@ -65,8 +77,9 @@ class Alumno {
     posicionBarra,
     // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
   }) : _imagen = imagen,
-        juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
-
+       juego1Settings =
+           juego1Settings ??
+           Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
     // El cuerpo del constructor permanece igual
     if (volverDerecha != null) {
       _volverDerecha = volverDerecha;
@@ -136,7 +149,6 @@ class Alumno {
     // Usamos _imagen en lugar de imagen, ya que es el campo real
     return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen, volverDerecha: $volverDerecha}';
   }
-
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
     Color? colorFondoLoc, colorBotonesLoc, colorNavLoc, colorSeleccionLoc;
@@ -224,9 +236,9 @@ class Alumno {
   }
 
   Future<void> descargarImagen(
-      Directory tempDir, {
-        int maxBytes = 10 * 1024 * 1024,
-      }) async {
+    Directory tempDir, {
+    int maxBytes = 10 * 1024 * 1024,
+  }) async {
     // Usamos _imagen que es el campo privado y real
     if (_imagen == null || _imagen!.isEmpty) {
       imagenLocal = '';
@@ -306,9 +318,9 @@ class Alumno {
                   backgroundImage: cachedImage,
                   child: cachedImage == null
                       ? Text(
-                    nombre.isNotEmpty ? nombre[0] : '?',
-                    style: TextStyle(fontSize: size * 0.4),
-                  )
+                          nombre.isNotEmpty ? nombre[0] : '?',
+                          style: TextStyle(fontSize: size * 0.4),
+                        )
                       : null,
                 ),
               ),
@@ -342,9 +354,9 @@ class Alumno {
           backgroundImage: imageProvider,
           child: imageProvider == null
               ? Text(
-            nombre.isNotEmpty ? nombre[0] : '?',
-            style: const TextStyle(fontSize: 20),
-          )
+                  nombre.isNotEmpty ? nombre[0] : '?',
+                  style: const TextStyle(fontSize: 20),
+                )
               : null,
         ),
         title: Text(
@@ -362,45 +374,46 @@ class Alumno {
 
   Widget widgetAlumnoV2({required VoidCallback onTap}) {
     // Versión FINAL: Añade ValueKey para que Flutter distinga los widgets cuando la lista cambia
-    return _AlumnViewCard(
-        key: ValueKey(id),
-        alumno: this,
-        onTap: onTap
-    );
+    return _AlumnViewCard(key: ValueKey(id), alumno: this, onTap: onTap);
   }
 
   Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
     // Versión FINAL: Añade ValueKey basada en el ID y la URL de la imagen para forzar reconstrucción si cambia la imagen
     return _TeacherViewCard(
-        key: ValueKey("${id}_${_imagen ?? ''}"),
-        alumno: this,
-        onTap: onTap,
-        icono: icono
+      key: ValueKey("${id}_${_imagen ?? ''}"),
+      alumno: this,
+      onTap: onTap,
+      icono: icono,
     );
   }
 }
 
-// -----------------------------------------------------------------------------
-// --- _AlumnViewCard (StatefulWidget) ---
-// -----------------------------------------------------------------------------
-
+/// **Nombre de la Clase: `_AlumnViewCard`**
+///
+/// **Descripción:** clase que gestiona como se ve el widget del alumno en vista de alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 class _AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
   const _AlumnViewCard({
-    Key? key, // Versión FINAL: Se añade Key
+    super.key, // Versión FINAL: Se añade Key
     required this.alumno,
-    required this.onTap
-  }) : super(key: key); // Versión FINAL: Se usa Key
+    required this.onTap,
+  }); // Versión FINAL: Se usa Key
 
   @override
   State<_AlumnViewCard> createState() => _AlumnViewCardState();
-
 }
 
 class _AlumnViewCardState extends State<_AlumnViewCard> {
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -443,9 +456,17 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
   }
 }
 
-// -----------------------------------------------------------------------------
-// --- _TeacherViewCard (StatefulWidget) ---
-// -----------------------------------------------------------------------------
+/// **Nombre de la Clase: `_TeacherViewCard`**
+///
+/// **Descripción:** clase que gestiona la vista de un alumno en la perspectiva del profesor.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class _TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
@@ -453,18 +474,17 @@ class _TeacherViewCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _TeacherViewCard({
-    Key? key, // Versión FINAL: Se añade Key
+    super.key, // Versión FINAL: Se añade Key
     required this.alumno,
     required this.onTap,
     required this.icono,
-  }) : super(key: key); // Versión FINAL: Se usa Key
+  }); // Versión FINAL: Se usa Key
 
   @override
   State<_TeacherViewCard> createState() => _TeacherViewCardState();
 }
 
 class _TeacherViewCardState extends State<_TeacherViewCard> {
-
   @override
   Widget build(BuildContext context) {
     return Card(

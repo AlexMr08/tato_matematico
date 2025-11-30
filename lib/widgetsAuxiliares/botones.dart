@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// **Nombre de la Clase: `BotonConIcono`**
+///
+/// **Descripción:** Clase que genera un boton con icono y texto personalizable para la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 class BotonConIcono extends StatelessWidget {
   final dynamic icono;
   final String texto;
@@ -71,6 +82,17 @@ class BotonConIcono extends StatelessWidget {
   }
 }
 
+/// **Nombre de la Clase: `BotonSinIcono`**
+///
+/// **Descripción:** Clase que genera un boton con texto personalizable para la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 class BotonSinIcono extends StatelessWidget {
   final String texto;
   final VoidCallback? onPressed;
@@ -117,11 +139,22 @@ class BotonSinIcono extends StatelessWidget {
   }
 }
 
+/// **Nombre de la Clase: `BotonIcono`**
+///
+/// **Descripción:** Clase que genera un boton con solo un icono personalizable para la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 class BotonIcono extends StatelessWidget {
   final dynamic icono;
   final VoidCallback? onPressed;
   final Color? color;
-  BotonIcono({super.key, required this.icono, required this.onPressed, this.color})
+  const BotonIcono({super.key, required this.icono, required this.onPressed, this.color})
     : assert(
         icono is IconData || icono is String,
         'Los iconos deben ser un String o un IconData, el alternativo puede ser null',

@@ -16,9 +16,20 @@ import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/clase.dart';
 import 'package:tato_matematico/agregar/agregarAlumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
 import 'datos/alumno.dart';
 import 'holders/profesorHolder.dart';
+
+/// **Nombre de la Clase: `MainMenuProfe`**
+///
+/// **Descripción:** Clase encargada de mostrar el menu de los profesores.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Andrés Ignacio Mardones Domcke
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class MainMenuProfe extends StatefulWidget {
   const MainMenuProfe({super.key});
@@ -275,11 +286,11 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     label: 'Alumnos',
                   ),
                   const NavigationDestination(
-                    icon: const Icon(Icons.school),
+                    icon: Icon(Icons.school),
                     label: 'Profesores',
                   ),
                   const NavigationDestination(
-                    icon: const Icon(Icons.menu_book),
+                    icon: Icon(Icons.menu_book),
                     label: 'Clases',
                   ),
                   const NavigationDestination(
@@ -293,7 +304,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     label: 'Alumnos',
                   ),
                   const NavigationDestination(
-                    icon: const Icon(Icons.menu_book),
+                    icon: Icon(Icons.menu_book),
                     label: 'Clases',
                   ),
                   const NavigationDestination(
@@ -372,7 +383,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     itemBuilder: (BuildContext context, int index) {
                       return _clasesFiltradas[index].widgetClase(context, () {
                         navegar(
-                          EditarClaseV2(
+                          EditarClase(
                             clase: _clasesFiltradas[index],
                             allAlumnos: _alumnos,
                           ),

@@ -4,6 +4,18 @@ import 'package:path_provider/path_provider.dart';
 
 typedef ImagenLoader = Future<File?> Function(Directory tempDir);
 
+/// **Nombre de la Clase: `FotoPerfil`**
+///
+/// **Descripción:** Clase que permite mostrar una foto de perfil circular.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
 class FotoPerfil extends StatefulWidget {
   final String nombre;
   final String idUnico;

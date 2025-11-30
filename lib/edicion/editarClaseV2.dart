@@ -10,17 +10,29 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import '../auxFunc.dart';
 
-class EditarClaseV2 extends StatefulWidget {
+/// **Nombre de la Clase: `EditarClase`**
+///
+/// **Descripción:** Clase que permite editar los datos de una clase existente en la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Andrés Ignacio Mardones Domcke
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
+
+class EditarClase extends StatefulWidget {
   final Clase clase;
   final List<Alumno> allAlumnos;
 
-  const EditarClaseV2({
+  const EditarClase({
     super.key,
     required this.clase,
     required this.allAlumnos,
   });
   @override
-  State<EditarClaseV2> createState() => _EditarClaseV2State();
+  State<EditarClase> createState() => _EditarClaseState();
 }
 
 /*
@@ -35,7 +47,7 @@ class EditarClaseV2 extends StatefulWidget {
   - Se pueden eliminar alumnos sin problemas
    */
 
-class _EditarClaseV2State extends State<EditarClaseV2> {
+class _EditarClaseState extends State<EditarClase> {
   late TextEditingController _nombreController;
   final DatabaseReference dbref = FirebaseDatabase.instance.ref();
   late List<Alumno> alumnos;

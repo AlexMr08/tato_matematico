@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class Juego2Page extends StatefulWidget {
-  const Juego2Page({Key? key}) : super(key: key);
+  const Juego2Page({super.key});
 
   @override
   State<Juego2Page> createState() => _Juego2PageState();

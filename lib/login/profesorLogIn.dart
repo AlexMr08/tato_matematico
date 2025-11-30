@@ -4,12 +4,23 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
-import '../ScaffoldComun.dart';
 import '../holders/profesorHolder.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import '../mainMenuProfe.dart';
+
+/// **Nombre de la Clase: `ProfesorLogIn`**
+///
+/// **Descripción:** Clase que permite iniciar sesion a los profesores.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** ?
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 
 class ProfesorLogIn extends StatefulWidget {
   const ProfesorLogIn({super.key});
@@ -98,13 +109,8 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldComun(
+    return ScaffoldComunV2(
       titulo: 'Inicio de sesion del profesor',
-      funcionSalir: Navigator.canPop(context)
-          ? () => Navigator.pop(context)
-          : null,
-      fab: null,
-      navBar: null,
       cuerpo: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -196,11 +202,9 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
       saltBytes.add(int.parse(hexByte, radix: 16));
     }
 
-    final nonce = await SecretKey(saltBytes);
-
     final secretKey = await pbkdf2.deriveKey(
       secretKey: SecretKey(utf8.encode(password)),
-      nonce: await nonce.extractBytes(),
+      nonce: await SecretKey(saltBytes).extractBytes(),
     );
 
     final hashBytes = await secretKey.extractBytes();
