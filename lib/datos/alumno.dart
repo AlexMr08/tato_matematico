@@ -2,8 +2,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:path_provider/path_provider.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
@@ -21,6 +19,7 @@ class Alumno {
   Color? _colorFondo;
   Color? _colorBarraNav;
   Color? _colorBotones;
+  Color? _colorSeleccion;
   bool _volverDerecha = false;
   int? posicionBarra;
   // Versión FINAL: Usamos File? foto para la caché en memoria/disco
@@ -49,6 +48,7 @@ class Alumno {
     Color? colorFondo,
     Color? colorBarraNav,
     Color? colorBotones,
+    Color? colorSeleccion,
     this.permisoAjustesJuego1 = true,
     this.permisoEstadisticasJuego1 = true,
     this.mostrarPuntuacionJuego1 = true,
@@ -79,6 +79,9 @@ class Alumno {
     }
     if (colorBotones != null) {
       _colorBotones = colorBotones;
+    }
+    if (colorSeleccion != null) {
+      _colorSeleccion = colorSeleccion;
     }
     if (posicionBarra != null) {
       this.posicionBarra = posicionBarra;
@@ -122,6 +125,12 @@ class Alumno {
     _colorBotones = value;
   }
 
+  Color? get colorSeleccion => _colorSeleccion;
+
+  set colorSeleccion(Color? value) {
+    _colorSeleccion = value;
+  }
+
   @override
   String toString() {
     // Usamos _imagen en lugar de imagen, ya que es el campo real
@@ -130,7 +139,7 @@ class Alumno {
 
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
-    Color? colorFondoLoc, colorBotonesLoc, colorNavLoc;
+    Color? colorFondoLoc, colorBotonesLoc, colorNavLoc, colorSeleccionLoc;
     if (data['colorFondo'] != null) {
       // Manejo de null con operador de nulidad seguro
       final colorStr = data['colorFondo'] as String?;
@@ -155,6 +164,14 @@ class Alumno {
       }
     }
 
+    if (data['colorSeleccion'] != null) {
+      final colorStr = data['colorSeleccion'] as String?;
+      if (colorStr != null) {
+        int hex = int.parse(colorStr, radix: 16);
+        colorSeleccionLoc = Color(hex);
+      }
+    }
+
     Juego1Settings? juego1Settings;
     if (data['juego1Settings'] != null) {
       final settingsMap = data['juego1Settings'] as Map<dynamic, dynamic>;
@@ -173,6 +190,7 @@ class Alumno {
       colorFondo: colorFondoLoc,
       colorBarraNav: colorNavLoc,
       colorBotones: colorBotonesLoc,
+      colorSeleccion: colorSeleccionLoc,
       posicionBarra: data['posicionBarra'],
       permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
       permisoEstadisticasJuego1: data['permisoEstadisticasJuego1'] ?? true,

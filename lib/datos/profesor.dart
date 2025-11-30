@@ -3,8 +3,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:path_provider/path_provider.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 class Profesor {
@@ -133,42 +131,13 @@ class Profesor {
   }
 
   Widget widgetProfesorV2(BuildContext context, VoidCallback navegar) {
-    return _ProfesorCardInternal(key: ValueKey(imagen), profesor: this, onTap: navegar);
-  }
-
-  Widget widgetProfesor(BuildContext context, VoidCallback navegar) {
-    ImageProvider? imageProvider;
-    if (imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(imagenLocal));
-      // Si la ruta es una URL, podemos usar esta línea: (No funciona con rutas gs://)
-      //imageProvider = imagenLocal.startsWith('http') ? NetworkImage(imagenLocal) : FileImage(File(imagenLocal));
-    }
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: imageProvider,
-          child: imageProvider == null
-              ? Text(
-                  nombre.isNotEmpty ? nombre[0] : '?',
-                  style: const TextStyle(fontSize: 20),
-                )
-              : null,
-        ),
-        title: Text(
-          nombre,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: IconButton(icon: Icon(Icons.edit), onPressed: navegar),
-        onTap: null,
-      ),
+    return _ProfesorCardInternal(
+      key: ValueKey(imagen),
+      profesor: this,
+      onTap: navegar,
     );
   }
+
 }
 
 class _ProfesorCardInternal extends StatefulWidget {
@@ -186,8 +155,6 @@ class _ProfesorCardInternal extends StatefulWidget {
 }
 
 class _ProfesorCardInternalState extends State<_ProfesorCardInternal> {
-
-
   @override
   Widget build(BuildContext context) {
     return Card(

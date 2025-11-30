@@ -5,6 +5,7 @@ import 'package:tato_matematico/agregar/agregarClase.dart';
 import 'package:tato_matematico/agregar/agregarProfesor.dart';
 import 'package:tato_matematico/edicion/editarAlumno.dart';
 import 'package:tato_matematico/edicion/editarClaseV2.dart';
+import 'package:tato_matematico/edicion/editarProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
@@ -208,13 +209,17 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     }
 
     if (_searchController.text.isEmpty) {
-      _profesoresFiltrados = List.from(_profesores);
+      _profesoresFiltrados = _profesores
+          .where((p) => p.id != profesorHolder.profesor!.id)
+          .toList();
     } else {
       _profesoresFiltrados = _profesores
           .where(
-            (profesor) => profesor.nombre.toLowerCase().contains(
-              _searchController.text.toLowerCase(),
-            ),
+            (profesor) =>
+                profesor.nombre.toLowerCase().contains(
+                  _searchController.text.toLowerCase(),
+                ) &&
+                profesor.id != profesorHolder.profesor!.id,
           )
           .toList();
     }
@@ -329,7 +334,14 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     itemBuilder: (BuildContext context, int index) {
                       return _profesoresFiltrados[index].widgetProfesorV2(
                         context,
-                        () {},
+                        () {
+                          navegar(
+                            EditarProfesor(
+                              profesor: _profesoresFiltrados[index],
+                            ),
+                            context,
+                          );
+                        },
                       );
                     },
                   );
@@ -373,15 +385,12 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               ),
 
               /// Perfil page
-              Center(
-                child: PerfilProfesor(
-                  profesor: profesor,
-                  clases: profesor.director
-                      ? _clases
-                      : _clases
-                            .where((clase) => clase.idTutor == profesor.id)
-                            .toList(),
-                ),
+              PerfilProfesor(
+                profesor: profesor,
+                clases: _clases
+                    .where((clase) => clase.idTutor == profesor.id)
+                    .toList(),
+                propio: true,
               ),
             ][!profesor.director &&
                     (currentPageIndex == 1 || currentPageIndex == 2)

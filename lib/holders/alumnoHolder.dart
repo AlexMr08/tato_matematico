@@ -37,5 +37,12 @@ class AlumnoHolder extends ChangeNotifier {
     }
   }
 
+  void setColorSeleccion(Color color) {
+    if (alumno != null) {
+      alumno!.colorSeleccion = color;
+      notifyListeners();
+    }
+  }
+
   bool get hasAlumno => alumno != null;
 }

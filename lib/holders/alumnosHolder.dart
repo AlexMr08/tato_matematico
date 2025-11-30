@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/clase.dart'; // Asegúrate de importar tu modelo Alumno
+import 'package:tato_matematico/clase.dart';
 
 class AlumnosHolder extends ChangeNotifier {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
-  List<Alumno> _alumnos = [];
+  final List<Alumno> _alumnos = [];
   bool _isLoading = true;
 
   // Suscripciones
@@ -93,7 +93,6 @@ class AlumnosHolder extends ChangeNotifier {
     }
   }
 
-
   void _onChildRemoved(DatabaseEvent event) {
     if (event.snapshot.value == null) return;
     final key = event.snapshot.key!;
@@ -105,9 +104,9 @@ class AlumnosHolder extends ChangeNotifier {
 
   // Obtener alumnos filtrados por el ID de su clase
   List<Alumno> obtenerAlumnosPorClase(Clase clase) {
-    return _alumnos.where((a) =>  clase.alumnos.contains(a.id)).toList();
+    return _alumnos.where((a) => clase.alumnos.contains(a.id)).toList();
   }
-  
+
   // Obtener un alumno específico (útil si lo necesitas buscar por ID)
   Alumno? obtenerAlumnoPorId(String id) {
     try {

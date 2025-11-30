@@ -18,8 +18,14 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 class PerfilProfesor extends StatefulWidget {
   final Profesor profesor;
   final List<Clase> clases;
+  final bool propio;
 
-  PerfilProfesor({super.key, required this.profesor, required this.clases});
+  PerfilProfesor({
+    super.key,
+    required this.profesor,
+    required this.clases,
+    required this.propio,
+  });
 
   @override
   State<PerfilProfesor> createState() => _PerfilProfesorState();
@@ -79,7 +85,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 8,),
+          SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -152,9 +158,11 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
           ),
 
           const SizedBox(height: 32),
-          const Text(
-            'MIS CLASES',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+          Text(
+            widget.propio
+                ? 'MIS CLASES'
+                : 'CLASES DE ${widget.profesor.nombre.toUpperCase()}',
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
 

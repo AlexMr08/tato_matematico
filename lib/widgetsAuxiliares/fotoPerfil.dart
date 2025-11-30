@@ -1,18 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-// Ya no importamos 'profesor.dart' para que sea 100% genérico
 
-// Definimos un tipo de función para facilitar la lectura.
-// Esta función recibe un directorio y devuelve un archivo (o null).
 typedef ImagenLoader = Future<File?> Function(Directory tempDir);
 
 class FotoPerfil extends StatefulWidget {
-  final String nombre; // El nombre para sacar las iniciales
-  final String
-  idUnico; // Un ID (o la URL misma) para saber si la imagen cambió y hay que recargar
-  final ImagenLoader?
-  onObtenerImagen; // La función que contiene la lógica para descargar/buscar la imagen
+  final String nombre;
+  final String idUnico;
+  final ImagenLoader? onObtenerImagen;
   final double radio;
 
   const FotoPerfil({

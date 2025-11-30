@@ -139,19 +139,11 @@ class _Juego1ScreenState extends State<Juego1Screen> {
       // TODO: Play sound
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          esCorrecto
-              ? '¡Correcto!'
-              : 'Incorrecto. El número era $_numeroAAdivinar.',
-        ),
-        backgroundColor: esCorrecto ? Colors.green : Colors.red,
-        duration: const Duration(milliseconds: 800),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-      ),
-    );
+    if (esCorrecto) {
+      snackBarExito(context, "¡Correcto!");
+    } else {
+      snackBarError(context, "Incorrecto. Prueba de nuevo.");
+    }
 
     if (esCorrecto) {
       setState(() {
@@ -204,67 +196,20 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     }
   }
 
-  List<BottomNavigationBarItem> _buildBottomNavBarItems(Color textColor) {
-    final items = <BottomNavigationBarItem>[
-      BottomNavigationBarItem(
-        icon: Icon(Icons.arrow_back, color: textColor),
-        label: 'Volver',
-      ),
-    ];
-    if (_alumno.permisoAjustesJuego1) {
-      items.add(
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings, color: textColor),
-          label: 'Ajustes',
-        ),
-      );
-    }
-    if (_alumno.permisoEstadisticasJuego1) {
-      items.add(
-        BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart, color: textColor),
-          label: 'Estadísticas',
-        ),
-      );
-    }
-    return items;
-  }
-
-  void _onBottomNavItemTapped(int index) {
-    if (index == 0) {
-      Navigator.of(context).pop();
-      return;
-    }
-
-    int currentIndex = 1;
-    if (_alumno.permisoAjustesJuego1) {
-      if (index == currentIndex) {
-        _navegarAjustes();
-        return;
-      }
-      currentIndex++;
-    }
-    if (_alumno.permisoEstadisticasJuego1) {
-      if (index == currentIndex) {
-        // TODO: Navigate to statistics screen
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final Color navColor =
-        _alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
     final Color buttonColor =
         _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
     final Color fondoColor =
         _alumno.colorFondo ?? Theme.of(context).colorScheme.surface;
     final Color backgroundTextColor = getTextColorForBackground(fondoColor);
     final Color buttonTextColor = getTextColorForBackground(buttonColor);
+    final Color selectedButtonBorderColor =
+        _alumno.colorSeleccion ?? Theme.of(context).colorScheme.secondary;
 
     final buttonStyle = ElevatedButton.styleFrom(
       backgroundColor: buttonColor,
@@ -285,7 +230,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
       posicion: posicionBarra,
       alumno: _alumno,
       onVolver: () {},
-      onAjustes: () {},
+      onAjustes: _navegarAjustes,
       onEstadisticas: () {},
       hasAjustes: _alumno.permisoAjustesJuego1,
       hasEstadisticas: _alumno.permisoEstadisticasJuego1,
@@ -337,9 +282,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.transparent,
+                          color: isSelected ? selectedButtonBorderColor : Colors.transparent,
                           width: 3,
                         ),
                       ),
@@ -349,7 +292,9 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                           style: TextStyle(
                             fontSize: 48, // Texto de número mucho más grande
                             fontWeight: FontWeight.bold,
-                            color: buttonTextColor,
+                            color: isSelected
+                                ? getTextColorForBackground(cardColor)
+                                : buttonTextColor,
                           ),
                         ),
                       ),

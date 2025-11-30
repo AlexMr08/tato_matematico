@@ -62,6 +62,9 @@ class _ConfigColorState extends State<ConfigColor> {
                   case "colorBotones":
                     alumnoHolder.setColorBotones(pickerColor);
                     break;
+                  case "colorSeleccion":
+                    alumnoHolder.setColorSeleccion(pickerColor);
+                    break;
                   default:
                     break;
                 }
@@ -80,11 +83,7 @@ class _ConfigColorState extends State<ConfigColor> {
       children: [
         Text(label),
         InkWell(
-          onTap: () => _showColorPicker(
-            ref,
-            label,
-            color,
-          ),
+          onTap: () => _showColorPicker(ref, label, color),
           child: Container(
             width: 128,
             height: 48,
@@ -103,35 +102,58 @@ class _ConfigColorState extends State<ConfigColor> {
   Widget build(BuildContext context) {
     Alumno alumno;
     alumnoHolder = context.read<AlumnoHolder>();
-    if(widget.alum != null){
+    if (widget.alum != null) {
       alumno = widget.alum!;
-    }else{
+    } else {
       alumno = alumnoHolder.alumno!;
     }
-
 
     return ScaffoldComun(
       titulo: 'Ajustes comunes de color',
       navBar: null,
-      funcionSalir: (){Navigator.pop(context);},
-      cuerpo: Padding(padding: const EdgeInsets.all(8.0),
-      child: Center(
-        child: Column(
-          children: [
-            _colorTile("colorFondo", "Color de fondo", alumno.colorFondo != null
-                ? alumno.colorFondo!
-                : Theme.of(context).colorScheme.surface),
-            SizedBox(height: 8,),
-            _colorTile("colorBarraNav", "Color de la barra de navegacion", alumno.colorBarraNav != null
-                ? alumno.colorBarraNav!
-                : Theme.of(context).colorScheme.primary),
-            SizedBox(height: 8,),
-            _colorTile("colorBotones", "Color de los botones", alumno.colorBotones != null
-                ? alumno.colorBotones!
-                : Theme.of(context).colorScheme.primaryContainer),
-          ],
+      funcionSalir: () {
+        Navigator.pop(context);
+      },
+      cuerpo: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Column(
+            children: [
+              _colorTile(
+                "colorFondo",
+                "Color de fondo",
+                alumno.colorFondo != null
+                    ? alumno.colorFondo!
+                    : Theme.of(context).colorScheme.surface,
+              ),
+              SizedBox(height: 8),
+              _colorTile(
+                "colorBarraNav",
+                "Color de la barra de navegacion",
+                alumno.colorBarraNav != null
+                    ? alumno.colorBarraNav!
+                    : Theme.of(context).colorScheme.primary,
+              ),
+              SizedBox(height: 8),
+              _colorTile(
+                "colorBotones",
+                "Color de los botones",
+                alumno.colorBotones != null
+                    ? alumno.colorBotones!
+                    : Theme.of(context).colorScheme.primaryContainer,
+              ),
+              SizedBox(height: 8),
+              _colorTile(
+                "colorSeleccion",
+                "Color del boton seleccionado",
+                alumno.colorSeleccion != null
+                    ? alumno.colorSeleccion!
+                    : Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ],
+          ),
         ),
-      ),)
+      ),
     );
   }
 }

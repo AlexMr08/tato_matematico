@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
-import '../ScaffoldComun.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 
 class ProfesorEditarContrasena extends StatefulWidget {
@@ -37,10 +36,13 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
     String id,
   ) async {
     // Validar que los campos no estén vacíos
-    if (password1.isEmpty || password2.isEmpty || password1 != password2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Las contraseñas no coinciden")),
-      );
+    if (password1.isEmpty) {
+      snackBarAviso(context, "La contraseña no puede estar vacia");
+      return;
+    }
+
+    if (password1 != password2) {
+      snackBarAviso(context, "Las contraseñas no coinciden");
       return;
     }
 
@@ -73,13 +75,9 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldComun(
-      titulo: 'Inicio de sesion del profesor',
-      funcionSalir: Navigator.canPop(context)
-          ? () => Navigator.pop(context)
-          : null,
-      fab: null,
-      navBar: null,
+    return ScaffoldComunV2(
+      titulo: 'Cambiar contraseña',
+      subtitulo: widget.profesor.username,
       cuerpo: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -103,7 +101,7 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 32),
 
                 Center(
                   child: SizedBox(
@@ -134,7 +132,7 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 Center(
                   child: BotonSinIcono(
@@ -172,11 +170,9 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
       saltBytes.add(int.parse(hexByte, radix: 16));
     }
 
-    final nonce = await SecretKey(saltBytes);
-
     final secretKey = await pbkdf2.deriveKey(
       secretKey: SecretKey(utf8.encode(password)),
-      nonce: await nonce.extractBytes(),
+      nonce: await SecretKey(saltBytes).extractBytes(),
     );
 
     final hashBytes = await secretKey.extractBytes();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego_1/ajustes_numeros_screen.dart';
 import 'package:tato_matematico/juegos/juego_1/ajustes_sonidos_screen.dart';
