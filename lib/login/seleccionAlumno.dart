@@ -107,6 +107,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
                 ),
               ),
             ),
+            SizedBox(height: 8),
             BotonesInferiores(
               onPrevious: retroceder(),
               onNext: avanzar(totalPaginas),
@@ -351,18 +352,17 @@ class GridAlumnos extends StatelessWidget {
           onTap: () {
             context.read<AlumnoHolder>().setAlumno(alumno);
             cargarTipoLogin(alumno.id).then((tipo) {
-
               if (tipo == "seleccionImagen") {
                 navegar(LoginConImagen(alumnoId: alumno.id), context);
-              } else if (tipo == "secuenciaImagenes"){
+              } else if (tipo == "secuenciaImagenes") {
                 navegar(AlumnoLoginSecuencia(alumnoId: alumno.id), context);
-              } else if (tipo == "alfanumerica"){
+              } else if (tipo == "alfanumerica") {
                 navegar(AlumnoLogIn(), context);
               }
             });
           },
         );
-      }
+      },
     );
   }
 }
@@ -387,7 +387,6 @@ class BotonesInferiores extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Column(
         children: [
-          SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

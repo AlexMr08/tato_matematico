@@ -1,10 +1,11 @@
 import 'dart:math';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
-import 'package:tato_matematico/auxFunc.dart'; // Importar para la función de color
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_ajustes_screen.dart';
@@ -198,10 +199,6 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     final Color buttonColor =
         _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
     final Color fondoColor =
@@ -229,91 +226,107 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     return ScaffoldAlumno(
       posicion: posicionBarra,
       alumno: _alumno,
-      onVolver: () {},
+      onVolver: Navigator.of(context).pop,
       onAjustes: _navegarAjustes,
       onEstadisticas: () {},
       hasAjustes: _alumno.permisoAjustesJuego1,
       hasEstadisticas: _alumno.permisoEstadisticasJuego1,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          if (_mostrarPuntuacion)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Puntuación: $_puntuacion',
-                style: TextStyle(
-                  color: backgroundTextColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+      child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(buttonColor),
               ),
-            ),
-          ElevatedButton.icon(
-            style: buttonStyle,
-            onPressed: () => _speak(_numeroAAdivinar.toString()),
-            icon: const Icon(Icons.volume_up),
-            label: const Text('Volver a escuchar'),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 250, // Aumenta el tamaño máximo
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                  childAspectRatio: 1.2, // Proporción más ancha
-                ),
-                itemCount: _opciones.length,
-                itemBuilder: (context, index) {
-                  final numero = _opciones[index];
-                  final bool isSelected = numero == _numeroSeleccionado;
-                  final Color cardColor = isSelected
-                      ? Color.alphaBlend(Colors.white, buttonColor)
-                      : buttonColor;
-
-                  return GestureDetector(
-                    onTap: () => setState(() => _numeroSeleccionado = numero),
-                    child: Card(
-                      color: cardColor,
-                      elevation: isSelected ? 12 : 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: isSelected ? selectedButtonBorderColor : Colors.transparent,
-                          width: 3,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          numero.toString(),
-                          style: TextStyle(
-                            fontSize: 48, // Texto de número mucho más grande
-                            fontWeight: FontWeight.bold,
-                            color: isSelected
-                                ? getTextColorForBackground(cardColor)
-                                : buttonTextColor,
-                          ),
-                        ),
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (_mostrarPuntuacion)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Puntuación: $_puntuacion',
+                      style: TextStyle(
+                        color: backgroundTextColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                SizedBox(height: 8),
+                ElevatedButton.icon(
+                  style: buttonStyle,
+                  onPressed: () => _speak(_numeroAAdivinar.toString()),
+                  icon: const Icon(Icons.volume_up),
+                  label: const Text('Volver a escuchar'),
+                ),
+                SizedBox(height:8),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200, // Aumenta el tamaño máximo
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 1, // Proporción más ancha
+                          ),
+                      itemCount: _opciones.length,
+                      itemBuilder: (context, index) {
+                        final numero = _opciones[index];
+                        final bool isSelected = numero == _numeroSeleccionado;
+                        final Color cardColor = isSelected
+                            ? Color.alphaBlend(Colors.white, buttonColor)
+                            : buttonColor;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _numeroSeleccionado = numero),
+                          child: Card(
+                            color: cardColor,
+                            elevation: isSelected ? 12 : 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? selectedButtonBorderColor
+                                    : Colors.transparent,
+                                width: 3,
+                              ),
+                            ),
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                child: AutoSizeText(
+                                  numero.toString(),
+                                  style: TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? getTextColorForBackground(cardColor)
+                                        : buttonTextColor,
+                                  ),
+                                  maxLines: 1,
+                                  minFontSize: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    style: buttonStyle,
+                    onPressed: _aceptarRespuesta,
+                    child: const Text('Aceptar'),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              style: buttonStyle,
-              onPressed: _aceptarRespuesta,
-              child: const Text('Aceptar'),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
