@@ -187,15 +187,18 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
               itemCount: widget.clases.length,
               separatorBuilder: (_, _) => const SizedBox(height: 0),
               itemBuilder: (context, index) {
-                return widget.clases[index].widgetClase(context, () {
-                  navegar(
-                    EditarClase(
-                      clase: widget.clases[index],
-                      allAlumnos: alumnos,
-                    ),
-                    context,
-                  );
-                });
+                return ProfesorClaseCard(
+                  clase: widget.clases[index],
+                  onPressed: () {
+                    navegar(
+                      EditarClase(
+                        clase: widget.clases[index],
+                        allAlumnos: alumnos,
+                      ),
+                      context,
+                    );
+                  },
+                );
               },
             ),
           ),

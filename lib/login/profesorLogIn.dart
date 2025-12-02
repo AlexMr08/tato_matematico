@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import '../holders/profesorHolder.dart';
 import 'package:tato_matematico/datos/profesor.dart';
@@ -18,8 +19,8 @@ import '../mainMenuProfe.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** ?
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 02/12/2025
+/// * **Último cambio:** Se ha mejorado la navegacion por el formulario
 ///
 
 class ProfesorLogIn extends StatefulWidget {
@@ -51,9 +52,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
   void autenticacionProfesor(String username, String password) async {
     // Validar que los campos no estén vacíos
     if (username.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ingrese nombre de usuario y contraseña")),
-      );
+      snackBarAviso(context, "Ingrese nombre de usuario y contraseña");
       return;
     }
 
@@ -69,9 +68,9 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
 
     // Si el profesor no existe, mostrar mensaje de error
     if (event.snapshot.value == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Usuario no registrado")));
+      if (mounted) {
+        snackBarAviso(context, "Usuario no registrado");
+      }
       return;
     }
 
@@ -82,33 +81,34 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
     var hashHex = await _generarHash(profesorData["salt"], password);
     // Verificar la contraseña
     if (profesorData["pass"] == hashHex) {
-      print("Ha iniciado sesion correctamente");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            profesorData["director"]
-                ? "Ha iniciado sesion correctamente, rol: Director"
-                : "Ha iniciado sesion correctamente, rol: Profesor",
+      if (mounted) {
+        snackBarExito(
+          context,
+          profesorData["director"]
+              ? "Ha iniciado sesion correctamente, rol: Director"
+              : "Ha iniciado sesion correctamente, rol: Profesor",
+        );
+        context.read<ProfesorHolder>().setProfesor(
+          Profesor.fromMap(
+            profesorId,
+            Map<dynamic, dynamic>.from(profesorData),
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
-      context.read<ProfesorHolder>().setProfesor(
-        Profesor.fromMap(profesorId, Map<dynamic, dynamic>.from(profesorData)),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainMenuProfe()),
-      );
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainMenuProfe()),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Contraseña incorrecta")));
+      if (mounted) {
+        snackBarAviso(context, "Contraseña incorrecta");
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final FocusNode passFocus = FocusNode();
     return ScaffoldComunV2(
       titulo: 'Inicio de sesion del profesor',
       cuerpo: SafeArea(
@@ -141,6 +141,10 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                     width: 500,
                     child: TextField(
                       controller: usernameController,
+                      textInputAction: TextInputAction.next,
+                      onSubmitted: (_) {
+                        FocusScope.of(context).requestFocus(passFocus);
+                      },
                       decoration: const InputDecoration(
                         labelText: 'Nombre de usuario',
                         border: OutlineInputBorder(),
@@ -156,6 +160,13 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                     width: 500,
                     child: TextField(
                       controller: passwordController,
+                      focusNode: passFocus,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) {
+                        String username = usernameController.text.trim();
+                        String password = passwordController.text.trim();
+                        autenticacionProfesor(username, password);
+                      },
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'Contraseña',
@@ -188,17 +199,16 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
     );
   }
 
-  Future<String?> _generarHash(salt, password) async {
+  Future<String?> _generarHash(String salt, String password) async {
     final pbkdf2 = Pbkdf2(
       macAlgorithm: Hmac.sha256(),
       iterations: 10000, // Estándar recomendado mínimo hoy en día
       bits: 256, // 32 bytes de salida
     );
 
-    String saltHex = salt;
     List<int> saltBytes = [];
-    for (int i = 0; i < saltHex.length; i += 2) {
-      String hexByte = saltHex.substring(i, i + 2);
+    for (int i = 0; i < salt.length; i += 2) {
+      String hexByte = salt.substring(i, i + 2);
       saltBytes.add(int.parse(hexByte, radix: 16));
     }
 

@@ -49,87 +49,31 @@ class Clase {
     return 'Clase{id: $id, nombre: $nombre, ano: $ano, idTutor: $idTutor, alumnos: $alumnos}';
   }
 
-  Widget widgetSeleccion(VoidCallback onTap) {
-    return _CardSeleccion(
-      nombre: nombre,
-      tutor: 'Tutor: $idTutor',
-      numAlumnos: '${alumnos.length} alumnos',
-      ano: 'Año $ano',
-      onTap: onTap,
-    );
-  }
-
-  Widget widgetClase(BuildContext context, VoidCallback onPressed) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          child: Text(
-            nombre.isNotEmpty ? nombre[0] : '?',
-            style: const TextStyle(fontSize: 20),
-          ),
-        ),
-        title: Text(
-          nombre,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text('Año $ano | ${alumnos.length} alumnos'),
-        trailing: IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: onPressed,
-        ),
-        onTap: null,
-      ),
-    );
-  }
 }
 
-class _CardSeleccion extends StatelessWidget {
-  final String nombre;
-  final String tutor;
-  final String numAlumnos;
-  final String ano;
+class SelectorClaseCard extends StatelessWidget {
+  final Clase clase;
   final VoidCallback onTap;
 
-  const _CardSeleccion({
-    required this.nombre,
-    required this.tutor,
-    required this.numAlumnos,
-    required this.ano,
-    required this.onTap,
-  });
+  const SelectorClaseCard({super.key, required this.clase, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.purple.shade100),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+      child: Card(
+        elevation: 4,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FotoPerfil(nombre: nombre, idUnico: "", radio: 48),
+              FotoPerfil(nombre: clase.nombre, idUnico: "", radio: 48),
               const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  nombre,
+                  clase.nombre,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -140,10 +84,45 @@ class _CardSeleccion extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(ano, style: const TextStyle(fontSize: 12)),
+              Text(clase.ano, style: const TextStyle(fontSize: 12)),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ProfesorClaseCard extends StatelessWidget {
+  final Clase clase;
+  final VoidCallback onPressed;
+
+  const ProfesorClaseCard({super.key, required this.clase, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          radius: 28,
+          child: Text(
+            clase.nombre.isNotEmpty ? clase.nombre[0] : '?',
+            style: const TextStyle(fontSize: 20),
+          ),
+        ),
+        title: Text(
+          clase.nombre,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text('Año ${clase.ano} | ${clase.alumnos.length} alumnos'),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: onPressed,
+        ),
+        onTap: null,
       ),
     );
   }

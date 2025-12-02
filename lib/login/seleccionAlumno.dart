@@ -37,7 +37,7 @@ Future<String?> cargarTipoLogin(String alumnoId) async {
 class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   List<Alumno> alumnos = [];
   int paginaActual = 0;
-  final int itemsPorPagina = 12;
+  final int itemsPorPagina = 10;
 
   /*
   Se han hecho pruebas unitarias para asegurar que funciona correctamente:
@@ -67,10 +67,18 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
       );
     }
 
-    final double spacing = 8;
-    final isTabletVar = isTablet(context);
-    final int columnas = isTabletVar ? 4 : 3; // hasta 3 por fila
     final int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
+
+    if (paginaActual >= totalPaginas && totalPaginas > 0) {
+      paginaActual = totalPaginas - 1;
+    }
+
+    int inicio = paginaActual * itemsPorPagina;
+    int fin = (inicio + itemsPorPagina) < alumnos.length
+        ? (inicio + itemsPorPagina)
+        : alumnos.length;
+
+    var alumnosPagina = alumnos.isEmpty ? [] : alumnos.sublist(inicio, fin);
 
     return ScaffoldComunV2(
       titulo: "Seleccion de alumno",
@@ -80,32 +88,45 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
           children: [
             SizedBox(height: 8),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final double itemWidth =
-                        (constraints.maxWidth - (spacing * (columnas - 1))) /
-                        columnas;
-                    final int rowCount = (itemsPorPagina / columnas).ceil();
-                    final double itemHeight =
-                        (constraints.maxHeight - (spacing * (rowCount - 1))) /
-                        rowCount;
-
-                    return GridAlumnos(
-                      listaAlumnos: alumnos,
-                      paginaActual: paginaActual,
-                      totalPaginas: totalPaginas,
-                      itemsPorPagina: itemsPorPagina,
-                      crossAxisCount: columnas,
-                      itemWidth: itemWidth,
-                      itemHeight: itemHeight,
-                      spacing: spacing,
-                      totalItems: alumnos.length,
-                    );
-                  },
-                ),
-              ),
+              child: alumnosPagina.isEmpty
+                  ? const Center(child: Text("No hay clases disponibles"))
+                  : Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        runAlignment: WrapAlignment.start,
+                        spacing: 32,
+                        runSpacing: 32,
+                        children: alumnosPagina.map((alumno) {
+                          return SizedBox(
+                            width: 200,
+                            height: 200,
+                            child: AlumnViewCard(
+                              alumno: alumno,
+                              onTap: () {
+                                context.read<AlumnoHolder>().setAlumno(alumno);
+                                cargarTipoLogin(alumno.id).then((tipo) {
+                                  if (tipo == "seleccionImagen") {
+                                    navegar(
+                                      LoginConImagen(alumnoId: alumno.id),
+                                      context,
+                                    );
+                                  } else if (tipo == "secuenciaImagenes") {
+                                    navegar(
+                                      AlumnoLoginSecuencia(alumnoId: alumno.id),
+                                      context,
+                                    );
+                                  } else if (tipo == "alfanumerica") {
+                                    navegar(AlumnoLogIn(), context);
+                                  }
+                                });
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
             ),
             SizedBox(height: 8),
             BotonesInferiores(
@@ -133,171 +154,6 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
           })
         : null;
   }
-
-  /*
-  @override
-  Future<void> didChangeDependencies() async {
-    super.didChangeDependencies();
-    if (!_yaCargado) {
-      _futureAlumnos = _loadAlumnos();
-      _yaCargado = true; // Para que no vuelva a ejecutarse
-    }
-  }
-
-  Future<List<Alumno>> _loadAlumnos() async {
-    final snapshot = await _dbRef.child("tato").child("alumnos").get();
-    if (!snapshot.exists) return [];
-
-    final data = Map<String, dynamic>.from(snapshot.value as Map);
-    final tempDir = await getTemporaryDirectory();
-    for (final entry in data.entries) {
-      if (widget.clase.alumnos.contains(entry.key)) {
-        final alumnoData = Map<dynamic, dynamic>.from(entry.value);
-        final alumno = Alumno.fromMap(entry.key, alumnoData);
-        await alumno.descargarImagen(tempDir);
-        print('Alumno cargado: $alumno');
-        alumnos.add(alumno);
-      }
-    }
-    _attachListenersAlumno();
-    return alumnos;
-  }
-
-  @override
-  void dispose() {
-    _subAdded?.cancel();
-    _subChanged?.cancel();
-    _subRemoved?.cancel();
-    super.dispose();
-  }
-
-  void _attachListenersAlumno() {
-    _subAdded = _alumnosRef.onChildAdded.listen(
-      (event) => _handleChildAdded(event),
-    );
-    _subChanged = _alumnosRef.onChildChanged.listen(
-      (event) => _handleChildChanged(event),
-    );
-  }
-
-  Future<void> _handleChildAdded(DatabaseEvent event) async {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
-    // evita duplicados
-    if (alumnos.any((a) => a.id == key)) return;
-    if (!widget.clase.alumnos.contains(key)) return;
-    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-    final newAlumno = Alumno.fromMap(key, data);
-    await newAlumno.descargarImagen(await getTemporaryDirectory());
-    setState(() => alumnos.add(newAlumno));
-    _futureAlumnos = Future.value(alumnos);
-  }
-
-  Future<void> _handleChildChanged(DatabaseEvent event) async {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
-    if (!widget.clase.alumnos.contains(key)) return;
-    final index = alumnos.indexWhere((a) => a.id == key);
-    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-    final updated = Alumno.fromMap(key, data);
-    await updated.descargarImagen(await getTemporaryDirectory());
-    if (index != -1) {
-      setState(() => alumnos[index] = updated);
-    } else {
-      // si no estaba, añadirlo
-      setState(() => alumnos.add(updated));
-    }
-    _futureAlumnos = Future.value(alumnos);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final double spacing = 8;
-    final isTabletVar = isTablet(context);
-    final int columnas = isTabletVar ? 4 : 3; // hasta 3 por fila
-
-    return ScaffoldComunV2(
-      titulo: 'Seleccion de alumno',
-      subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
-      cuerpo: FutureBuilder<List<Alumno>>(
-        future: _futureAlumnos,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No hay alumnos'));
-          }
-
-          final alumnos = snapshot.data!;
-          final int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
-
-          return SafeArea(
-            child: Column(
-              children: [
-                SizedBox(height: 8),
-                /*
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Iniciar sesion como ', style: TextStyle(fontSize: 16)),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        alignment: Alignment.centerLeft,
-                      ),
-                      onPressed: () {navegar(ProfesorLogIn(), context);},
-                      child: Text("profesor", style: TextStyle(fontSize: 16, decoration: TextDecoration.underline)),
-                    ),
-                  ],
-                ),
-                 */
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final double itemWidth =
-                            (constraints.maxWidth -
-                                (spacing * (columnas - 1))) /
-                            columnas;
-                        final int rowCount = (itemsPorPagina / columnas).ceil();
-                        final double itemHeight =
-                            (constraints.maxHeight -
-                                (spacing * (rowCount - 1))) /
-                            rowCount;
-
-                        return GridAlumnos(
-                          listaAlumnos: alumnos,
-                          paginaActual: paginaActual,
-                          totalPaginas: totalPaginas,
-                          itemsPorPagina: itemsPorPagina,
-                          crossAxisCount: columnas,
-                          itemWidth: itemWidth,
-                          itemHeight: itemHeight,
-                          spacing: spacing,
-                          totalItems: alumnos.length,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                BotonesInferiores(
-                  onPrevious: retroceder(),
-                  onNext: avanzar(totalPaginas),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-   */
 }
 
 class GridAlumnos extends StatelessWidget {
@@ -348,7 +204,8 @@ class GridAlumnos extends StatelessWidget {
       itemCount: currentPageItems,
       itemBuilder: (context, index) {
         final alumno = alumnosPagina[index];
-        return alumno.widgetAlumnoV2(
+        return AlumnViewCard(
+          alumno: alumno,
           onTap: () {
             context.read<AlumnoHolder>().setAlumno(alumno);
             cargarTipoLogin(alumno.id).then((tipo) {

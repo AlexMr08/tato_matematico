@@ -104,9 +104,12 @@ class _SeleccionClaseState extends State<SeleccionClase> {
                         return SizedBox(
                           width: 150,
                           height: 200,
-                          child: clase.widgetSeleccion(() {
-                            navegar(SeleccionAlumno(clase: clase), context);
-                          }),
+                          child: SelectorClaseCard(
+                            clase: clase,
+                            onTap: () {
+                              navegar(SeleccionAlumno(clase: clase), context);
+                            },
+                          ),
                         );
                       }).toList(),
                     ),

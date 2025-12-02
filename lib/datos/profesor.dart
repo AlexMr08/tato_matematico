@@ -13,8 +13,8 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 02/12/2025
+/// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
 ///
 
 class Profesor {
@@ -140,8 +140,9 @@ class Profesor {
     return null;
   }
 
+  @deprecated
   Widget widgetProfesorV2(BuildContext context, VoidCallback navegar) {
-    return _ProfesorCardInternal(
+    return ProfesorCard(
       key: ValueKey(imagen),
       profesor: this,
       onTap: navegar,
@@ -161,21 +162,21 @@ class Profesor {
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
 
-class _ProfesorCardInternal extends StatefulWidget {
+class ProfesorCard extends StatefulWidget {
   final Profesor profesor;
   final VoidCallback onTap;
 
-  const _ProfesorCardInternal({
+  const ProfesorCard({
     super.key,
     required this.profesor,
     required this.onTap,
   });
 
   @override
-  State<_ProfesorCardInternal> createState() => _ProfesorCardInternalState();
+  State<ProfesorCard> createState() => _ProfesorCardState();
 }
 
-class _ProfesorCardInternalState extends State<_ProfesorCardInternal> {
+class _ProfesorCardState extends State<ProfesorCard> {
   @override
   Widget build(BuildContext context) {
     return Card(

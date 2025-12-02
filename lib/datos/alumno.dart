@@ -16,8 +16,8 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 02/12/2025
+/// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
 ///
 
 class Alumno {
@@ -297,6 +297,7 @@ class Alumno {
   // --- Widgets deprecados (widgetAlumno, widgetProfesor) ---
   // Mantenidos por si acaso, pero las versiones V2 con State mejoran la gestión de caché/carga.
 
+  @deprecated
   Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
     var ori = MediaQuery.of(context).orientation;
 
@@ -338,6 +339,7 @@ class Alumno {
     );
   }
 
+  @deprecated
   Widget widgetProfesor(BuildContext c, VoidCallback navegar, Icon icono) {
     ImageProvider? imageProvider;
     if (imagenLocal.isNotEmpty) {
@@ -371,15 +373,16 @@ class Alumno {
   }
 
   // --- Widgets V2 (usando State) ---
-
+  @deprecated
   Widget widgetAlumnoV2({required VoidCallback onTap}) {
     // Versión FINAL: Añade ValueKey para que Flutter distinga los widgets cuando la lista cambia
-    return _AlumnViewCard(key: ValueKey(id), alumno: this, onTap: onTap);
+    return AlumnViewCard(key: ValueKey(id), alumno: this, onTap: onTap);
   }
 
+  @deprecated
   Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
     // Versión FINAL: Añade ValueKey basada en el ID y la URL de la imagen para forzar reconstrucción si cambia la imagen
-    return _TeacherViewCard(
+    return TeacherViewCard(
       key: ValueKey("${id}_${_imagen ?? ''}"),
       alumno: this,
       onTap: onTap,
@@ -388,7 +391,7 @@ class Alumno {
   }
 }
 
-/// **Nombre de la Clase: `_AlumnViewCard`**
+/// **Nombre de la Clase: `AlumnViewCard`**
 ///
 /// **Descripción:** clase que gestiona como se ve el widget del alumno en vista de alumno.
 ///
@@ -399,21 +402,21 @@ class Alumno {
 /// * **Fecha de modificación:** 30/11/2025
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
-class _AlumnViewCard extends StatefulWidget {
+class AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
-  const _AlumnViewCard({
+  const AlumnViewCard({
     super.key, // Versión FINAL: Se añade Key
     required this.alumno,
     required this.onTap,
   }); // Versión FINAL: Se usa Key
 
   @override
-  State<_AlumnViewCard> createState() => _AlumnViewCardState();
+  State<AlumnViewCard> createState() => _AlumnViewCardState();
 }
 
-class _AlumnViewCardState extends State<_AlumnViewCard> {
+class _AlumnViewCardState extends State<AlumnViewCard> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -456,7 +459,7 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
   }
 }
 
-/// **Nombre de la Clase: `_TeacherViewCard`**
+/// **Nombre de la Clase: `TeacherViewCard`**
 ///
 /// **Descripción:** clase que gestiona la vista de un alumno en la perspectiva del profesor.
 ///
@@ -468,12 +471,12 @@ class _AlumnViewCardState extends State<_AlumnViewCard> {
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
 
-class _TeacherViewCard extends StatefulWidget {
+class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
 
-  const _TeacherViewCard({
+  const TeacherViewCard({
     super.key, // Versión FINAL: Se añade Key
     required this.alumno,
     required this.onTap,
@@ -481,10 +484,10 @@ class _TeacherViewCard extends StatefulWidget {
   }); // Versión FINAL: Se usa Key
 
   @override
-  State<_TeacherViewCard> createState() => _TeacherViewCardState();
+  State<TeacherViewCard> createState() => _TeacherViewCardState();
 }
 
-class _TeacherViewCardState extends State<_TeacherViewCard> {
+class _TeacherViewCardState extends State<TeacherViewCard> {
   @override
   Widget build(BuildContext context) {
     return Card(

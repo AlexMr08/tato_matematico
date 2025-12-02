@@ -27,8 +27,8 @@ import 'holders/profesorHolder.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Andrés Ignacio Mardones Domcke
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 01/12/2025
+/// * **Último cambio:** Se ha optimizado el codigo
 ///
 
 class MainMenuProfe extends StatefulWidget {
@@ -181,18 +181,28 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   Widget build(BuildContext context) {
     final profesorHolder = context.watch<ProfesorHolder>();
     final ah = context.watch<AlumnosHolder>();
+
+    final profes = context.select<ProfesoresHolder, List<Profesor>>(
+      ((ph) => ph.profesores),
+    );
+    final profesIsLoading = context.select<ProfesoresHolder, bool>(
+      ((ph) => ph.isLoading),
+    );
+    final profesInit = context.select<ProfesoresHolder, bool>(
+      ((ph) => ph.isInit),
+    );
+
     final ch = context.watch<ClasesHolder>();
-    final ph = context.watch<ProfesoresHolder>();
 
     if (profesorHolder.profesor != null &&
         profesorHolder.profesor!.director &&
-        !ph.isInit) {
+        !profesInit) {
       context.read<ProfesoresHolder>().init();
     }
 
     _alumnos = ah.alumnos;
     _clases = ch.clases;
-    _profesores = ph.profesores;
+    _profesores = profes;
 
     if (_searchController.text.isEmpty) {
       _alumnosFiltrados = List.from(_alumnos);
@@ -320,7 +330,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                 reverse: false,
                 itemCount: _alumnosFiltrados.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return _alumnosFiltrados[index].widgetProfesorV2(
+                  return TeacherViewCard(
+                    alumno: _alumnosFiltrados[index],
                     onTap: () {
                       context.read<AlumnoHolder>().setAlumno(
                         _alumnosFiltrados[index],
@@ -335,7 +346,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               /// Profesores page
               Builder(
                 builder: (context) {
-                  if (ph.isLoading) {
+                  if (profesIsLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   return ListView.builder(
@@ -343,9 +354,9 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     padding: EdgeInsets.only(top: 8),
                     itemCount: _profesoresFiltrados.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _profesoresFiltrados[index].widgetProfesorV2(
-                        context,
-                        () {
+                      return ProfesorCard(
+                        profesor: _profesoresFiltrados[index],
+                        onTap: () {
                           navegar(
                             EditarProfesor(
                               profesor: _profesoresFiltrados[index],
@@ -381,15 +392,18 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     padding: EdgeInsets.only(bottom: fabOverlapPadding, top: 8),
                     itemCount: _clasesFiltradas.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _clasesFiltradas[index].widgetClase(context, () {
-                        navegar(
-                          EditarClase(
-                            clase: _clasesFiltradas[index],
-                            allAlumnos: _alumnos,
-                          ),
-                          context,
-                        );
-                      });
+                      return ProfesorClaseCard(
+                        clase: _clasesFiltradas[index],
+                        onPressed: () {
+                          navegar(
+                            EditarClase(
+                              clase: _clasesFiltradas[index],
+                              allAlumnos: _alumnos,
+                            ),
+                            context,
+                          );
+                        },
+                      );
                     },
                   );
                 },

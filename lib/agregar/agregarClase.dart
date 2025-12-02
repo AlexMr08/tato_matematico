@@ -109,7 +109,8 @@ class _AgregarClaseState extends State<AgregarClase> {
                           return SizedBox.shrink(); // No mostrar el alumno si ya está en la clase
                         }
 
-                        return alumnos[index].widgetProfesorV2(
+                        return TeacherViewCard(
+                          alumno: alumnos[index],
                           onTap: () {
                             List<String> alumnosActualizados = List.from(
                               seleccionados,
@@ -288,7 +289,8 @@ class _AgregarClaseState extends State<AgregarClase> {
                   reverse: false,
                   itemCount: alumnos.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return alumnos[index].widgetProfesorV2(
+                    return TeacherViewCard(
+                      alumno: alumnos[index],
                       onTap: () {
                         seleccionados.remove(alumnos[index].id);
                         setState(() {
