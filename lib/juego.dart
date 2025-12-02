@@ -13,28 +13,70 @@ import 'package:tato_matematico/auxFunc.dart';
 /// * **Último cambio:** Se han añadido la descripcion y metadatos de control
 ///
 
+/// **Nombre de la Clase: `JuegoCard`**
+///
+/// **Descripción:** clase basica que representa un juego dentro de la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 02/12/2025
+/// * **Último cambio:** Se ha eliminado el widget
+///
+
 class Juego {
   String id;
   Widget actividad;
   String nombre;
-  Color color;
   IconData? icono;
 
   Juego({
     required this.id,
     required this.actividad,
     required this.nombre,
-    required this.color,
     this.icono,
   });
 
-  Widget widgetJuego(BuildContext context, VoidCallback navegar, Color? color) {
+}
+
+/// **Nombre de la Clase: `JuegoCard`**
+///
+/// **Descripción:** clase que gestiona la vista de las tarjetas de los juegos.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 02/12/2025
+/// * **Último cambio:** Se ha creado la clase
+///
+
+class JuegoCard extends StatefulWidget {
+  final Juego juego;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const JuegoCard({
+    super.key, // Versión FINAL: Se añade Key
+    required this.juego,
+    required this.onTap,
+    required this.color,
+  }); // Versión FINAL: Se usa Key
+
+  @override
+  State<JuegoCard> createState() => _JuegoCardState();
+}
+
+class _JuegoCardState extends State<JuegoCard> {
+  @override
+  Widget build(BuildContext context) {
     final Color backgroundColor =
-        color ?? Theme.of(context).colorScheme.primaryContainer;
+        widget.color ?? Theme.of(context).colorScheme.primaryContainer;
     final Color contentColor = getTextColorForBackground(backgroundColor);
 
     return InkWell(
-      onTap: navegar,
+      onTap: widget.onTap,
       child: Card(
         color: backgroundColor,
         shape: RoundedRectangleBorder(
@@ -48,13 +90,13 @@ class Juego {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  icono ?? Icons.videogame_asset,
+                  widget.juego.icono ?? Icons.videogame_asset,
                   size: 90, // Icono mucho más grande
                   color: contentColor,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  nombre,
+                  widget.juego.nombre,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: contentColor,

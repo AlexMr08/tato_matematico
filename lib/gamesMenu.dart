@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/configColorAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/pruebaJuego2.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'juego.dart';
@@ -42,25 +44,21 @@ class _GamesMenuState extends State<GamesMenu> {
       id: 'juego1',
       actividad: const Juego1Screen(),
       nombre: 'Juego 1',
-      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'juego2',
-      actividad: const Placeholder(),
+      actividad: const Juego2Screen(),
       nombre: 'Juego 2',
-      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'juego3',
-      actividad: const Placeholder(),
+      actividad: const ActividadOrdenarNumeros(cantidad: 8, esAscendente: true),
       nombre: 'Juego 3',
-      color: Theme.of(context).colorScheme.primaryContainer,
     ),
     Juego(
       id: 'juego4',
       actividad: const Placeholder(),
       nombre: 'Juego 4',
-      color: Theme.of(context).colorScheme.primaryContainer,
     ),
   ];
 
@@ -129,15 +127,15 @@ class _GamesMenuState extends State<GamesMenu> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: listaJuegos[0].widgetJuego(context, () {
+                      child: JuegoCard(juego: listaJuegos[0], onTap: () {
                         navegar(listaJuegos[0].actividad, context);
-                      }, alumno.colorBotones),
+                      }, color: alumno.colorBotones),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: listaJuegos[1].widgetJuego(context, () {
+                      child: JuegoCard(juego: listaJuegos[1],onTap: () {
                         navegar(listaJuegos[1].actividad, context);
-                      }, alumno.colorBotones),
+                      }, color: alumno.colorBotones,),
                     ),
                   ],
                 ),
@@ -147,15 +145,15 @@ class _GamesMenuState extends State<GamesMenu> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: listaJuegos[2].widgetJuego(context, () {
+                      child: JuegoCard(juego: listaJuegos[2],onTap: () {
                         navegar(listaJuegos[2].actividad, context);
-                      }, alumno.colorBotones),
+                      }, color: alumno.colorBotones,),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: listaJuegos[3].widgetJuego(context, () {
+                      child: JuegoCard(juego: listaJuegos[3],onTap: () {
                         navegar(listaJuegos[3].actividad, context);
-                      }, alumno.colorBotones),
+                      }, color: alumno.colorBotones,),
                     ),
                   ],
                 ),
