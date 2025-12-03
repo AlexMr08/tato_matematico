@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tato_matematico/auxFunc.dart';
 
 /// **Nombre de la Clase: `BotonConIcono`**
 ///
@@ -101,8 +102,9 @@ class BotonSinIcono extends StatelessWidget {
   final double? vertPadding;
   final double? horiPadding;
   final double? radius;
+  Color? colorFondo;
 
-  const BotonSinIcono({
+  BotonSinIcono({
     super.key,
     required this.texto,
     required this.onPressed,
@@ -111,6 +113,7 @@ class BotonSinIcono extends StatelessWidget {
     this.vertPadding,
     this.horiPadding,
     this.radius,
+    this.colorFondo,
   });
 
   @override
@@ -118,8 +121,11 @@ class BotonSinIcono extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+        backgroundColor:
+            colorFondo ?? Theme.of(context).colorScheme.primaryContainer,
+        foregroundColor: colorFondo != null
+            ? getTextColorForBackground(colorFondo!)
+            : Theme.of(context).colorScheme.onPrimaryContainer,
         padding: EdgeInsets.symmetric(
           vertical: vertPadding ?? 10,
           horizontal: horiPadding ?? 24,
@@ -154,11 +160,15 @@ class BotonIcono extends StatelessWidget {
   final dynamic icono;
   final VoidCallback? onPressed;
   final Color? color;
-  const BotonIcono({super.key, required this.icono, required this.onPressed, this.color})
-    : assert(
-        icono is IconData || icono is String,
-        'Los iconos deben ser un String o un IconData, el alternativo puede ser null',
-      );
+  const BotonIcono({
+    super.key,
+    required this.icono,
+    required this.onPressed,
+    this.color,
+  }) : assert(
+         icono is IconData || icono is String,
+         'Los iconos deben ser un String o un IconData, el alternativo puede ser null',
+       );
 
   @override
   Widget build(BuildContext context) {

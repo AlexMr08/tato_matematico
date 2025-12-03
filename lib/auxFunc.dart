@@ -129,88 +129,129 @@ Future<bool?> mostrarDialogoSiNoAlumnoV2(
   );
 }
 
-Future<bool?> mostrarDialogoSiNoAlumno(
+Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
   BuildContext context,
   String titulo,
   String contenido,
+  Color fondo,
+  Color boton,
 ) async {
-  return showDialog<bool>(
+  var textFondo = getTextColorForBackground(boton);
+  var textBoton = getTextColorForBackground(boton);
+
+  return showGeneralDialog<bool>(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(titulo),
-        content: Text(contenido),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-        ),
-        actionsAlignment:
-            MainAxisAlignment.spaceEvenly, // Distribuye el espacio
-        actions: <Widget>[
-          // ----------------- BOTÓN NO -----------------
-          Material(
-            elevation: 5,
-            borderRadius: BorderRadius.circular(15),
-            color: Colors.red.shade50,
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context).pop(false);
-              },
-              borderRadius: BorderRadius.circular(15),
+    barrierLabel: "Cerrar",
+    barrierColor: Colors.black54,
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: fondo,
+          body: SafeArea(
+            child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/images/no.png',
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.contain,
+                    Text(
+                      titulo,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: textFondo,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      "No",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 20),
+                    Text(
+                      contenido,
+                      style: TextStyle(fontSize: 24, color: textFondo),
+                      textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+                    const SizedBox(height: 60),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // ----------------- BOTÓN SALIR -----------------
+                        Material(
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(20),
+                          color: boton,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(false),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/boton_volver.png',
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.contain,
+                                    color: textBoton,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    "Volver al menú",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                      color: textBoton,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
 
-          // ----------------- BOTÓN SI -----------------
-          Material(
-            elevation: 5,
-            borderRadius: BorderRadius.circular(15),
-            color: Colors.green.shade50,
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context).pop(true);
-              },
-              borderRadius: BorderRadius.circular(15),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/si.png',
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      "Si",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                        // ----------------- BOTÓN REINICIAR -----------------
+                        Material(
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(20),
+                          color: boton,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(true),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/de_nuevo2.png',
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.contain,
+                                    color: textBoton,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    "Empezar de nuevo",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                      color: textBoton,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       );
     },
   );
@@ -316,7 +357,5 @@ void snackBarExito(BuildContext context, String mensaje) {
 }
 
 void snackBarAviso(BuildContext context, String mensaje) {
-  ScaffoldMessenger.of(
-    context,
-  ).showSnackBar(SnackBar(content: Text(mensaje)));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
 }
