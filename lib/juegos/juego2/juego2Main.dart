@@ -8,11 +8,34 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:flutter/foundation.dart';
+import 'package:tato_matematico/juego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 /// **Nombre de la Clase: `Juego2**
 ///
 /// **Descripción:** Clase que representa el segundo juego de la aplicación.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 03/12/2025
+/// * **Último cambio:** Se ha creado la clase
+///
+
+class Juego2 extends Juego {
+  Juego2()
+    : super(
+        id: 'juego2',
+        actividad: const Juego2Screen(),
+        nombre: 'Juego 2',
+        icono: Icons.sort,
+      );
+}
+
+/// **Nombre de la Clase: `Juego2Screen**
+///
+/// **Descripción:** Clase que representa visualmente el segundo juego de la aplicación.
 ///
 /// ---
 /// **Metadatos de Control:**
@@ -30,18 +53,20 @@ class Juego2Screen extends StatefulWidget {
 
 class _Juego2ScreenState extends State<Juego2Screen> {
   late Alumno alumno;
-  int min = 33;
-  int max = 100;
-  int numOpciones = 12;
+  int min = 1;
+  int max = 10;
+  int numOpciones = 10;
   List<int> numeros = [];
   List<int?> numerosAbajo = List.filled(12, null);
   List<int> numerosOrdenados = [];
-  int repeticiones = 0;
+  Set<int> _indicesError = {};
+  int repeticionesTotales = 5;
+  int repeticionesCompletadas = 0;
+  bool modoImagenes = true;
 
   @override
   void initState() {
     super.initState();
-    // 1. GENERAMOS EL JUEGO SOLO UNA VEZ AQUÍ
     numeros = _generarNuevoJuego(min, max, numOpciones);
     numerosAbajo = List.filled(numOpciones, null);
     numerosOrdenados = numeros.toList();
@@ -49,14 +74,11 @@ class _Juego2ScreenState extends State<Juego2Screen> {
   }
 
   void moverNumero(int numero) {
-    // Buscamos el primer hueco vacío abajo
     int indiceVacio = numerosAbajo.indexOf(null);
 
     if (indiceVacio != -1) {
       setState(() {
-        // Ponemos el número abajo
         numerosAbajo[indiceVacio] = numero;
-        // Lo quitamos de arriba para que no se duplique
         numeros.remove(numero);
       });
     }
@@ -157,7 +179,9 @@ class _Juego2ScreenState extends State<Juego2Screen> {
       _ => PosicionBarra.abajo,
     };
 
-    //numeros = _generarNuevoJuego(min, max, numOpciones);
+    var colorTexto = alumno.colorFondo != null
+        ? getTextColorForBackground(alumno.colorFondo!)
+        : Theme.of(context).colorScheme.onSurface;
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -174,20 +198,49 @@ class _Juego2ScreenState extends State<Juego2Screen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          spacing: 8,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "REPETICIONES: ",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: colorTexto,
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+                ...List.generate(repeticionesTotales, (index) {
+                  bool completado = index < repeticionesCompletadas;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Icon(
+                      completado ? Icons.emoji_emotions_rounded : Icons.circle,
+                      color: colorTexto,
+                      size: 24,
+                    ),
+                  );
+                }),
+              ],
+            ),
+
             Expanded(
               child: numeros.isNotEmpty
                   ? Wrap(
-                      alignment: WrapAlignment.start,
-                      runAlignment: WrapAlignment.start,
-                      spacing: 32,
-                      runSpacing: 32,
-                      children: numeros.map((num) {
+                      alignment: WrapAlignment.center,
+                      runAlignment: WrapAlignment.spaceBetween,
+                      spacing: 24,
+                      children: numeros.map((numero) {
                         return SizedBox(
-                          width: 140,
-                          height: 140,
+                          width: 135,
+                          height: 135,
                           child: InkWell(
-                            onTap: () => moverNumero(num),
+                            onTap: () => moverNumero(numero),
                             child: Card(
                               elevation: 4,
                               shape: RoundedRectangleBorder(
@@ -196,15 +249,19 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                               child: Center(
                                 child: Container(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: AutoSizeText(
-                                    num.toString(),
-                                    style: TextStyle(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    maxLines: 1,
-                                    minFontSize: 8,
-                                  ),
+                                  child: modoImagenes
+                                      ? Image.asset(
+                                          "assets/images/${numero}ball.png",
+                                        )
+                                      : AutoSizeText(
+                                          numero.toString(),
+                                          style: TextStyle(
+                                            fontSize: 48,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          minFontSize: 8,
+                                        ),
                                 ),
                               ),
                             ),
@@ -212,18 +269,30 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                         );
                       }).toList(),
                     )
-                  : Center(child: Text("No quedan numeros")),
+                  : Center(
+                      child: Text(
+                        "No quedan numeros",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorTexto,
+                        ),
+                      ),
+                    ),
             ),
-            const SizedBox(height: 16),
             Text(
               "Ordenados",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: colorTexto,
+              ),
             ),
-            const SizedBox(height: 16),
             Container(
-              foregroundDecoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.black, width: 2),
+              decoration: BoxDecoration(
+                color: alumno.colorBotones,
+                border: Border.all(color: colorTexto, width: 2),
+                borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.all(16.0),
               child: Wrap(
@@ -231,32 +300,41 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                 runAlignment: WrapAlignment.start,
                 spacing: 16,
                 runSpacing: 16,
-                children: numerosAbajo.map((num) {
+                children: numerosAbajo.map((numero) {
                   return SizedBox(
                     width: 75,
                     height: 75,
                     child: InkWell(
-                      onTap: () => devolverNumero(
-                        num == null ? -1 : numerosAbajo.indexOf(num),
-                      ),
+                      onTap: () => numero != null
+                          ? devolverNumero(numerosAbajo.indexOf(numero))
+                          : null,
                       child: Card(
                         elevation: 4,
+                        color: _indicesError.contains(numerosAbajo.indexOf(numero))
+                            ? Colors.red.shade300
+                            : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            child: AutoSizeText(
-                              num != null ? num.toString() : "",
-                              style: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              minFontSize: 8,
-                            ),
-                          ),
+                          child: numero != null
+                              ? Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: modoImagenes
+                                      ? Image.asset(
+                                          "assets/images/${numero}ball.png",
+                                        )
+                                      : AutoSizeText(
+                                          numero.toString(),
+                                          style: TextStyle(
+                                            fontSize: 48,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          minFontSize: 8,
+                                        ),
+                                )
+                              : const SizedBox.shrink(),
                         ),
                       ),
                     ),
@@ -264,26 +342,81 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                 }).toList(),
               ),
             ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: BotonSinIcono(
+                  texto: "Aceptar",
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  colorFondo: alumno.colorBotones,
+                  onPressed: () {
+                    Set<int> nuevosErrores = {};
 
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (listEquals(numerosAbajo, numerosOrdenados)) {
-                    // Correcto
-                    snackBarExito(
-                      context,
-                      "Has ordenado los números correctamente.",
-                    );
-                  } else {
-                    // Incorrecto
-                    snackBarError(
-                      context,
-                      "El orden no es correcto. Inténtalo de nuevo.",
-                    );
-                  }
-                },
-                child: const Text('Aceptar'),
+                    _indicesError.clear();
+                    for (int i = 0; i < numerosAbajo.length; i++) {
+                      if (numerosAbajo[i] != numerosOrdenados[i]) {
+                        nuevosErrores.add(i);
+                      }
+                    }
+
+                    if (nuevosErrores.isEmpty) {
+                      // Correcto
+                      snackBarExito(
+                        context,
+                        "Has ordenado los números correctamente.",
+                      );
+                      repeticionesCompletadas += 1;
+                      if (repeticionesCompletadas >= repeticionesTotales) {
+                        mostrarDialogoSalirReiniciarAlumnoV2(
+                          context,
+                          "Quieres volver a jugar?",
+                          "Si quieres volver a jugar pulsa en reiniciar, si no, pulsa en salir.",
+                          alumno.colorFondo ??
+                              Theme.of(context).colorScheme.surface,
+                          alumno.colorBotones ??
+                              Theme.of(context).colorScheme.primaryContainer,
+                        ).then((onValue) {
+                          if (onValue != null) {
+                            if (onValue) {
+                              // Reiniciar
+                              setState(() {
+                                repeticionesCompletadas = 0;
+                                numeros = _generarNuevoJuego(
+                                  min,
+                                  max,
+                                  numOpciones,
+                                );
+                                numerosAbajo = List.filled(numOpciones, null);
+                                numerosOrdenados = numeros.toList();
+                                numerosOrdenados.sort();
+                                _indicesError.clear();
+                              });
+                            } else {
+                              navigator.pop();
+                            }
+                          }
+                        });
+                      }
+                      setState(() {
+                        numeros = _generarNuevoJuego(min, max, numOpciones);
+                        numerosAbajo = List.filled(numOpciones, null);
+                        numerosOrdenados = numeros.toList();
+                        numerosOrdenados.sort();
+                        _indicesError.clear();
+                      });
+                    } else {
+                      setState(() {
+                        _indicesError = nuevosErrores;
+                      });
+                      snackBarError(
+                        context,
+                        "El orden no es correcto. Inténtalo de nuevo.",
+                      );
+                    }
+                  },
+                ),
               ),
             ),
           ],
