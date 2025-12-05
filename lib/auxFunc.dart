@@ -136,7 +136,7 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
   Color fondo,
   Color boton,
 ) async {
-  var textFondo = getTextColorForBackground(boton);
+  var textFondo = getTextColorForBackground(fondo);
   var textBoton = getTextColorForBackground(boton);
 
   return showGeneralDialog<bool>(

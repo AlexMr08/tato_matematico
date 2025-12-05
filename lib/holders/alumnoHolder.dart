@@ -31,7 +31,7 @@ class AlumnoHolder extends ChangeNotifier {
 
   void _escucharCambiosPerfil(String id) {
     _perfilSubscription?.cancel();
-    final perfilRef = _dbRef.child('tato').child('profesorado').child(id);
+    final perfilRef = _dbRef.child('tato').child('alumnos').child(id);
 
     _perfilSubscription = perfilRef.onValue.listen((event) {
       if (event.snapshot.value != null) {
@@ -39,8 +39,7 @@ class AlumnoHolder extends ChangeNotifier {
 
         final alumnoActualizado = Alumno.fromMap(id, data);
 
-        if (alumno != null &&
-            alumno!.imagen == alumnoActualizado.imagen) {
+        if (alumno != null && alumno!.imagen == alumnoActualizado.imagen) {
           alumnoActualizado.foto = alumno!.foto;
           alumnoActualizado.imagenLocal = alumno!.imagenLocal;
         }

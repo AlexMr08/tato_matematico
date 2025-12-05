@@ -19,14 +19,23 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 ///
 
 class AgregarAlumno extends StatefulWidget {
-  const AgregarAlumno({super.key});
+  FirebaseDatabase? database;
+  AgregarAlumno({super.key, this.database});
 
   @override
   State<AgregarAlumno> createState() => _AgregarAlumnoState();
 }
 
-class _AgregarAlumnoState extends State<AgregarAlumno> {
+class _AgregarAlumnoState extends State<AgregarAlumno> with AlumnoLogic {
   final _nombreController = TextEditingController();
+  int res = 0;
+  late FirebaseDatabase _db;
+
+  @override
+  void initState() {
+    super.initState();
+    _db = widget.database ?? FirebaseDatabase.instance;
+  }
 
   /*
   Se han hecho pruebas unitarias para asegurar que funciona correctamente:
@@ -37,52 +46,17 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
     la cual estara documentada en su lugar correspondiente, y funciona bien.
   - Se puede editar sin problema el usuario creado para personalizarlo
    */
-  Future<void> agregarAlumno() async {
-    final nombre = _nombreController.text.trim();
 
-    if (nombre.isEmpty) {
-      snackBarAviso(context, "Por favor, introduce el nombre");
-      return;
-    }
+  Future<void> agregarAlumno(String nom) async {
+    int resultado = await procesarAgregarAlumno(nom, _db);
 
-    //En esta parte se establece una contrasena por defecto de "0000"
-    String contrasena_defecto = "0000";
-
-    //Se hace cifrado de la contrasena por Hash
-    var bytes = utf8.encode(contrasena_defecto);
-    var digest = sha256.convert(bytes);
-
-    String passwordHash = digest.toString();
-
-    //Se crea el alumno
-
-    final dbRef = FirebaseDatabase.instance
-        .ref()
-        .child("tato")
-        .child("alumnos");
-
-    final newAlumnoRef = dbRef.push();
-    await newAlumnoRef.set({"nombre": nombre});
-
-    //Se crea la contrasena del alumno que por defecto es
-    // "0000" cifrada en Hash.
-
-    String id = newAlumnoRef.key!;
-
-    final dbRefpass = FirebaseDatabase.instance
-        .ref()
-        .child("tato")
-        .child("login");
-
-    await dbRefpass.child(id).set({
-      "alfanumerica": {"hash": passwordHash},
-      "tipoLogin": "alfanumerica",
-    });
-
-    if (mounted) {
-      snackBarExito(context, "Alumno añadido correctamente");
-      _nombreController.clear();
-      Navigator.of(context).pop(true);
+    if (resultado == -1) {
+      if (mounted) snackBarAviso(context, "El nombre no puede estar vacío");
+    } else {
+      if (mounted) {
+        snackBarExito(context, "Alumno creado con exito");
+        Navigator.of(context).pop(true);
+      }
     }
   }
 
@@ -122,7 +96,7 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
               width: double.infinity,
               child: BotonSinIcono(
                 texto: "Añadir alumno",
-                onPressed: agregarAlumno,
+                onPressed: () => agregarAlumno(_nombreController.text),
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 vertPadding: 14,
@@ -133,5 +107,39 @@ class _AgregarAlumnoState extends State<AgregarAlumno> {
         ),
       ),
     );
+  }
+}
+
+// Agrega esto al final o principio de agregarAlumno.dart
+
+mixin AlumnoLogic {
+  // Esta función ahora es pura y testeable.
+  // Recibe la DB como argumento en lugar de depender del estado.
+  Future<int> procesarAgregarAlumno(String nom, FirebaseDatabase db) async {
+    final nombre = nom.trim();
+
+    // 1. Validación: Si está vacío devuelve -1
+    if (nombre.isEmpty) {
+      return -1;
+    }
+
+    String contrasenaDefecto = "0000";
+    var bytes = utf8.encode(contrasenaDefecto);
+    var digest = sha256.convert(bytes);
+    String passwordHash = digest.toString();
+
+    final dbRef = db.ref().child("tato").child("alumnos");
+    final newAlumnoRef = dbRef.push();
+    await newAlumnoRef.set({"nombre": nombre});
+
+    String id = newAlumnoRef.key!;
+
+    final dbRefpass = db.ref().child("tato").child("login");
+    await dbRefpass.child(id).set({
+      "alfanumerica": {"hash": passwordHash},
+      "tipoLogin": "alfanumerica",
+    });
+
+    return 1; // Éxito
   }
 }

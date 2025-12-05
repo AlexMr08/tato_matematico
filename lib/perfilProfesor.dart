@@ -11,7 +11,6 @@ import 'package:tato_matematico/edicion/editarClaseV2.dart';
 import 'package:tato_matematico/edicion/profesorEditarContrasena.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
-import 'package:tato_matematico/holders/profesorHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
@@ -112,7 +111,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                   clipBehavior: Clip.hardEdge,
                   child: GestureDetector(
                     onTap: () {
-                      _mostrarMenuOrigen(context, widget.profesor);
+                      _mostrarMenuOrigen(context, widget.profesor, propio: widget.propio);
                     },
                     child: foto,
                   ),
@@ -207,7 +206,11 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
     );
   }
 
-  void _mostrarMenuOrigen(BuildContext context, Profesor alumno) {
+  void _mostrarMenuOrigen(
+    BuildContext context,
+    Profesor alumno, {
+    bool propio = true,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
 
     showModalBottomSheet(
@@ -230,7 +233,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                   title: const Text('Galería'),
                   onTap: () {
                     Navigator.of(context).pop(); // Cerrar menú
-                    _cambiarImagen(ImageSource.gallery, alumno);
+                    _cambiarImagen(ImageSource.gallery, alumno, propio: propio);
                   },
                 ),
                 ListTile(
@@ -238,7 +241,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                   title: const Text('Cámara'),
                   onTap: () {
                     Navigator.of(context).pop(); // Cerrar menú
-                    _cambiarImagen(ImageSource.camera, alumno);
+                    _cambiarImagen(ImageSource.camera, alumno, propio: propio);
                   },
                 ),
               ],
@@ -249,10 +252,14 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
     );
   }
 
-  Future<void> _cambiarImagen(ImageSource source, Profesor prof) async {
+  Future<void> _cambiarImagen(
+    ImageSource source,
+    Profesor prof, {
+    bool propio = true,
+  }) async {
     try {
       final ImagePicker picker = ImagePicker();
-
+      print(propio);
       // Abrimos camara o galeria con optimizacion
       final XFile? pickedFile = await picker.pickImage(
         source: source,
@@ -317,7 +324,9 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
 
       // 5. Notificar cambios
       if (mounted) {
-        context.read<ProfesorHolder>().setProfesor(prof);
+        if (propio) {
+          //context.read<ProfesorHolder>().setProfesor(prof);
+        }
         snackBarExito(context, "Imagen actualizada correctamente.");
       }
     } catch (e) {

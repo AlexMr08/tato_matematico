@@ -158,7 +158,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
             texto: "Añadir $texto",
             onPressed: () {
               if (currentPageIndex == 0) {
-                navegar(const AgregarAlumno(), context);
+                navegar(AgregarAlumno(), context);
               }
               if (currentPageIndex == 1) {
                 navegar(const AgregarProfesor(), context);
@@ -181,28 +181,19 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
   Widget build(BuildContext context) {
     final profesorHolder = context.watch<ProfesorHolder>();
     final ah = context.watch<AlumnosHolder>();
-
-    final profes = context.select<ProfesoresHolder, List<Profesor>>(
-      ((ph) => ph.profesores),
-    );
-    final profesIsLoading = context.select<ProfesoresHolder, bool>(
-      ((ph) => ph.isLoading),
-    );
-    final profesInit = context.select<ProfesoresHolder, bool>(
-      ((ph) => ph.isInit),
-    );
+    final ph = context.watch<ProfesoresHolder>();
 
     final ch = context.watch<ClasesHolder>();
 
     if (profesorHolder.profesor != null &&
         profesorHolder.profesor!.director &&
-        !profesInit) {
+        !ph.isInit) {
       context.read<ProfesoresHolder>().init();
     }
 
     _alumnos = ah.alumnos;
     _clases = ch.clases;
-    _profesores = profes;
+    _profesores = ph.profesores;
 
     if (_searchController.text.isEmpty) {
       _alumnosFiltrados = List.from(_alumnos);
@@ -346,7 +337,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
               /// Profesores page
               Builder(
                 builder: (context) {
-                  if (profesIsLoading) {
+                  if (ph.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   return ListView.builder(

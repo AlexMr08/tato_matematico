@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/auxFunc.dart';
 
@@ -27,17 +29,37 @@ import 'package:tato_matematico/auxFunc.dart';
 
 class Juego {
   String id;
-  Widget actividad;
   String nombre;
   IconData? icono;
+  int min;
+  int max;
+  int cantidad;
+
 
   Juego({
     required this.id,
-    required this.actividad,
     required this.nombre,
+    required this.min,
+    required this.max,
+    required this.cantidad,
     this.icono,
   });
 
+  int generarNuevoNumero() {
+    int res;
+    if (max < min) {
+      res = 0;
+    } else if (min < 0) {
+      final random = Random();
+      res = min + random.nextInt(max + 1);
+    } else if (max == min) {
+      res = min;
+    } else {
+      final random = Random();
+      res = min + random.nextInt(max - min + 1);
+    }
+    return res;
+  }
 }
 
 /// **Nombre de la Clase: `JuegoCard`**
