@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 
 /// **Nombre de la Clase: `Juego**
 ///
@@ -23,8 +25,9 @@ import 'package:tato_matematico/auxFunc.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 02/12/2025
-/// * **Último cambio:** Se ha eliminado el widget
+/// * **Fecha de modificación:** 05/12/2025
+/// * **Último cambio:** Se han añadido atributos comunes de los juegos y se ha añadido un metodo para generar aleatorios.
+/// * **Tambien un metodo para subir estadisticas
 ///
 
 class Juego {
@@ -34,16 +37,21 @@ class Juego {
   int min;
   int max;
   int cantidad;
-
+  bool usaImagenes;
+  String tipoImagenes;
 
   Juego({
     required this.id,
     required this.nombre,
     required this.min,
     required this.max,
-    required this.cantidad,
+    required int cantidad,
+    required bool usaImagenes,
+    required String tipoImagenes,
     this.icono,
-  });
+  }) : usaImagenes = max > 10 ? false : usaImagenes,
+       cantidad = max - min + 1 < cantidad ? max - min + 1 : cantidad,
+       tipoImagenes = tipoImagenes == "" ? "apple" : tipoImagenes;
 
   int generarNuevoNumero() {
     int res;
@@ -59,6 +67,51 @@ class Juego {
       res = min + random.nextInt(max - min + 1);
     }
     return res;
+  }
+
+  Future<void> subirEstadisticas({
+    required int aciertos,
+    required int errores,
+    required int omisiones,
+    required Alumno alumno,
+  }) async {
+    if (omisiones == 0 && aciertos == 0 && errores == 0) return;
+
+    // 1. Obtenemos la semana actual para la ruta en la BD
+    String semana = obtenerSemana();
+
+    // 2. Referencia a las estadísticas de este juego y semana
+    var dbRef = FirebaseDatabase.instance.ref().child(
+      "tato/estadisticas/${alumno.id}/$id/$semana",
+    );
+
+    // 3. Realizamos la transaccion
+    await dbRef.runTransaction((Object? data) {
+      // Si no existen datos previos en esa ruta, creamos el mapa inicial
+      if (data == null) {
+        return Transaction.success({
+          "aciertos": aciertos,
+          "errores": errores,
+          "omisiones": omisiones,
+        });
+      }
+
+      // Si existen datos, los leemos y los incrementamos
+      final Map<String, dynamic> estadisticas = Map<String, dynamic>.from(
+        data as Map,
+      );
+
+      int aciertosPrevios = (estadisticas['aciertos'] as int?) ?? 0;
+      int erroresPrevios = (estadisticas['errores'] as int?) ?? 0;
+      int omisionesPrevias = (estadisticas['omisiones'] as int?) ?? 0;
+
+      estadisticas['aciertos'] = aciertosPrevios + aciertos;
+      estadisticas['errores'] = erroresPrevios + errores;
+      estadisticas['omisiones'] = omisionesPrevias + omisiones;
+
+      // Devolvemos los datos actualizados para que se guarden
+      return Transaction.success(estadisticas);
+    });
   }
 }
 
@@ -80,11 +133,11 @@ class JuegoCard extends StatefulWidget {
   final Color? color;
 
   const JuegoCard({
-    super.key, // Versión FINAL: Se añade Key
+    super.key,
     required this.juego,
     required this.onTap,
     required this.color,
-  }); // Versión FINAL: Se usa Key
+  });
 
   @override
   State<JuegoCard> createState() => _JuegoCardState();

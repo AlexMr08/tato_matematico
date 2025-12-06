@@ -225,6 +225,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
     return ScaffoldAlumno(
       posicion: posicionBarra,
+      textoCabecera: "Juego 1 - Selecciona el numero correcto",
       alumno: _alumno,
       onVolver: Navigator.of(context).pop,
       onAjustes: _navegarAjustes,
@@ -259,7 +260,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                   icon: const Icon(Icons.volume_up),
                   label: const Text('Volver a escuchar'),
                 ),
-                SizedBox(height:8),
+                SizedBox(height: 8),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
