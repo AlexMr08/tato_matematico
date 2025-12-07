@@ -132,6 +132,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
 
     return ScaffoldAlumno(
       alumno: alumno,
+      textoCabecera: "Ajustes de color",
       hasAjustes: false,
       hasEstadisticas: false,
       onAjustes: () {},

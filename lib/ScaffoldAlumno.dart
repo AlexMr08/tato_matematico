@@ -20,6 +20,7 @@ class ScaffoldAlumno extends StatelessWidget {
   final Widget child;
   final PosicionBarra posicion;
   final Alumno alumno;
+  final String textoCabecera;
   final VoidCallback onVolver;
   final VoidCallback onAjustes;
   final VoidCallback onEstadisticas;
@@ -31,6 +32,7 @@ class ScaffoldAlumno extends StatelessWidget {
     required this.child,
     required this.posicion,
     required this.alumno,
+    required this.textoCabecera,
     required this.onVolver,
     required this.onAjustes,
     required this.onEstadisticas,
@@ -45,31 +47,63 @@ class ScaffoldAlumno extends StatelessWidget {
     Widget body;
     switch (posicion) {
       case PosicionBarra.arriba:
-        body = Column(children: [barra, Expanded(child: child)]);
+        body = Column(
+          children: [
+            barra,
+            Expanded(child: child),
+          ],
+        );
         break;
       case PosicionBarra.abajo:
-        body = Column(children: [Expanded(child: child), barra]);
+        body = Column(
+          children: [
+            Expanded(child: child),
+            barra,
+          ],
+        );
         break;
       case PosicionBarra.izquierda:
-        body = Row(children: [barra, Expanded(child: child)]);
+        body = Row(
+          children: [
+            barra,
+            Expanded(child: child),
+          ],
+        );
         break;
       case PosicionBarra.derecha:
-        body = Row(children: [Expanded(child: child), barra]);
+        body = Row(
+          children: [
+            Expanded(child: child),
+            barra,
+          ],
+        );
         break;
     }
 
-    final Color appBarColor = alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+    final Color appBarColor =
+        alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: appBarColor,
         foregroundColor: getTextColorForBackground(appBarColor),
-        title: Text(alumno.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          textoCabecera,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
-      backgroundColor: alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
-      body: SafeArea(child: body),
+      backgroundColor:
+          alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, Object? result) async {
+          if (didPop) return;
+          onVolver();
+        },
+        child: SafeArea(child: body),
+      ),
     );
   }
 
@@ -77,30 +111,33 @@ class ScaffoldAlumno extends StatelessWidget {
     final bool esHorizontal =
         posicion == PosicionBarra.arriba || posicion == PosicionBarra.abajo;
 
-    final Color navColor = alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+    final Color navColor =
+        alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
 
     final List<Widget> botones = [
       //if (alumno.volverDerecha == false)
-        _BotonNav(
-          icon: Icons.arrow_back,
-          label: "Volver",
-          onTap: onVolver,
-          color: navColor,
-        ),
-      hasAjustes ?
-        _BotonNav(
-          icon: Icons.settings,
-          label: "Ajustes",
-          onTap: onAjustes,
-          color: navColor,
-        ): SizedBox(),
-      hasEstadisticas ?
-        _BotonNav(
-          icon: Icons.bar_chart,
-          label: "Estadísticas",
-          onTap: onEstadisticas,
-          color: navColor,
-        ): SizedBox(),
+      _BotonNav(
+        icon: Icons.arrow_back,
+        label: "Volver",
+        onTap: onVolver,
+        color: navColor,
+      ),
+      hasAjustes
+          ? _BotonNav(
+              icon: Icons.settings,
+              label: "Ajustes",
+              onTap: onAjustes,
+              color: navColor,
+            )
+          : SizedBox(),
+      hasEstadisticas
+          ? _BotonNav(
+              icon: Icons.bar_chart,
+              label: "Estadísticas",
+              onTap: onEstadisticas,
+              color: navColor,
+            )
+          : SizedBox(),
       /*if (alumno.volverDerecha == true)
        _BotonNav(
           icon: Icons.arrow_back,

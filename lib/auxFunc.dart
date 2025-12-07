@@ -1,9 +1,34 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:tato_matematico/ScaffoldAlumno.dart';
 
 // --- Función de utilidad para el color del texto ---
 Color getTextColorForBackground(Color backgroundColor) {
   return backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+}
+
+String obtenerSemana() {
+  DateTime now = DateTime.now();
+
+  DateTime lunes = now.subtract(Duration(days: now.weekday - 1));
+  DateTime domingo = lunes.add(const Duration(days: 6));
+
+  String f(int n) => n.toString().padLeft(2, '0');
+  String inicio = "${f(lunes.day)}-${f(lunes.month)}-${lunes.year}";
+  String fin = "${f(domingo.day)}/${f(domingo.month)}/${domingo.year}";
+
+  return inicio;
+}
+
+PosicionBarra getPosicionBarra(int? numBarra) {
+  PosicionBarra posicionBarra = switch (numBarra) {
+    0 => PosicionBarra.arriba,
+    1 => PosicionBarra.abajo,
+    2 => PosicionBarra.izquierda,
+    3 => PosicionBarra.derecha,
+    _ => PosicionBarra.abajo,
+  };
+  return posicionBarra;
 }
 
 Future<bool?> mostrarDialogoSiNoAlumnoV2(
@@ -136,7 +161,7 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
   Color fondo,
   Color boton,
 ) async {
-  var textFondo = getTextColorForBackground(boton);
+  var textFondo = getTextColorForBackground(fondo);
   var textBoton = getTextColorForBackground(boton);
 
   return showGeneralDialog<bool>(
@@ -233,6 +258,141 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                                   const SizedBox(height: 10),
                                   Text(
                                     "Empezar de nuevo",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                      color: textBoton,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Future<bool?> mostrarDialogoSiguienteAlumnoV2(
+  BuildContext context,
+  String titulo,
+  String contenido,
+  Color fondo,
+  Color boton,
+) async {
+  var textFondo = getTextColorForBackground(fondo);
+  var textBoton = getTextColorForBackground(boton);
+
+  return showGeneralDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: "Cerrar",
+    barrierColor: Colors.black54,
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: fondo,
+          body: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "🥳🥳🥳🥳",
+                      style: TextStyle(
+                        fontSize: 64,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      titulo,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: textFondo,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      contenido,
+                      style: TextStyle(fontSize: 24, color: textFondo),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 60),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // ----------------- BOTÓN SALIR -----------------
+                        Material(
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(20),
+                          color: boton,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(false),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/boton_volver.png',
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.contain,
+                                    color: textBoton,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    "Volver al menú",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                      color: textBoton,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // ----------------- BOTÓN REINICIAR -----------------
+                        Material(
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(20),
+                          color: boton,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(true),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/siguiente.png',
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.contain,
+                                    color: textBoton,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    "Siguiente",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 28,
