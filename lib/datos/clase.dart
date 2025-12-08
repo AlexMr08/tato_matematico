@@ -48,22 +48,26 @@ class Clase {
   String toString() {
     return 'Clase{id: $id, nombre: $nombre, ano: $ano, idTutor: $idTutor, alumnos: $alumnos}';
   }
-
 }
 
 class SelectorClaseCard extends StatelessWidget {
   final Clase clase;
   final VoidCallback onTap;
 
-  const SelectorClaseCard({super.key, required this.clase, required this.onTap});
+  const SelectorClaseCard({
+    super.key,
+    required this.clase,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Card(
+    return Card(
         elevation: 4,
-        child: Padding(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -97,7 +101,11 @@ class ProfesorClaseCard extends StatelessWidget {
   final Clase clase;
   final VoidCallback onPressed;
 
-  const ProfesorClaseCard({super.key, required this.clase, required this.onPressed});
+  const ProfesorClaseCard({
+    super.key,
+    required this.clase,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {

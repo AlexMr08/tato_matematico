@@ -116,11 +116,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
   Widget build(BuildContext context) {
     Alumno alumno;
     alumnoHolder = context.read<AlumnoHolder>();
-    if (widget.alum != null) {
-      alumno = widget.alum!;
-    } else {
-      alumno = alumnoHolder.alumno!;
-    }
+    alumno = alumnoHolder.alumno!;
 
     return ScaffoldComunV2(
       titulo: 'Ajustes comunes de color',

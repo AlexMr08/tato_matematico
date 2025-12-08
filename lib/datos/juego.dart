@@ -123,8 +123,8 @@ class Juego {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 02/12/2025
-/// * **Último cambio:** Se ha creado la clase
+/// * **Fecha de modificación:** 08/12/2025
+/// * **Último cambio:** Se ha cambiado el orden de Card e InkWell para darle mejor aspecto
 ///
 
 class JuegoCard extends StatefulWidget {
@@ -150,15 +150,16 @@ class _JuegoCardState extends State<JuegoCard> {
         widget.color ?? Theme.of(context).colorScheme.primaryContainer;
     final Color contentColor = getTextColorForBackground(backgroundColor);
 
-    return InkWell(
-      onTap: widget.onTap,
-      child: Card(
+    return Card(
         color: backgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24), // Bordes más redondeados
         ),
         elevation: 6,
-        child: Center(
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(

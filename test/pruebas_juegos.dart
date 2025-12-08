@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tato_matematico/agregar/agregarAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/datos/juego.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
+import 'package:tato_matematico/juegos/juego2/juego2.dart';
+import 'package:tato_matematico/juegos/juego2/juego2State.dart';
 
 class TestAlumnoLogic with AlumnoLogic {}
 
@@ -103,7 +104,7 @@ void main() {
       final alumno = Alumno(id: "test_1", nombre: "Tester", imagen: '');
 
       // Creamos la configuración del juego: Ordenar 3 números entre 1 y 10
-      final juegoConfig = Juego2(1, 10, 3, false, "", true);
+      final juegoConfig = Juego2(min: 1, max: 10, cantidad: 3, usaImagenes: false, tipoImagenes: "", ordenDescendente: true);
 
       test('iniciarJuego genera números y prepara el tablero vacío', () {
         final state = Juego2State(juegoConfig, alumno);
@@ -120,6 +121,9 @@ void main() {
         // Verificamos que no empieza finalizado ni con fallos
         expect(state.finalizado, false);
         expect(state.fallo, false);
+        expect(state.errores, 0);
+        expect(state.aciertos, 0);
+        expect(state.repeticionesCompletadas, 0);
       });
 
       test('moverNumero coloca la ficha y detecta si es correcta', () {
@@ -171,7 +175,6 @@ void main() {
 
           // Simulamos una partida perfecta moviendo todos los números en orden
           for (int numero in state.numerosOrdenados) {
-            // Verificamos que antes de mover el último no esté finalizado
             expect(state.finalizado, false);
             state.moverNumero(numero);
           }

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+
+import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
 class AlumnoLogIn extends StatefulWidget {
   const AlumnoLogIn({super.key});
@@ -108,24 +111,9 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
     //Fin seccion hecha con chatgpt
     alumno = alumnoHolder.alumno!;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: Navigator.canPop(context)
-            ? InkWell(
-                child: const Icon(Icons.arrow_back),
-                onTap: () => {Navigator.pop(context)},
-              )
-            : const Icon(Icons.menu),
-        title: const Text(
-          'Inicio de sesion de Alumno',
-          style: TextStyle(fontSize: 20),
-        ),
-        centerTitle: true,
-        actions: [Padding(padding: const EdgeInsets.only(right: 16))],
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SafeArea(
+    return ScaffoldComunV2(
+      titulo: "Inicio de sesion de Alumno",
+      cuerpo: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Padding(
@@ -156,16 +144,12 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
                       return SizedBox(
                         width: size,
                         height: size,
-                        child: CircleAvatar(
-                          backgroundImage: imageProvider,
-                          child: imageProvider == null
-                              ? Text(
-                                  alumno.nombre.isNotEmpty
-                                      ? alumno.nombre[0]
-                                      : '?',
-                                  style: TextStyle(fontSize: size * 0.4),
-                                )
-                              : null,
+                        child: FotoPerfil(
+                          key: ValueKey(alumno.imagen),
+                          nombre: alumno.nombre,
+                          idUnico: alumno.imagen ?? alumno.id,
+                          onObtenerImagen: alumno.obtenerImagen,
+                          radio: 56,
                         ),
                       );
                     },

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 import 'package:tato_matematico/edicion/editarClaseV2.dart';
 import 'package:tato_matematico/edicion/profesorEditarContrasena.dart';
 import 'package:tato_matematico/datos/profesor.dart';
