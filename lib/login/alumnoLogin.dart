@@ -100,6 +100,7 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
   Widget build(BuildContext context) {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     //Seccion hecha con chatgpt
     if (alumnoHolder.alumno == null) {
@@ -112,84 +113,94 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
     alumno = alumnoHolder.alumno!;
 
     return ScaffoldComunV2(
-      titulo: "Inicio de sesion de Alumno",
+      titulo: "Contraseña Alfanumérica",
       cuerpo: SafeArea(
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 30),
-                Center(
-                  child: Text(
-                    alumno.nombre,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Center(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      double size = 150; // Tamaño fijo del avatar en login
-                      ImageProvider? imageProvider;
-                      if (alumno.imagenLocal.isNotEmpty) {
-                        imageProvider = FileImage(File(alumno.imagenLocal));
-                      }
-                      return SizedBox(
-                        width: size,
-                        height: size,
-                        child: FotoPerfil(
-                          key: ValueKey(alumno.imagen),
-                          nombre: alumno.nombre,
-                          idUnico: alumno.imagen ?? alumno.id,
-                          onObtenerImagen: alumno.obtenerImagen,
-                          radio: 56,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                Center(
-                  child: SizedBox(
-                    width: 150,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimaryContainer,
+        child: Center(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // NOMBRE
+                    Text(
+                      alumno.nombre,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
                       ),
-                      onPressed: () {
-                        String password = passwordController.text.trim();
-                        autenticacionAlumno(alumno.id, password);
-                      },
-                      child: const Text('Entrar'),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+
+                    const SizedBox(height: 30),
+
+                    // FOTO DE PERFIL
+                    Center(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          double size = 150; // Tamaño fijo del avatar en login
+                          ImageProvider? imageProvider;
+                          if (alumno.imagenLocal.isNotEmpty) {
+                            imageProvider = FileImage(File(alumno.imagenLocal));
+                          }
+                          return SizedBox(
+                            width: size,
+                            height: size,
+                            child: FotoPerfil(
+                              key: ValueKey(alumno.imagen),
+                              nombre: alumno.nombre,
+                              idUnico: alumno.imagen ?? alumno.id,
+                              onObtenerImagen: alumno.obtenerImagen,
+                              radio: 56,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    // CAMPO CONTRASEÑA
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      style: const TextStyle(fontSize: 24, letterSpacing: 2),
+                      decoration: InputDecoration(
+                        labelText: 'Introduce tu contraseña',
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // BOTON ENTRAR
+                    Center(
+                      child: SizedBox(
+                        width: 150,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
+                          ),
+                          onPressed: () {
+                            String password = passwordController.text.trim();
+                            autenticacionAlumno(alumno.id, password);
+                          },
+                          child: const Text('Entrar'),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
