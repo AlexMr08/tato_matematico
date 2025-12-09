@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/login/loginImagenService.dart';
 import 'package:tato_matematico/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
 import 'package:tato_matematico/gamesMenu.dart';
@@ -20,151 +21,59 @@ class LoginConImagen extends StatefulWidget {
 }
 
 class _LoginConImagenState extends State<LoginConImagen> {
+  final _service = LoginImagenService();
   final db = FirebaseDatabase.instance.ref();
 
   bool cargando = true;
-  List<Pictograma> biblioteca = [];
   List<Pictograma> imagenesMostradas = [];
-  List<String> _idsDistractorasManuales = [];
 
   String? _idCorrecta;
   String? _idSeleccionada;
-  int total = 6;
-  bool aleatorio = true;
 
   @override
   void initState() {
     super.initState();
-    _cargarConfiguracion();
+    _iniciarLogin();
   }
 
-  Future<void> _cargarConfiguracion() async {
+  Future<void> _iniciarLogin() async {
     try {
-      // 1. Cargar configuración de login
+      // 1. LEER CONFIGURACIÓN (Esto es específico de cada tipo de login)
       final snap = await db
-          .child("tato")
-          .child("login")
-          .child(widget.alumnoId)
-          .child("seleccionImagen")
+          .child("tato/login/${widget.alumnoId}/seleccionImagen")
           .get();
 
-      if (!snap.exists || snap.value == null || snap.value is! Map) {
-        // No hay configuración válida
-        debugPrint("No hay configuración de login por imagen o formato inválido.");
-        if (mounted) {
-          setState(() => cargando = false);
-        }
+      if (!snap.exists) {
+        setState(() => cargando = false);
         return;
       }
 
-      final Map<String, dynamic> data = Map<String, dynamic>.from(snap.value as Map);
+      final data = Map<String, dynamic>.from(snap.value as Map);
 
       _idCorrecta = data["idImagenCorrecta"]?.toString();
-      total = (data["totalImagenes"] is int)
-          ? data["totalImagenes"] as int
-          : int.tryParse("${data["totalImagenes"]}") ?? total;
+      int total = int.tryParse("${data["totalImagenes"]}") ?? 6;
+      bool aleatorio = data["distractorasAleatorias"]?.toString().toLowerCase() == 'true';
 
-      aleatorio = data["distractorasAleatorias"] is bool
-          ? data["distractorasAleatorias"] as bool
-          : (data["distractorasAleatorias"]?.toString().toLowerCase() == 'true');
-
-      _idsDistractorasManuales = [];
-      if (data["imagenesDistractoras"] != null && data["imagenesDistractoras"] is Map) {
-        Map distractoresMap = data["imagenesDistractoras"];
-        _idsDistractorasManuales = distractoresMap.keys.map((k) => k.toString()).toList();
+      List<String> manuales = [];
+      if (data["imagenesDistractoras"] is Map) {
+        manuales = (data["imagenesDistractoras"] as Map).keys.map((k) => k.toString()).toList();
       }
 
-      if (!aleatorio && _idCorrecta != null) {
-        await _cargarGridManual();
+      // 2. PEDIR GRID AL SERVICIO (Aquí nos ahorramos 80 líneas de código)
+      if (_idCorrecta != null) {
+        imagenesMostradas = await _service.generarGrid(
+            idsCorrectos: [_idCorrecta!], // Lo pasamos como lista
+            idsDistractoresManuales: manuales,
+            totalImagenes: total,
+            esAleatorio: aleatorio
+        );
       }
-      else {
-        _cargarGridAleatorio();
-      }
 
-      if (mounted) setState(() => cargando = false);
-
-    } catch (e, st) {
-      debugPrint("ERROR en _cargarConfiguracion: $e\n$st");
-      if (mounted) setState(() => cargando = false);
-    }
-  }
-
-  Future<void> _cargarGridManual() async{
-    List<String> todosLosIds = [_idCorrecta!, ..._idsDistractorasManuales];
-
-    // Usamos un Set para evitar duplicados si la BD tuviera errores
-    todosLosIds = todosLosIds.toSet().toList();
-
-    List<Pictograma> listaFinal = [];
-
-    // Creamos una lista de "promesas" (Futures) para pedirlas todas a la vez
-    // Esto es mucho más rápido que pedirlas una por una en un bucle
-    List<Future<DataSnapshot>> futuros = todosLosIds.map((id) {
-      return db.child("tato/bibliotecaImagenes/$id").get();
-    }).toList();
-
-    // Esperamos a que todas bajen en paralelo
-    List<DataSnapshot> snapshots = await Future.wait(futuros);
-
-    for (var snap in snapshots) {
-      if (snap.exists && snap.value != null) {
-        try {
-          // El 'key' del snapshot es el ID del pictograma
-          listaFinal.add(Pictograma.fromMap(snap.key!, snap.value as Map));
-        } catch (e) {
-          debugPrint("Error parseando pictograma: $e");
-        }
-      }
-    }
-
-    // Mezclamos para que la contraseña no salga siempre primera
-    listaFinal.shuffle();
-
-    if (mounted) {
-      setState(() {
-        imagenesMostradas = listaFinal;
-      });
-    }
-  }
-
-  Future<void> _cargarGridAleatorio() async {
-    final snapBiblioteca = await db.child("tato").child("bibliotecaImagenes").get();
-    List<Pictograma> biblioteca = [];
-
-    if (snapBiblioteca.exists && snapBiblioteca.value != null && snapBiblioteca.value is Map) {
-      final map = Map<String, dynamic>.from(snapBiblioteca.value as Map);
-      map.forEach((key, value) {
-        biblioteca.add(Pictograma.fromMap(key, value));
-      });
-    }
-
-    if (biblioteca.isEmpty || _idCorrecta == null) return;
-
-    imagenesMostradas = [];
-
-    // 1. Buscar Correcta
-    try {
-      final correcta = biblioteca.firstWhere((p) => p.id == _idCorrecta);
-      imagenesMostradas.add(correcta);
     } catch (e) {
-      debugPrint("Imagen correcta no encontrada");
-      return;
+      debugPrint("Error: $e");
+    } finally {
+      if (mounted) setState(() => cargando = false);
     }
-
-    // 2. Rellenar con aleatorios
-    List<Pictograma> restantes = List.from(biblioteca)
-      ..removeWhere((p) => p.id == _idCorrecta);
-    restantes.shuffle();
-
-    final int objetivo = total.clamp(1, biblioteca.length);
-    while (imagenesMostradas.length < objetivo && restantes.isNotEmpty) {
-      imagenesMostradas.add(restantes.removeAt(0));
-    }
-
-    // 3. Mezclar
-    imagenesMostradas.shuffle();
-
-    if (mounted) setState(() {});
   }
 
   void _intentarLogin() {
