@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 
 /// **Nombre de la Clase: `ClasesHolder`**
 ///

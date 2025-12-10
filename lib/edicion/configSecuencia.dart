@@ -209,9 +209,9 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           items: const [
-                            DropdownMenuItem(value: 6, child: Text("6 Imágenes")),
-                            DropdownMenuItem(value: 9, child: Text("9 Imágenes")),
-                            DropdownMenuItem(value: 12, child: Text("12 Imágenes")),
+                            DropdownMenuItem(value: 4, child: Text("4 Imágenes (2x2)")),
+                            DropdownMenuItem(value: 6, child: Text("6 Imágenes (2x3)")),
+                            DropdownMenuItem(value: 8, child: Text("8 Imágenes (2x4)")),
                           ],
                           onChanged: (v) => setState(() {
                             _gridSize = v!;

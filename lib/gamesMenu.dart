@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/configColorAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/juegos/juego2/juego2.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'holders/alumnoHolder.dart';
@@ -11,14 +12,14 @@ import 'datos/juego.dart';
 
 /// **Nombre de la Clase: `GamesMenu**
 ///
-/// **Descripción:** clase que permite cambiar distintos colores de la interfaz de un alumno.
+/// **Descripción:** clase que muestra el menu principal del alumno
 ///
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha cambiado la ruta de los ajustes
+/// * **Fecha de modificación:** 07/12/2025
+/// * **Último cambio:** Se ha añadido el juego 2 correctamente
 ///
 
 class GamesMenu extends StatefulWidget {
@@ -48,7 +49,14 @@ class _GamesMenuState extends State<GamesMenu> {
       usaImagenes: false,
       tipoImagenes: "",
     ),
-    Juego2(1, 10, 8, true, "", true),
+    Juego2(
+      min: 1,
+      max: 20,
+      cantidad: 12,
+      ordenDescendente: true,
+      usaImagenes: false,
+      tipoImagenes: "",
+    ),
     Juego(
       id: 'juego3',
       nombre: 'Juego 3',
@@ -82,13 +90,23 @@ class _GamesMenuState extends State<GamesMenu> {
     }
     alumno = alumnoHolder.alumno!;
 
-    PosicionBarra posicionBarra = switch (alumno.posicionBarra) {
-      0 => PosicionBarra.arriba,
-      1 => PosicionBarra.abajo,
-      2 => PosicionBarra.izquierda,
-      3 => PosicionBarra.derecha,
-      _ => PosicionBarra.abajo,
-    };
+    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
+
+    if (alumnoHolder.isLoaded == false || alumnoHolder.juego2 == null) {
+      return ScaffoldAlumno(
+        alumno: alumno,
+        posicion: posicionBarra,
+        textoCabecera: "Menu principal",
+        hasEstadisticas: true,
+        hasAjustes: true,
+        onVolver: () {},
+        onAjustes: () {},
+        onEstadisticas: () {},
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    listaJuegos[1] = alumnoHolder.juego2!;
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -134,10 +152,13 @@ class _GamesMenuState extends State<GamesMenu> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: JuegoCard(
-                      juego: listaJuegos[1],
+                      juego: alumnoHolder.juego2!,
                       onTap: () {
                         navegar(
-                          Juego2Screen(juego: listaJuegos[1], alumno: alumno),
+                          Juego2Screen(
+                            juego: alumnoHolder.juego2!,
+                            alumno: alumno,
+                          ),
                           context,
                         );
                       },

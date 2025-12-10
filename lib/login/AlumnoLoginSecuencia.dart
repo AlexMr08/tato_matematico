@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
+import 'package:tato_matematico/login/loginImagenService.dart';
 import 'package:tato_matematico/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
 import 'package:tato_matematico/gamesMenu.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
+import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 
+/// Pantalla de inicio de sesión mediante secuencia de imágenes.
+///
+/// En esta pantalla se le muestra un grid de imágenes al alumno y debe pulsarlas
+/// en orden para acceder a los juegos.
+///
+/// Se utiliza [LoginImagenService] para generar el grid de imágenes.
 class AlumnoLoginSecuencia extends StatefulWidget {
   final String alumnoId;
 
@@ -14,26 +27,32 @@ class AlumnoLoginSecuencia extends StatefulWidget {
 }
 
 class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
+  final _service = LoginImagenService();
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
   bool cargando = true;
-  List<Pictograma> biblioteca = [];
   List<Pictograma> imagenesMostradas = [];
+  List<String> idsSecuenciaOrdenada = [];
+  final List<String> _seleccionUsuario = [];
 
-  Map<String, String> secuenciaCorrecta = {};
-  int pasoActual = 1;
-  int total = 6;
-  bool aleatorio = true;
+  EstadoLogin _estado = EstadoLogin.normal;
 
   @override
   void initState() {
     super.initState();
-    _cargarConfiguracion();
+    _iniciarLogin();
   }
 
-  Future<void> _cargarConfiguracion() async {
+  /// Carga la configuración de login de secuencia desde Firebase.
+  ///
+  /// Recupera:
+  /// 1. La secuencia correcta (ordenada).
+  /// 2. Configuración del grid (total de imágenes, modo aleatorio).
+  /// 3. Distractores manuales (si existen).
+  ///
+  /// Se delega la generación del grid a [_service]
+  Future<void> _iniciarLogin() async {
     try {
-      // 1. Cargar configuración de login por secuencia
       final snap = await _dbRef
           .child("tato")
           .child("login")
@@ -41,125 +60,308 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
           .child("secuenciaImagenes")
           .get();
 
-      if (snap.exists && snap.value != null && snap.value is Map) {
-        final data = Map<String, dynamic>.from(snap.value as Map);
-        final secuencia = data["secuenciaCorrecta"] as Map?;
-        if (secuencia != null) {
-          secuenciaCorrecta = secuencia.map((k, v) => MapEntry(k, v.toString()));
-        }
-        total = data["totalImagenes"] is int
-            ? data["totalImagenes"]
-            : int.tryParse("${data["totalImagenes"]}") ?? 6;
-        aleatorio = data["distractorasAleatorias"]?.toString().toLowerCase() == "true";
+      if (!snap.exists || snap.value == null || snap.value is! Map) {
+        if (mounted) setState(() => cargando = false);
+        return;
       }
 
-      // 2. Cargar biblioteca de pictogramas
-      final snapBib = await _dbRef.child("tato").child("bibliotecaImagenes").get();
-      if (snapBib.exists && snapBib.value != null && snapBib.value is Map) {
-        final map = Map<String, dynamic>.from(snapBib.value as Map);
-        biblioteca = map.entries.map((e) => Pictograma.fromMap(e.key, e.value)).toList();
+      final Map<String, dynamic> data = Map<String, dynamic>.from(snap.value as Map);
+
+      // Obtenemos la secuencia correcta
+      if (data["secuenciaCorrecta"] != null && data["secuenciaCorrecta"] is Map) {
+        Map<String, String> secuenciaMap = Map<String, String>.from(data["secuenciaCorrecta"]);
+        var clavesOrdenadas = secuenciaMap.keys.toList()..sort();
+        idsSecuenciaOrdenada = clavesOrdenadas.map((k) => secuenciaMap[k]!).toList();
       }
 
-      _generarImagenes();
-      if (mounted) setState(() => cargando = false);
+      // Obtenemos total de imagenes y modo aleatorio
+      int total = (data["totalImagenes"] is int)
+          ? data["totalImagenes"] as int
+          : int.tryParse("${data["totalImagenes"]}") ?? 9;
+
+      bool aleatorio = data["distractorasAleatorias"] is bool
+          ? data["distractorasAleatorias"] as bool
+          : (data["distractorasAleatorias"]?.toString().toLowerCase() == 'true');
+
+      // Obtenemos las distractoras manuales
+      List<String> manuales = [];
+      if (data["imagenesDistractoras"] != null && data["imagenesDistractoras"] is Map) {
+        Map distractoresMap = data["imagenesDistractoras"];
+        manuales = distractoresMap.keys.map((k) => k.toString()).toList();
+      }
+
+      // Pedimos el grid al servicio de imagenes
+      if (idsSecuenciaOrdenada.isNotEmpty) {
+        imagenesMostradas = await _service.generarGrid(
+            idsCorrectos: idsSecuenciaOrdenada, // Pasamos la lista de la secuencia
+            idsDistractoresManuales: manuales,
+            totalImagenes: total,
+            esAleatorio: aleatorio
+        );
+      }
+
     } catch (e) {
-      debugPrint("Error cargando secuencia: $e");
+      debugPrint("Error inicializando secuencia: $e");
+    } finally {
       if (mounted) setState(() => cargando = false);
     }
   }
 
-  void _generarImagenes() {
-    if (biblioteca.isEmpty || secuenciaCorrecta.isEmpty) {
-      imagenesMostradas = [];
-      if (mounted) setState(() {});
+  /// Maneja la interacción al tocar una imagen del grid.
+  ///
+  /// Si la imagen estaba seleccionada, se desmarca.
+  /// Si no estaba seleccionada, se añade al final de la selección.
+  void _onImagenTap(String id) {
+    // Si el usuario toca algo, volvemos al estado normal (quitamos mensaje de error)
+    if (_estado != EstadoLogin.normal) {
+      setState(() => _estado = EstadoLogin.normal);
+    }
+
+    setState(() {
+      if (_seleccionUsuario.contains(id)) {
+        _seleccionUsuario.remove(id);
+      } else {
+        if (_seleccionUsuario.length < idsSecuenciaOrdenada.length) {
+          _seleccionUsuario.add(id);
+        }
+      }
+    });
+  }
+
+  /// Compara la contraseña correcta con la selección del usuario.
+  ///
+  /// Comprueba longitud y coincidencia exacta en cada posición.
+  void _intentarLogin() {
+    final alumnoHolder = context.read<AlumnoHolder>();
+    // Validar longitud
+    if (_seleccionUsuario.length != idsSecuenciaOrdenada.length) {
       return;
     }
 
-    // Añadir imágenes de la secuencia primero
-    List<Pictograma> seleccionadas = [];
-    for (var id in secuenciaCorrecta.values) {
-      final picto = biblioteca.firstWhere((p) => p.id == id, orElse: () => Pictograma(id: id, url: '', descripcion: '', categoria: '',));
-      seleccionadas.add(picto);
-    }
-
-    // Añadir distractoras
-    List<Pictograma> restantes = List.from(biblioteca)..removeWhere((p) => secuenciaCorrecta.values.contains(p.id));
-    while (seleccionadas.length < total && restantes.isNotEmpty) {
-      seleccionadas.add(restantes.removeAt(0));
-    }
-
-    if (aleatorio) seleccionadas.shuffle();
-
-    imagenesMostradas = seleccionadas;
-    if (mounted) setState(() {});
-  }
-
-  void _tocarImagen(Pictograma picto) {
-    String clavePaso = "paso_${pasoActual.toString().padLeft(2, '0')}";
-    String? idEsperada = secuenciaCorrecta[clavePaso];
-
-    if (idEsperada == null) return;
-
-    if (picto.id == idEsperada) {
-      pasoActual++;
-      if (pasoActual > secuenciaCorrecta.length) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Ha iniciado sesión correctamente"), backgroundColor: Colors.green),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => GamesMenu()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Paso correcto: $clavePaso"),
-            backgroundColor: Colors.blue,
-            duration: const Duration(milliseconds: 500),
-          ),
-        );
+    // Validar orden estricto: El item 0 del usuario debe ser el item 0 de la secuencia
+    bool esCorrecto = true;
+    for (int i = 0; i < idsSecuenciaOrdenada.length; i++) {
+      if (_seleccionUsuario[i] != idsSecuenciaOrdenada[i]) {
+        esCorrecto = false;
+        break;
       }
-    } else {
-      pasoActual = 1;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Secuencia incorrecta, empieza de nuevo"), backgroundColor: Colors.red),
-      );
+    }
+
+    if (esCorrecto) {
+      // EXITO
+      setState(() => _estado = EstadoLogin.exito);
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const GamesMenu()),
+          );
+        }
+      });
+    }
+    else {
+      // ERROR
+      setState(() {
+        _estado = EstadoLogin.error;
+        _seleccionUsuario.clear();
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (cargando) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (imagenesMostradas.isEmpty) return const Scaffold(body: Center(child: Text("No se pudieron preparar las imágenes")));
+    final alumnoHolder = context.watch<AlumnoHolder>();
+    final Alumno? alumno = alumnoHolder.alumno;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Inicio de sesion de Alumno',
-          style: TextStyle(fontSize: 20),
+    if (alumno == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+    // --- LÓGICA DEL GRID 2xN ---
+    // Calculamos las columnas para que siempre sean 2 filas.
+    int columnas = 3;
+    if (imagenesMostradas.length == 4) columnas = 2; // (2x2)
+    if (imagenesMostradas.length == 8) columnas = 4; // (2x4)
+    if (imagenesMostradas.length > 8) columnas = 4;  // Fallback para más grandes
+
+    double maxWidth = columnas * 180.0;
+
+    bool botonEntrarActivo = _seleccionUsuario.length == idsSecuenciaOrdenada.length;
+    bool botonBorrarActivo = _seleccionUsuario.isNotEmpty;
+
+    return ScaffoldComunV2(
+        titulo: "Incio de Sesion por Secuencia",
+        cuerpo: cargando
+            ? const Center(child: CircularProgressIndicator())
+            : SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxWidth),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+
+                        // BARRA DE ESTADO
+                        LoginStatusCard(
+                          estado: _estado,
+                          mensajeNormal: "Pulsa las imágenes en orden.",
+                        ),
+
+                        const SizedBox(height: 10,),
+
+                        // INDICADOR DE PROGRESO PARA LAS SELECCIONADAS
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(idsSecuenciaOrdenada.length, (index) {
+                            bool rellenado = index < _seleccionUsuario.length;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                  color: rellenado ? colorScheme.primary : Colors.transparent,
+                                  border: Border.all(
+                                      color: rellenado ? colorScheme.primary : Colors.grey.shade400,
+                                      width: 2
+                                  ),
+                                  shape: BoxShape.circle
+                              ),
+                            );
+                          }),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        // GRID DE IMAGENES
+                        if (imagenesMostradas.isEmpty)
+                          const Text("Error cargando imágenes")
+                        else
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: columnas,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 1.0,
+                            ),
+                            itemCount: imagenesMostradas.length,
+                            itemBuilder: (context, index) {
+                              final picto = imagenesMostradas[index];
+
+                              // Comprobar si está seleccionada y en qué posición
+                              int indexSeleccion = _seleccionUsuario.indexOf(picto.id);
+                              bool isSelected = indexSeleccion != -1;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Feedback.forTap(context);
+                                  _onImagenTap(picto.id);
+                                },
+                                child: Stack(
+                                  children: [
+                                    // LA IMAGEN (FONDO)
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isSelected ? colorScheme.primary : Colors.grey.shade300,
+                                          width: isSelected ? 4 : 1,
+                                        ),
+                                        boxShadow: isSelected
+                                            ? [BoxShadow(color: colorScheme.primary.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
+                                            : [],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(11),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: ImagenStorage(rutaGs: picto.url, fit: BoxFit.contain),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // EL NÚMERO DE ORDEN
+                                    if (isSelected)
+                                      Align(
+                                        alignment: Alignment.topRight,
+                                        child: Container(
+                                          width: 40, height: 40,
+                                          margin: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                              color: colorScheme.primary,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: Colors.white, width: 2),
+                                              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "${indexSeleccion + 1}",
+                                              style: TextStyle(
+                                                  color: colorScheme.onPrimary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 22
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+
+                        const SizedBox(height: 20),
+
+                        // BOTONERA
+                        SizedBox(
+                          width: 350,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // BOTÓN ENTRAR
+                              SizedBox(
+                                height: 50,
+                                child: BotonConIcono(
+                                  icono: Icons.login_rounded,
+                                  texto: "ENTRAR",
+                                  fontSize: 20,
+                                  radio: 27,
+                                  onPressed: botonEntrarActivo ? _intentarLogin : null,
+                                ),
+                              ),
+
+                              const SizedBox(height: 15),
+
+                              // BOTÓN BORRAR
+                              SizedBox(
+                                height: 50,
+                                child: BotonConIcono(
+                                  icono: Icons.delete_outline_rounded,
+                                  texto: "BORRAR TODO",
+                                  fontSize: 20,
+                                  radio: 27,
+                                  onPressed: botonBorrarActivo ? () {
+                                    setState(() => _seleccionUsuario.clear());
+                                  } : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
         ),
-        centerTitle: true,
-        actions: [Padding(padding: const EdgeInsets.only(right: 16))],
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4, crossAxisSpacing: 10, mainAxisSpacing: 10,
-            childAspectRatio: 1.4),
-        itemCount: imagenesMostradas.length,
-        itemBuilder: (context, index) {
-          final picto = imagenesMostradas[index];
-          return InkWell(
-            onTap: () => _tocarImagen(picto),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ImagenStorage(rutaGs: picto.url, fit: BoxFit.cover),
-            ),
-          );
-        },
-      ),
     );
   }
 }

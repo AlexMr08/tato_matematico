@@ -23,10 +23,7 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 class Alumno {
   String id;
   String nombre;
-
-  // Versión FINAL: Usamos un campo privado para controlar el setter y el cambio de caché
   String? _imagen;
-
   String imagenLocal = '';
   Color? _colorFondo;
   Color? _colorBarraNav;
@@ -34,7 +31,6 @@ class Alumno {
   Color? _colorSeleccion;
   bool _volverDerecha = false;
   int? posicionBarra;
-  // Versión FINAL: Usamos File? foto para la caché en memoria/disco
   File? foto;
   bool permisoAjustesJuego1;
   bool permisoEstadisticasJuego1;
@@ -304,101 +300,6 @@ class Alumno {
     return null;
   }
 
-  // --- Widgets deprecados (widgetAlumno, widgetProfesor) ---
-  // Mantenidos por si acaso, pero las versiones V2 con State mejoran la gestión de caché/carga.
-
-  @deprecated
-  Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
-    var ori = MediaQuery.of(context).orientation;
-
-    return InkWell(
-      onTap: navegar,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          double size = ori == Orientation.portrait
-              ? constraints.maxWidth * 0.7
-              : constraints.maxHeight * 0.7;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: size,
-                height: size,
-                child: CircleAvatar(
-                  backgroundImage: cachedImage,
-                  child: cachedImage == null
-                      ? Text(
-                          nombre.isNotEmpty ? nombre[0] : '?',
-                          style: TextStyle(fontSize: size * 0.4),
-                        )
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                nombre,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  @deprecated
-  Widget widgetProfesor(BuildContext c, VoidCallback navegar, Icon icono) {
-    ImageProvider? imageProvider;
-    if (imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(imagenLocal));
-    }
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: imageProvider,
-          child: imageProvider == null
-              ? Text(
-                  nombre.isNotEmpty ? nombre[0] : '?',
-                  style: const TextStyle(fontSize: 20),
-                )
-              : null,
-        ),
-        title: Text(
-          nombre,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: IconButton(icon: icono, onPressed: navegar),
-        onTap: null,
-      ),
-    );
-  }
-
-  // --- Widgets V2 (usando State) ---
-  @deprecated
-  Widget widgetAlumnoV2({required VoidCallback onTap}) {
-    // Versión FINAL: Añade ValueKey para que Flutter distinga los widgets cuando la lista cambia
-    return AlumnViewCard(key: ValueKey(id), alumno: this, onTap: onTap);
-  }
-
-  @deprecated
-  Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
-    // Versión FINAL: Añade ValueKey basada en el ID y la URL de la imagen para forzar reconstrucción si cambia la imagen
-    return TeacherViewCard(
-      key: ValueKey("${id}_${_imagen ?? ''}"),
-      alumno: this,
-      onTap: onTap,
-      icono: icono,
-    );
-  }
 }
 
 /// **Nombre de la Clase: `AlumnViewCard`**
@@ -412,47 +313,37 @@ class Alumno {
 /// * **Fecha de modificación:** 30/11/2025
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
-class AlumnViewCard extends StatefulWidget {
+class AlumnViewCard extends StatelessWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
-  const AlumnViewCard({
-    super.key, // Versión FINAL: Se añade Key
-    required this.alumno,
-    required this.onTap,
-  }); // Versión FINAL: Se usa Key
+  const AlumnViewCard({super.key, required this.alumno, required this.onTap});
 
-  @override
-  State<AlumnViewCard> createState() => _AlumnViewCardState();
-}
-
-class _AlumnViewCardState extends State<AlumnViewCard> {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onTap,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 8,
+            children: [
+              Expanded(
                 child: FotoPerfil(
-                  key: ValueKey(widget.alumno.imagen),
-                  nombre: widget.alumno.nombre,
-                  idUnico: widget.alumno.imagen ?? widget.alumno.id,
-                  onObtenerImagen: widget.alumno.obtenerImagen,
+                  key: ValueKey(alumno.imagen),
+                  nombre: alumno.nombre,
+                  idUnico: alumno.imagen ?? alumno.id,
+                  onObtenerImagen: alumno.obtenerImagen,
                   radio: 56,
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text(
-                widget.alumno.nombre,
+              Text(
+                alumno.nombre,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -461,8 +352,8 @@ class _AlumnViewCardState extends State<AlumnViewCard> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

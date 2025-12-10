@@ -3,13 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
 import 'package:tato_matematico/login/AlumnoLoginSecuencia.dart';
 import 'package:tato_matematico/login/alumnoLogin.dart';
 import 'package:tato_matematico/login/LoginConImagen.dart';
+
+/// **Nombre de la Clase: `SeleccionAlumno`**
+///
+/// **Descripción:** Clase usada para diseñar la interfaz de seleccion de alumno
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 07/12/2025
+/// * **Último cambio:** Se ha hecho cambios en el diseño para adaptarlo a moviles
+///
 
 class SeleccionAlumno extends StatefulWidget {
   final Clase clase;
@@ -37,7 +49,10 @@ Future<String?> cargarTipoLogin(String alumnoId) async {
 class _SeleccionAlumnoState extends State<SeleccionAlumno> {
   List<Alumno> alumnos = [];
   int paginaActual = 0;
-  final int itemsPorPagina = 10;
+  late int itemsPorPagina = 10;
+  bool notInit = true;
+  late double size;
+  late bool em;
 
   /*
   Se han hecho pruebas unitarias para asegurar que funciona correctamente:
@@ -59,14 +74,14 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
 
     var alumnos = ah.obtenerAlumnosPorClase(widget.clase);
 
-    if (alumnos.isEmpty) {
-      return ScaffoldComunV2(
-        titulo: "Seleccion de alumno",
-        subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
-        cuerpo: const Center(child: Text("La clase no tiene alumnos")),
-      );
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
     }
 
+    itemsPorPagina = em ? 6 : 12;
+    var spacing = em ? 16.0 : 24.0;
     final int totalPaginas = (alumnos.length / itemsPorPagina).ceil();
 
     if (paginaActual >= totalPaginas && totalPaginas > 0) {
@@ -80,55 +95,70 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
 
     var alumnosPagina = alumnos.isEmpty ? [] : alumnos.sublist(inicio, fin);
 
+    var width = em ? (size - spacing - 32) / 2 : (size - spacing * 5 - 32) / 6;
+
+    var height = em ? width : 200.0;
+
+    if (alumnos.isEmpty) {
+      return ScaffoldComunV2(
+        titulo: "Seleccion de alumno",
+        subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
+        cuerpo: const Center(child: Text("La clase no tiene alumnos")),
+      );
+    }
+
     return ScaffoldComunV2(
       titulo: "Seleccion de alumno",
       subtitulo: "${widget.clase.nombre} - ${widget.clase.ano}",
-      cuerpo: SafeArea(
+      cuerpo: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
         child: Column(
+          spacing: 8,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(height: 8),
-            Expanded(
-              child: alumnosPagina.isEmpty
-                  ? const Center(child: Text("No hay clases disponibles"))
-                  : Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8.0),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        runAlignment: WrapAlignment.start,
-                        spacing: 32,
-                        runSpacing: 32,
-                        children: alumnosPagina.map((alumno) {
-                          return SizedBox(
-                            width: 200,
-                            height: 200,
-                            child: AlumnViewCard(
-                              alumno: alumno,
-                              onTap: () {
-                                context.read<AlumnoHolder>().setAlumno(alumno);
-                                cargarTipoLogin(alumno.id).then((tipo) {
-                                  if (tipo == "seleccionImagen") {
-                                    navegar(
-                                      LoginConImagen(alumnoId: alumno.id),
-                                      context,
-                                    );
-                                  } else if (tipo == "secuenciaImagenes") {
-                                    navegar(
-                                      AlumnoLoginSecuencia(alumnoId: alumno.id),
-                                      context,
-                                    );
-                                  } else if (tipo == "alfanumerica") {
-                                    navegar(AlumnoLogIn(), context);
-                                  }
-                                });
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
+            alumnosPagina.isEmpty
+                ? const Center(child: Text("No hay clases disponibles"))
+                : Expanded(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      runAlignment: WrapAlignment.start,
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: alumnosPagina.map((alumno) {
+                        return SizedBox(
+                          width: width,
+                          height: height,
+                          child: AlumnViewCard(
+                            alumno: alumno,
+                            onTap: () {
+                              context.read<AlumnoHolder>().setAlumno(alumno);
+                              cargarTipoLogin(alumno.id).then((tipo) {
+                                if (mounted) {
+                                  setState(() {
+                                    if (tipo == "seleccionImagen") {
+                                      navegar(
+                                        LoginConImagen(alumnoId: alumno.id),
+                                        context,
+                                      );
+                                    } else if (tipo == "secuenciaImagenes") {
+                                      navegar(
+                                        AlumnoLoginSecuencia(
+                                          alumnoId: alumno.id,
+                                        ),
+                                        context,
+                                      );
+                                    } else if (tipo == "alfanumerica") {
+                                      navegar(AlumnoLogIn(), context);
+                                    }
+                                  });
+                                }
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
                     ),
-            ),
-            SizedBox(height: 8),
+                  ),
             BotonesInferiores(
               onPrevious: retroceder(),
               onNext: avanzar(totalPaginas),
@@ -240,40 +270,34 @@ class BotonesInferiores extends StatelessWidget {
       textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: onPrevious,
-                style: bigButtonStyle,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back, size: 64),
-                    Text("Anterior"),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 32),
-              ElevatedButton(
-                onPressed: onNext,
-                style: bigButtonStyle,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_forward, size: 64),
-                    Text("Siguiente"),
-                  ],
-                ),
-              ),
-            ],
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      spacing: 16,
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: onPrevious,
+            style: bigButtonStyle,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.arrow_back, size: 64), Text("Anterior")],
+            ),
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: onNext,
+            style: bigButtonStyle,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.arrow_forward, size: 64),
+                Text("Siguiente"),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

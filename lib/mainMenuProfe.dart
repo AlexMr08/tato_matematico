@@ -11,9 +11,9 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
 import 'package:tato_matematico/holders/clasesHolder.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
-import 'package:tato_matematico/perfilProfesor.dart';
+import 'package:tato_matematico/widgetsAuxiliares/perfilProfesor.dart';
 import 'package:tato_matematico/datos/profesor.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 import 'package:tato_matematico/agregar/agregarAlumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'datos/alumno.dart';
@@ -93,13 +93,13 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
     }
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       color: Theme.of(context).colorScheme.primary, // mismo color
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 8,
         children: [
-          SizedBox(
-            width: 700,
+          Expanded(
             child: TextField(
               controller: _searchController,
               onChanged: (value) {
@@ -157,6 +157,8 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
             radio: 16,
             texto: "Añadir $texto",
             onPressed: () {
+              FocusScope.of(context).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
               if (currentPageIndex == 0) {
                 navegar(AgregarAlumno(), context);
               }
@@ -272,6 +274,7 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
           onDestinationSelected: (int index) {
             setState(() {
               currentPageIndex = index;
+              FocusScope.of(context).unfocus();
               if (profesor.director) {
                 _searchController.clear();
                 _alumnosFiltrados = List.from(_alumnos);

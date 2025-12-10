@@ -116,11 +116,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
   Widget build(BuildContext context) {
     Alumno alumno;
     alumnoHolder = context.read<AlumnoHolder>();
-    if (widget.alum != null) {
-      alumno = widget.alum!;
-    } else {
-      alumno = alumnoHolder.alumno!;
-    }
+    alumno = alumnoHolder.alumno!;
 
     PosicionBarra posicionBarra = switch (alumno.posicionBarra) {
       0 => PosicionBarra.arriba,

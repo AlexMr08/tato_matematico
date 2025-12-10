@@ -241,12 +241,8 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                               child: Text("6 Imágenes (2x3)"),
                             ),
                             DropdownMenuItem(
-                              value: 9,
-                              child: Text("9 Imágenes (3x3)"),
-                            ),
-                            DropdownMenuItem(
-                              value: 12,
-                              child: Text("12 Imágenes (3x4)"),
+                              value: 8,
+                              child: Text("8 Imágenes (2x4)"),
                             ),
                           ],
                           onChanged: (v) => setState(() {

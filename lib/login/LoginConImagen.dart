@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
+import 'package:tato_matematico/login/loginImagenService.dart';
 import 'package:tato_matematico/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
 import 'package:tato_matematico/gamesMenu.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 
-//Parte del codigo se ha hecho con asistencia de IA
-
+/// Pantalla de inicio de sesión mediante la selección de una imagen.
+///
+/// En esta pantalla se muestra un grid de imágenes y el alumno debe pulsar
+/// la imagen correcta para acceder a los juegos.
+///
+/// Se utiliza [LoginImagenService] para generar el grid de imágenes.
 class LoginConImagen extends StatefulWidget {
   final String alumnoId;
 
@@ -17,214 +28,239 @@ class LoginConImagen extends StatefulWidget {
 }
 
 class _LoginConImagenState extends State<LoginConImagen> {
+  final _service = LoginImagenService();
   final db = FirebaseDatabase.instance.ref();
 
   bool cargando = true;
-  List<Pictograma> biblioteca = [];
   List<Pictograma> imagenesMostradas = [];
 
-  String? idCorrecta;
-  int total = 6;
-  bool aleatorio = true;
+  String? _idCorrecta;
+  String? _idSeleccionada;
+
+  EstadoLogin _estado = EstadoLogin.normal;
 
   @override
   void initState() {
     super.initState();
-    _cargarConfiguracion();
+    _iniciarLogin();
   }
 
-  Future<void> _cargarConfiguracion() async {
+  /// Carga la configuración de login de seleccion de imagen desde Firebase.
+  ///
+  /// Recupera:
+  /// 1. La imagen correcta.
+  /// 2. Configuración del grid (total de imágenes, modo aleatorio).
+  /// 3. Distractores manuales (si existen).
+  ///
+  /// Se delega la generación del grid a [_service].
+  Future<void> _iniciarLogin() async {
     try {
-      // 1. Cargar configuración de login
       final snap = await db
-          .child("tato")
-          .child("login")
-          .child(widget.alumnoId)
-          .child("seleccionImagen")
+          .child("tato/login/${widget.alumnoId}/seleccionImagen")
           .get();
 
-      if (!snap.exists || snap.value == null || snap.value is! Map) {
-        // No hay configuración válida
-        debugPrint("No hay configuración de login por "
-            "imagen o formato inválido.");
-        if (mounted) {
-          setState(() => cargando = false);
-        }
+      if (!snap.exists) {
+        setState(() => cargando = false);
         return;
       }
 
-      final Map<String, dynamic> data =
-      Map<String, dynamic>.from(snap.value as Map);
+      final data = Map<String, dynamic>.from(snap.value as Map);
 
-      idCorrecta = data["idImagenCorrecta"]?.toString();
-      total = (data["totalImagenes"] is int) ? data["totalImagenes"] as int :
-      int.tryParse("${data["totalImagenes"]}") ?? total;
-      aleatorio = data["distractorasAleatorias"] is bool ?
-      data["distractorasAleatorias"] as bool :
-      (data["distractorasAleatorias"]?.toString().toLowerCase() == 'true');
+      // Obtenemos la correcta, el total de imágenes y aleatorio
+      _idCorrecta = data["idImagenCorrecta"]?.toString();
+      int total = int.tryParse("${data["totalImagenes"]}") ?? 6;
+      bool aleatorio = data["distractorasAleatorias"]?.toString().toLowerCase() == 'true';
 
-      // 2. Cargar biblioteca completa
-      final snapBib = await db.child("tato").child("bibliotecaImagenes").get();
+      List<String> manuales = [];
+      if (data["imagenesDistractoras"] is Map) {
+        manuales = (data["imagenesDistractoras"] as Map).keys.map((k) => k.toString()).toList();
+      }
 
-      final List<Pictograma> listaTemp = [];
+      // Delegar la generación del grid al servicio
+      if (_idCorrecta != null) {
+        imagenesMostradas = await _service.generarGrid(
+            idsCorrectos: [_idCorrecta!], // Lo pasamos como lista
+            idsDistractoresManuales: manuales,
+            totalImagenes: total,
+            esAleatorio: aleatorio
+        );
+      }
 
-      if (snapBib.exists && snapBib.value != null && snapBib.value is Map) {
-        final map = Map<String, dynamic>.from(snapBib.value as Map);
-        map.forEach((key, value) {
-          try {
-            listaTemp.add(Pictograma.fromMap(key, value));
-          } catch (e) {
-            debugPrint("Error parseando pictograma $key: $e");
-          }
-        });
+    } catch (e) {
+      debugPrint("Error: $e");
+    } finally {
+      if (mounted) setState(() => cargando = false);
+    }
+  }
+
+  /// Manejo de interacción al tocar una imagen.
+  ///
+  /// Se resetea al estado normal [EstadoLogin.normal] si había error.
+  /// Se realiza un toggle para la selección de la imagen.
+  void _onImagenTap(String id) {
+    if (_estado != EstadoLogin.normal) {
+      setState(() => _estado = EstadoLogin.normal);
+    }
+
+    setState(() {
+      if (_idSeleccionada == id) {
+        _idSeleccionada = null;
       } else {
-        debugPrint("Biblioteca vacía o formato inválido.");
+        _idSeleccionada = id;   // Seleccionar nueva
       }
+    });
+  }
 
-      if (listaTemp.isEmpty) {
-        // Si no hay imágenes, no podemos continuar
+  /// Compara la imagen seleccionada con la correcta
+  ///
+  /// Si se selecciona correcta, se navega al menú de juegos y se muestra feedback.
+  /// Si se selecciona incorrecta, se deselecciona la imagen y se muestra feedback.
+  void _intentarLogin() {
+    if (_idSeleccionada == null) return;
+
+    if (_idSeleccionada == _idCorrecta) {
+      // ÉXITO
+      setState(() => _estado = EstadoLogin.exito);
+
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          setState(() {
-            biblioteca = [];
-            cargando = false;
-          });
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const GamesMenu()),
+          );
         }
-        return;
-      }
-
-      // Asignar biblioteca y generar imágenes
-      if (mounted) {
-        setState(() {
-          biblioteca = listaTemp;
-        });
-      }
-
-      _generarImagenes();
-
-      if (mounted) setState(() => cargando = false);
-    } catch (e, st) {
-      debugPrint("ERROR en _cargarConfiguracion: $e\n$st");
-      if (mounted) setState(() => cargando = false);
+      });
     }
-  }
-
-  void _generarImagenes() {
-    imagenesMostradas = []; // limpiar primero
-
-    if (biblioteca.isEmpty) return;
-
-    // Buscar la imagen correcta (si no existe, abortamos)
-    final correcta = biblioteca.firstWhere(
-          (p) => p.id == idCorrecta
-    );
-
-    if (correcta.isEmpty) {
-      debugPrint("Imagen correcta no encontrada en la biblioteca: $idCorrecta");
-      // Si no encontramos la correcta, no generamos nada
-      if (mounted) {
-        setState(() {
-          imagenesMostradas = [];
-        });
-      }
-      return;
-    }
-
-    imagenesMostradas.add(correcta);
-
-    List<Pictograma> restantes = List.from(biblioteca)
-      ..removeWhere((p) => p.id == idCorrecta);
-
-    restantes.shuffle();
-
-    // Si hay menos imágenes de las que se piden, ajustamos el total
-    final int objetivo = total.clamp(1, biblioteca.length);
-
-    while (imagenesMostradas.length < objetivo && restantes.isNotEmpty) {
-      imagenesMostradas.add(restantes.removeAt(0));
-    }
-
-    imagenesMostradas.shuffle();
-
-    if (mounted) setState(() {});
-  }
-
-  void _tocarImagen(Pictograma picto) {
-    if (picto.id == idCorrecta) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Ha iniciado sesion correctamente"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => GamesMenu()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Contraseña incorrecta"),
-          backgroundColor: Colors.red,
-        ),
-      );
+    else {
+      // ERROR
+      setState(() {
+        _estado = EstadoLogin.error;
+        _idSeleccionada = null;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (cargando) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+    final alumnoHolder = context.watch<AlumnoHolder>();
+    final Alumno? alumno = alumnoHolder.alumno;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (alumno == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (biblioteca.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Selecciona tu imagen")),
-        body: const Center(child: Text("No hay imágenes disponibles.")),
-      );
-    }
+    // --- LÓGICA DEL GRID 2xN ---
+    // Calculamos las columnas para que siempre sean 2 filas aprox.
+    int columnas = 3; // Valor por defecto (2x3)
+    if (imagenesMostradas.length == 4) columnas = 2; // (2x2)
+    if (imagenesMostradas.length == 8) columnas = 4; // (2x4)
+    if (imagenesMostradas.length > 8) columnas = 4;  // Fallback para más grandes
 
-    if (imagenesMostradas.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Selecciona tu imagen")),
-        body: const Center(child: Text("No se pudo preparar las imágenes.")),
-      );
-    }
+    double maxWidth = columnas * 180.0;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Inicio de sesion de Alumno',
-          style: TextStyle(fontSize: 20),
-        ),
-        centerTitle: true,
-        actions: [Padding(padding: const EdgeInsets.only(right: 16))],
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4, crossAxisSpacing: 10, mainAxisSpacing: 10,
-            childAspectRatio: 1.4),
-        itemCount: imagenesMostradas.length,
-        itemBuilder: (context, index) {
-          final picto = imagenesMostradas[index];
+    return ScaffoldComunV2(
+      titulo: "Incio de sesión por Imagen",
+      cuerpo: cargando
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
 
-          return InkWell(
-            onTap: () => _tocarImagen(picto),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: ImagenStorage(
-                rutaGs: picto.url,
-                fit: BoxFit.cover,
+                  const SizedBox(height: 10),
+
+                  // TARJETA DE ESTADO DEL LOGIN
+                  LoginStatusCard(
+                    estado: _estado,
+                    mensajeNormal: "Elige la imagen correcta.",
+                    mensajeError: "Intentalo de nuevo.",
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // GRID DE IMÁGENES
+                  if (imagenesMostradas.isEmpty)
+                    const Text("No se pudieron cargar las imágenes")
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columnas,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        childAspectRatio: 1.0,
+                      ),
+                      itemCount: imagenesMostradas.length,
+                      itemBuilder: (context, index) {
+                        final picto = imagenesMostradas[index];
+                        final bool isSelected = _idSeleccionada == picto.id;
+
+                        return GestureDetector(
+                          onTap: () {
+                            _onImagenTap(picto.id);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected ? colorScheme.primary : Colors.grey.shade300,
+                                width: isSelected ? 5 : 1,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                BoxShadow(
+                                  color: colorScheme.primary.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                )
+                              ]
+                                  : [],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(11),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: ImagenStorage(
+                                  rutaGs: picto.url,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                  const SizedBox(height: 40),
+
+                  // BOTÓN ENTRAR
+                  SizedBox(
+                    height: 50,
+                    width: 350,
+                    child: BotonConIcono(
+                        icono: Icons.login_rounded,
+                        texto: "ENTRAR",
+                        fontSize: 20,
+                        radio: 27,
+                        onPressed: _idSeleccionada == null ? null : _intentarLogin,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

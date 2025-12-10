@@ -5,7 +5,7 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/clasesHolder.dart';
 import 'package:tato_matematico/login/profesorLogIn.dart';
 import 'package:tato_matematico/login/seleccionAlumno.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 
 /// **Nombre de la Clase: `SeleccionClase`**
 ///
@@ -15,8 +15,8 @@ import 'package:tato_matematico/clase.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 01/12/2025
-/// * **Último cambio:** Se ha rediseñado la interfaz para hacerla mas amigable
+/// * **Fecha de modificación:** 07/12/2025
+/// * **Último cambio:** Se ha rediseñado la interfaz para hacerla mas amigable en su version movil
 ///
 
 class SeleccionClase extends StatefulWidget {
@@ -29,8 +29,10 @@ class SeleccionClase extends StatefulWidget {
 class _SeleccionClaseState extends State<SeleccionClase> {
   bool mostrarSoloCursoActual = true;
   int paginaActual = 0;
-  final int _clasesPorPagina = 12;
-
+  late int _clasesPorPagina;
+  bool notInit = true;
+  late double size;
+  late bool em;
   @override
   Widget build(BuildContext context) {
     ClasesHolder ch = context.watch<ClasesHolder>();
@@ -43,6 +45,17 @@ class _SeleccionClaseState extends State<SeleccionClase> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
+    }
+    var spacing = em ? 12.0 : 32.0;
+    var width = em
+        ? (size - spacing - 16 * 2) / 2
+        : (size - spacing * 5 - 16 * 2) / 6;
+    var height = 200.0;
+    _clasesPorPagina = em ? 4 : 12;
     int totalPaginas = (clasesTodas.length / _clasesPorPagina).ceil();
     if (paginaActual >= totalPaginas && totalPaginas > 0) {
       paginaActual = totalPaginas - 1;
@@ -61,21 +74,19 @@ class _SeleccionClaseState extends State<SeleccionClase> {
       titulo: "Selección de clase",
       funcionLeading: () => navegar(ProfesorLogIn(), context),
       iconoLeading: Icons.school,
-      cuerpo: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 0.0,
-            ),
-            child: Row(
+      cuerpo: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          spacing: 8,
+          children: [
+            Row(
               mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 8,
               children: [
                 const Text(
                   "Mostrar solo clases del curso 25/26",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                const SizedBox(width: 8),
                 Switch(
                   value: mostrarSoloCursoActual,
                   onChanged: (val) {
@@ -87,23 +98,18 @@ class _SeleccionClaseState extends State<SeleccionClase> {
                 ),
               ],
             ),
-          ),
-
-          Expanded(
-            child: clasesPagina.isEmpty
-                ? const Center(child: Text("No hay clases disponibles"))
-                : Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8.0),
-                    child: Wrap(
+            Expanded(
+              child: clasesPagina.isEmpty
+                  ? const Center(child: Text("No hay clases disponibles"))
+                  : Wrap(
                       alignment: WrapAlignment.center,
                       runAlignment: WrapAlignment.start,
-                      spacing: 32,
-                      runSpacing: 32,
+                      spacing: spacing,
+                      runSpacing: spacing,
                       children: clasesPagina.map((clase) {
                         return SizedBox(
-                          width: 150,
-                          height: 200,
+                          width: width,
+                          height: height,
                           child: SelectorClaseCard(
                             clase: clase,
                             onTap: () {
@@ -113,22 +119,14 @@ class _SeleccionClaseState extends State<SeleccionClase> {
                         );
                       }).toList(),
                     ),
-                  ),
-          ),
-
-          BotonesInferiores(
-            onPrevious: retroceder(),
-            onNext: avanzar(totalPaginas),
-          ),
-          // Indicador de página (Opcional, ayuda a saber dónde estás)
-          /*Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Text(
-              "Página ${_paginaActual + 1} de ${totalPaginas == 0 ? 1 : totalPaginas}",
-              style: const TextStyle(color: Colors.grey),
             ),
-          ),*/
-        ],
+
+            BotonesInferiores(
+              onPrevious: retroceder(),
+              onNext: avanzar(totalPaginas),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -162,41 +160,38 @@ class BotonesInferiores extends StatelessWidget {
   Widget build(BuildContext context) {
     final ButtonStyle bigButtonStyle = ElevatedButton.styleFrom(
       minimumSize: const Size(0, 72),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        spacing: 16,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: onPrevious,
-                style: bigButtonStyle,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back, size: 64),
-                    Text("Anterior"),
-                  ],
-                ),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: onPrevious,
+              style: bigButtonStyle,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [Icon(Icons.arrow_back, size: 64), Text("Anterior")],
               ),
-              const SizedBox(width: 32),
-              ElevatedButton(
-                onPressed: onNext,
-                style: bigButtonStyle,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_forward, size: 64),
-                    Text("Siguiente"),
-                  ],
-                ),
+            ),
+          ),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: onNext,
+              style: bigButtonStyle,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.arrow_forward, size: 64),
+                  Text("Siguiente"),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),

@@ -5,198 +5,11 @@ import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/juego.dart';
+import 'package:tato_matematico/juegos/juego2/juego2.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
+import 'package:tato_matematico/juegos/juego2/juego2State.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
-/// **Nombre de la Clase: `Juego2**
-///
-/// **Descripción:** Clase que representa el segundo juego de la aplicación.
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 03/12/2025
-/// * **Último cambio:** Se ha creado la clase
-///
-
-class Juego2 extends Juego {
-  final bool ordenDescendente;
-  Juego2(
-    int min,
-    int max,
-    int cantidad,
-    bool usaImagenes,
-    String tipoImagenes,
-    this.ordenDescendente,
-  ) : super(
-        id: 'juego2',
-        nombre: 'Juego 2',
-        icono: Icons.videogame_asset,
-        min: min,
-        max: max,
-        cantidad: cantidad,
-        usaImagenes: usaImagenes,
-        tipoImagenes: tipoImagenes,
-      );
-
-  List<int> generarNuevoJuego() {
-    List<int> res = [];
-    while (res.length < cantidad) {
-      int num = generarNuevoNumero();
-      if (!res.contains(num)) {
-        res.add(num);
-      }
-    }
-    return res;
-  }
-}
-
-/// **Nombre de la Clase: `Juego2State**
-///
-/// **Descripción:** Clase que representa el estado de la partida actual del juego 2
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 06/12/2025
-/// * **Último cambio:** Se ha creado la clase
-///
-class Juego2State with ChangeNotifier {
-  final Juego2 juego;
-  final Alumno alumno;
-
-  late List<int> numeros;
-  late List<int?> numerosAbajo;
-  late List<int> numerosOrdenados;
-
-  int aciertos = 0;
-  int errores = 0;
-
-  int repeticionesTotales = 2;
-  int repeticionesCompletadas = 0;
-
-  bool falloActual = false;
-  bool fallo = false;
-  bool finalizado = false;
-
-  Juego2State(this.juego, this.alumno);
-
-  bool estaNumeroBienPosicionado(int num) {
-    if (!numerosOrdenados.contains(num)) return false;
-    return numerosOrdenados.indexOf(num) == numerosAbajo.indexOf(num);
-  }
-
-  void moverNumero(int numero) {
-    int indiceVacio = numerosAbajo.indexOf(null);
-    if (indiceVacio != -1) {
-      numerosAbajo[indiceVacio] = numero;
-      numeros.remove(numero);
-
-      if (numerosOrdenados[indiceVacio] != numero) {
-        falloActual = true;
-        if (!fallo) {
-          fallo = true;
-          errores += 1;
-        }
-      } else {
-        falloActual = false;
-      }
-      _verificarEstadoFinalizacion();
-      notifyListeners();
-    }
-  }
-
-  void devolverNumero(int index) {
-    int? numero = numerosAbajo[index];
-    if (numero != null && numerosAbajo[index] != numerosOrdenados[index]) {
-      numerosAbajo[index] = null;
-      numeros.add(numero);
-      falloActual = false;
-      finalizado = false;
-      notifyListeners();
-    }
-  }
-
-  void _verificarEstadoFinalizacion() {
-    if (numerosAbajo.contains(null)) {
-      finalizado = false;
-      return;
-    }
-
-    bool correcto = true;
-    for (int i = 0; i < numerosOrdenados.length; i++) {
-      if (numerosAbajo[i] != numerosOrdenados[i]) {
-        correcto = false;
-        break;
-      }
-    }
-
-    finalizado = correcto;
-  }
-
-  void iniciarJuego() {
-    fallo = false;
-    finalizado = false;
-    numeros = juego.generarNuevoJuego();
-    numerosAbajo = List.filled(juego.cantidad, null);
-    numerosOrdenados = numeros.toList();
-    numerosOrdenados.sort();
-    if (juego.ordenDescendente) {
-      numerosOrdenados = numerosOrdenados.reversed.toList();
-    }
-
-    notifyListeners();
-  }
-
-  void reiniciarJuego() {
-    repeticionesCompletadas = 0;
-    aciertos = 0;
-    errores = 0;
-    iniciarJuego();
-  }
-
-  bool finalizarJuego() {
-    aciertos += 1;
-    repeticionesCompletadas += 1;
-
-    bool juegoTerminado = todasLasRepeticionesHechas();
-
-    if (juegoTerminado) {
-      juego.subirEstadisticas(
-        aciertos: aciertos,
-        errores: errores,
-        omisiones: 0,
-        alumno: alumno,
-      );
-
-      aciertos = 0;
-      errores = 0;
-    }
-
-    notifyListeners();
-    return juegoTerminado;
-  }
-
-  /// Acción de salir (guardar progreso parcial si es necesario)
-  void salir() {
-    juego.subirEstadisticas(
-      aciertos: aciertos,
-      errores: errores,
-      alumno: alumno,
-      omisiones: repeticionesTotales - repeticionesCompletadas,
-    );
-  }
-
-  bool todasLasRepeticionesHechas() {
-    return repeticionesCompletadas >= repeticionesTotales;
-  }
-
-  String getRepeticionesString() {
-    return "Progreso: $repeticionesCompletadas de $repeticionesTotales";
-  }
-}
 
 /// **Nombre de la Clase: `Juego2Screen**
 ///
@@ -206,8 +19,8 @@ class Juego2State with ChangeNotifier {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 06/12/2025
-/// * **Último cambio:** Se ha hecho el estado de la partida independiente de la vista
+/// * **Fecha de modificación:** 08/12/2025
+/// * **Último cambio:** Se ha mejorado la consistencia visual entre dispositivos
 ///
 class Juego2Screen extends StatefulWidget {
   final Juego juego;
@@ -220,6 +33,9 @@ class Juego2Screen extends StatefulWidget {
 class _Juego2ScreenState extends State<Juego2Screen> {
   late Juego2State j2s;
   late Alumno alumno;
+  late double size;
+  late bool em;
+  bool notInit = true;
 
   @override
   void initState() {
@@ -239,9 +55,14 @@ class _Juego2ScreenState extends State<Juego2Screen> {
 
   @override
   Widget build(BuildContext context) {
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
+    }
+
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
-
     if (alumnoHolder.alumno == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => navigator.pop());
       return const SizedBox.shrink();
@@ -257,6 +78,25 @@ class _Juego2ScreenState extends State<Juego2Screen> {
     var imagenes = widget.juego.usaImagenes;
     var tipoImagen = widget.juego.tipoImagenes;
 
+    double tamanoFichaArriba;
+    double tamanoFichaAbajo;
+
+    double espaciado = em ? 12.0 : 24.0;
+
+    if (em) {
+      tamanoFichaArriba = (size - espaciado * 3 - 16) / 4; // Aprox 70-80px
+      if (tamanoFichaArriba > 90) tamanoFichaArriba = 90; // Límite máximo
+      tamanoFichaAbajo = ((size - 16 - 20 - espaciado / 2 * 5) / 6);
+    } else {
+      tamanoFichaArriba = (size - espaciado * 7 - 16) / 8;
+      tamanoFichaAbajo = ((size - 16 - 20 - espaciado / 2 * 11) / 12);
+    }
+
+    double fontSize = 24;
+
+    double radioBordeArriba = tamanoFichaArriba * 0.15;
+    double radioBordeAbajo = tamanoFichaAbajo * 0.15;
+
     return ScaffoldAlumno(
       alumno: alumno,
       textoCabecera: j2s.juego.ordenDescendente
@@ -264,7 +104,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
           : "Coloca de menor a mayor",
       posicion: posicionBarra,
       hasEstadisticas: false,
-      hasAjustes: false,
+      hasAjustes: true,
       onVolver: () {
         mostrarDialogoSiNoAlumnoV2(
           context,
@@ -277,12 +117,14 @@ class _Juego2ScreenState extends State<Juego2Screen> {
           }
         });
       },
-      onAjustes: () {},
+      onAjustes: () {
+        navegar(AjustesJuegoLandscape(juego: widget.juego as Juego2), context);
+      },
       onEstadisticas: () {},
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Column(
-          spacing: 8,
+          spacing: 4,
           children: [
             // --- ZONA DE PROGRESO ---
             Semantics(
@@ -295,7 +137,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                   Text(
                     "REPETICIONES: ",
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: fontSize,
                       fontWeight: FontWeight.bold,
                       color: colorTexto,
                     ),
@@ -310,7 +152,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                             ? Icons.emoji_emotions_rounded
                             : Icons.circle,
                         color: colorTexto,
-                        size: 24,
+                        size: fontSize,
                       ),
                     );
                   }),
@@ -324,14 +166,16 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                   ? Wrap(
                       alignment: WrapAlignment.center,
                       runAlignment: WrapAlignment.start,
-                      spacing: 24,
-                      runSpacing: 24,
+                      spacing: espaciado,
+                      runSpacing: espaciado,
                       children: j2s.numeros.map((numero) {
                         return TarjetaJuego(
-                          tamano: 110,
+                          key: ValueKey(numero),
+                          tamano: tamanoFichaArriba,
                           label: "Mover $numero",
                           isButton: true,
-                          isEnabled: true,
+                          isEnabled: !j2s.falloActual,
+                          radio: radioBordeArriba,
                           // Llamada directa a la lógica
                           onTap: () => j2s.moverNumero(numero),
                           colorFondo:
@@ -346,8 +190,9 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                   : Center(
                       child: Text(
                         "No quedan numeros",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 48,
+                          fontSize: fontSize,
                           fontWeight: FontWeight.bold,
                           color: colorTexto,
                         ),
@@ -358,7 +203,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
             Text(
               "Ordenados",
               style: TextStyle(
-                fontSize: 24,
+                fontSize: fontSize,
                 fontWeight: FontWeight.bold,
                 color: colorTexto,
               ),
@@ -375,13 +220,15 @@ class _Juego2ScreenState extends State<Juego2Screen> {
               child: Wrap(
                 alignment: WrapAlignment.start,
                 runAlignment: WrapAlignment.start,
-                spacing: 4,
-                runSpacing: 16,
+                spacing: espaciado / 2,
+                runSpacing: 0,
                 children: j2s.numerosAbajo.map((numero) {
                   return Column(
                     children: [
                       TarjetaJuego(
-                        tamano: 85,
+                        key: ValueKey(numero),
+                        tamano: tamanoFichaAbajo,
+                        radio: radioBordeAbajo,
                         label: () {
                           if (numero == null) return "Contenedor vacío";
                           if (j2s.estaNumeroBienPosicionado(numero)) {
@@ -428,7 +275,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
               alignment: Alignment.bottomRight,
               child: BotonSinIcono(
                 texto: "Aceptar",
-                fontSize: 24,
+                fontSize: fontSize,
                 fontWeight: FontWeight.bold,
                 colorFondo: alumno.colorBotones,
                 onPressed: j2s.finalizado

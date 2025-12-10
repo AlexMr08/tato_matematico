@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/profesoresHolder.dart';
@@ -18,19 +18,15 @@ import '../auxFunc.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Andrés Ignacio Mardones Domcke
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 08/12/2025
+/// * **Último cambio:** Se ha mejorado la responsividad
 ///
 
 class EditarClase extends StatefulWidget {
   final Clase clase;
   final List<Alumno> allAlumnos;
 
-  const EditarClase({
-    super.key,
-    required this.clase,
-    required this.allAlumnos,
-  });
+  const EditarClase({super.key, required this.clase, required this.allAlumnos});
   @override
   State<EditarClase> createState() => _EditarClaseState();
 }
@@ -55,6 +51,9 @@ class _EditarClaseState extends State<EditarClase> {
   String? anoSeleccionado;
   List<Profesor> _profesores = [];
   final List<String> _anos = generarListaAnos();
+  late double size;
+  bool em = false;
+  bool notInit = true;
 
   @override
   void initState() {
@@ -177,196 +176,407 @@ class _EditarClaseState extends State<EditarClase> {
   Widget build(BuildContext context) {
     _profesores = context.read<ProfesoresHolder>().profesores;
 
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
+    }
+
     return ScaffoldComunV2(
       titulo: "Editar Clase",
-      cuerpo: Column(
-        children: [
-          const SizedBox(height: 20),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      cuerpo: !em
+          ? Column(
               children: [
-                SizedBox(
-                  width: 500,
-                  child: TextField(
-                    controller: _nombreController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Nombre de la clase',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                BotonConIcono(
-                  icono: Icons.save,
-                  radio: 16,
-                  texto: "Guardar nombre",
-                  onPressed: guardarNombre,
-                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 500,
+                        child: TextField(
+                          controller: _nombreController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Nombre de la clase',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      BotonConIcono(
+                        icono: Icons.save,
+                        radio: 16,
+                        texto: "Guardar nombre",
+                        onPressed: guardarNombre,
+                      ),
 
-                SizedBox(width: 24),
+                      SizedBox(width: 24),
 
-                Text(
-                  'Año: ',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                DropdownButton<String>(
-                  value: anoSeleccionado,
-                  underline: Container(
-                    height: 2,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                  hint: const Text("Selecciona año"),
-                  items: _anos.map((ano) {
-                    return DropdownMenuItem(value: ano, child: Text(ano));
-                  }).toList(),
-                  onChanged: (nuevoId) async {
-                    setState(() => anoSeleccionado = nuevoId);
-                  },
-                ),
-                const SizedBox(width: 20),
-                BotonConIcono(
-                  icono: Icons.save,
-                  radio: 16,
-                  texto: "Guardar año",
-                  onPressed: guardarAno,
-                ),
-                const SizedBox(width: 20),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Tutor: ',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                _profesores.isEmpty
-                    ? const CircularProgressIndicator()
-                    : DropdownButton<String>(
-                        value: profesorTutor,
+                      Text(
+                        'Año: ',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      DropdownButton<String>(
+                        value: anoSeleccionado,
                         underline: Container(
                           height: 2,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         borderRadius: BorderRadius.circular(10),
-                        hint: const Text("Selecciona tutor"),
-                        items: _profesores.map((prof) {
-                          return DropdownMenuItem(
-                            value: prof.id,
-                            child: Text(prof.nombre),
-                          );
+                        hint: const Text("Selecciona año"),
+                        items: _anos.map((ano) {
+                          return DropdownMenuItem(value: ano, child: Text(ano));
                         }).toList(),
                         onChanged: (nuevoId) async {
-                          setState(() => profesorTutor = nuevoId);
+                          setState(() => anoSeleccionado = nuevoId);
                         },
                       ),
-                const SizedBox(width: 12),
-                BotonConIcono(
-                  icono: Icons.save,
-                  radio: 16,
-                  texto: "Guardar tutor",
-                  onPressed: guardarTutor,
-                ),
-                const SizedBox(width: 24),
-
-                Text(
-                  'Número de alumnos: ${alumnos.length}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                      const SizedBox(width: 20),
+                      BotonConIcono(
+                        icono: Icons.save,
+                        radio: 16,
+                        texto: "Guardar año",
+                        onPressed: guardarAno,
+                      ),
+                      const SizedBox(width: 20),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                BotonConIcono(
-                  icono: Icons.add,
-                  radio: 16,
-                  texto: "Añadir alumno",
-                  onPressed: () async {
-                    bool? resultado = await mostrarModalAlumnos(
-                      context,
-                      widget.allAlumnos,
-                      widget.clase.alumnos,
-                    );
-                    if (resultado == true) {
-                      setState(() {
-                        alumnos = alumnosDeClase(
-                          widget.clase,
-                          widget.allAlumnos,
-                        );
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
 
-          const SizedBox(height: 24),
+                const SizedBox(height: 20),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Tutor: ',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _profesores.isEmpty
+                          ? const CircularProgressIndicator()
+                          : DropdownButton<String>(
+                              value: profesorTutor,
+                              underline: Container(
+                                height: 2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              hint: const Text("Selecciona tutor"),
+                              items: _profesores.map((prof) {
+                                return DropdownMenuItem(
+                                  value: prof.id,
+                                  child: Text(prof.nombre),
+                                );
+                              }).toList(),
+                              onChanged: (nuevoId) async {
+                                setState(() => profesorTutor = nuevoId);
+                              },
+                            ),
+                      const SizedBox(width: 12),
+                      BotonConIcono(
+                        icono: Icons.save,
+                        radio: 16,
+                        texto: "Guardar tutor",
+                        onPressed: guardarTutor,
+                      ),
+                      const SizedBox(width: 24),
 
-          Expanded(
-            child: Scrollbar(
-              thumbVisibility: true,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ListView.builder(
-                  reverse: false,
-                  itemCount: alumnos.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return TeacherViewCard(
-                      alumno: alumnos[index],
-                      onTap: () {
-                        List<String> alumnosActualizados = List.from(
-                          widget.clase.alumnos,
-                        );
-                        alumnosActualizados.remove(alumnos[index].id);
-
-                        dbref
-                            .child('tato')
-                            .child('clases')
-                            .child(widget.clase.id)
-                            .update({'alumnos': alumnosActualizados})
-                            .then((_) {
-                              setState(() {
-                                widget.clase.alumnos.remove(alumnos[index].id);
-                              });
+                      Text(
+                        'Número de alumnos: ${alumnos.length}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      BotonConIcono(
+                        icono: Icons.add,
+                        radio: 16,
+                        texto: "Añadir alumno",
+                        onPressed: () async {
+                          bool? resultado = await mostrarModalAlumnos(
+                            context,
+                            widget.allAlumnos,
+                            widget.clase.alumnos,
+                          );
+                          if (resultado == true) {
+                            setState(() {
                               alumnos = alumnosDeClase(
                                 widget.clase,
                                 widget.allAlumnos,
                               );
-                            })
-                            .catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Error al eliminar el alumno: $error',
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Expanded(
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ListView.builder(
+                        reverse: false,
+                        itemCount: alumnos.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return TeacherViewCard(
+                            alumno: alumnos[index],
+                            onTap: () {
+                              List<String> alumnosActualizados = List.from(
+                                widget.clase.alumnos,
+                              );
+                              alumnosActualizados.remove(alumnos[index].id);
+
+                              dbref
+                                  .child('tato')
+                                  .child('clases')
+                                  .child(widget.clase.id)
+                                  .update({'alumnos': alumnosActualizados})
+                                  .then((_) {
+                                    setState(() {
+                                      widget.clase.alumnos.remove(
+                                        alumnos[index].id,
+                                      );
+                                    });
+                                    alumnos = alumnosDeClase(
+                                      widget.clase,
+                                      widget.allAlumnos,
+                                    );
+                                  })
+                                  .catchError((error) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Error al eliminar el alumno: $error',
+                                        ),
+                                      ),
+                                    );
+                                  });
+                            },
+                            icono: Icon(Icons.remove_circle),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              children: [
+                const SizedBox(height: 20),
+
+                // 1. ZONA SUPERIOR FIJA (Formularios)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // --- CAMPO NOMBRE + BOTÓN ---
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _nombreController,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Nombre de la clase',
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          BotonConIcono(
+                            icono: Icons.save,
+                            radio: 12,
+                            texto: "Guardar", // Texto corto para que quepa
+                            onPressed: guardarNombre,
+                          ),
+                        ],
+                      ),
+
+                      const Divider(height: 24),
+
+                      // --- CAMPO AÑO + BOTÓN ---
+                      Row(
+                        children: [
+                          const Text(
+                            "Año: ",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              value: anoSeleccionado,
+                              items: _anos
+                                  .map(
+                                    (ano) => DropdownMenuItem(
+                                      value: ano,
+                                      child: Text(ano),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) =>
+                                  setState(() => anoSeleccionado = v),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          BotonConIcono(
+                            icono: Icons.save,
+                            radio: 12,
+                            texto: "Guardar",
+                            onPressed: guardarAno,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // --- CAMPO TUTOR + BOTÓN ---
+                      Row(
+                        children: [
+                          const Text(
+                            "Tutor: ",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              value: profesorTutor,
+                              hint: const Text("Seleccionar"),
+                              items: _profesores
+                                  .map(
+                                    (p) => DropdownMenuItem(
+                                      value: p.id,
+                                      child: Text(
+                                        p.nombre,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) =>
+                                  setState(() => profesorTutor = v),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          BotonConIcono(
+                            icono: Icons.save,
+                            radio: 12,
+                            texto: "Guardar",
+                            onPressed: guardarTutor,
+                          ),
+                        ],
+                      ),
+
+                      const Divider(),
+
+                      // Cabecera Alumnos
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Alumnos (${alumnos.length})',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          BotonConIcono(
+                            icono: Icons.add,
+                            radio: 16,
+                            texto: "Añadir",
+                            onPressed: () async {
+                              bool? res = await mostrarModalAlumnos(
+                                context,
+                                widget.allAlumnos,
+                                widget.clase.alumnos,
+                              );
+                              if (res == true) {
+                                setState(
+                                  () => alumnos = alumnosDeClase(
+                                    widget.clase,
+                                    widget.allAlumnos,
                                   ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // 2. ZONA INFERIOR CON SCROLL (Lista de alumnos)
+                Expanded(
+                  child: alumnos.isEmpty
+                      ? const Center(child: Text("No hay alumnos"))
+                      : Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            itemCount: alumnos.length,
+                            itemBuilder: (context, index) {
+                              return TeacherViewCard(
+                                alumno: alumnos[index],
+                                onTap: () {
+                                  // Lógica de borrado
+                                  List<String> updated = List.from(
+                                    widget.clase.alumnos,
+                                  );
+                                  updated.remove(alumnos[index].id);
+                                  dbref
+                                      .child('tato')
+                                      .child('clases')
+                                      .child(widget.clase.id)
+                                      .update({'alumnos': updated})
+                                      .then((_) {
+                                        setState(() {
+                                          widget.clase.alumnos.remove(
+                                            alumnos[index].id,
+                                          );
+                                          alumnos = alumnosDeClase(
+                                            widget.clase,
+                                            widget.allAlumnos,
+                                          );
+                                        });
+                                      });
+                                },
+                                icono: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
                                 ),
                               );
-                            });
-                      },
-                      icono: Icon(Icons.remove_circle),
-                    );
-                  },
+                            },
+                          ),
+                        ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
