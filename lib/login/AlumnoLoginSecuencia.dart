@@ -9,13 +9,13 @@ import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
-enum EstadoLogin { normal, error, exito }
+import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 
 /// Pantalla de inicio de sesión mediante secuencia de imágenes.
 ///
 /// En esta pantalla se le muestra un grid de imágenes al alumno y debe pulsarlas
 /// en orden para acceder a los juegos.
+///
 /// Se utiliza [LoginImagenService] para generar el grid de imágenes.
 class AlumnoLoginSecuencia extends StatefulWidget {
   final String alumnoId;
@@ -50,7 +50,7 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
   /// 2. Configuración del grid (total de imágenes, modo aleatorio).
   /// 3. Distractores manuales (si existen).
   ///
-  /// Finalmente llama al servicio para generar el grid visual.
+  /// Se delega la generación del grid a [_service]
   Future<void> _iniciarLogin() async {
     try {
       final snap = await _dbRef
@@ -133,8 +133,6 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
   /// Comprueba longitud y coincidencia exacta en cada posición.
   void _intentarLogin() {
     final alumnoHolder = context.read<AlumnoHolder>();
-    String nombreAlumno = alumnoHolder.alumno?.nombre ?? "Alumno";
-
     // Validar longitud
     if (_seleccionUsuario.length != idsSecuenciaOrdenada.length) {
       return;
@@ -157,7 +155,7 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const GamesMenu()),
+            MaterialPageRoute(builder: (context) => const GamesMenu()),
           );
         }
       });
@@ -206,7 +204,10 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                       children: [
 
                         // BARRA DE ESTADO
-                        _buildStatusCard(context),
+                        LoginStatusCard(
+                          estado: _estado,
+                          mensajeNormal: "Pulsa las imágenes en orden.",
+                        ),
 
                         const SizedBox(height: 10,),
 
@@ -361,75 +362,6 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                 ),
               ),
         ),
-    );
-  }
-
-  // WIDGET AUXILIAR PARA BARRA DE ESTADO
-  Widget _buildStatusCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    Color colorFondo;
-    Color colorBorde;
-    Color colorTexto;
-    IconData icono;
-    String texto;
-
-    switch (_estado) {
-      case EstadoLogin.error:
-        colorFondo = colorScheme.errorContainer;
-        colorBorde = colorScheme.error;
-        colorTexto = colorScheme.onErrorContainer;
-        icono = Icons.sentiment_very_dissatisfied_rounded;
-        texto = "Inténtalo de nuevo.";
-        break;
-      case EstadoLogin.exito:
-        colorFondo = Colors.green.shade100;
-        colorBorde = Colors.green;
-        colorTexto = Colors.green.shade900;
-        icono = Icons.sentiment_very_satisfied_rounded;
-        texto = "¡Muy bien!";
-        break;
-      case EstadoLogin.normal:
-      default:
-      // Estilo neutro (parece una instrucción, no un error)
-        colorFondo = colorScheme.surfaceContainerHighest.withValues(alpha: .5);
-        colorBorde = colorScheme.outlineVariant;
-        colorTexto = colorScheme.onSurface;
-        icono = Icons.touch_app_outlined; // Icono de "tocar"
-        texto = "Pulsa las imágenes en el orden correcto";
-        break;
-    }
-
-    return Semantics(
-      liveRegion: true, // Lee los cambios automáticamente
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        decoration: BoxDecoration(
-          color: colorFondo,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorBorde, width: 1.5),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icono, color: colorTexto, size: 28),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text(
-                texto,
-                style: TextStyle(
-                  color: colorTexto,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18, // Texto grande y legible
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

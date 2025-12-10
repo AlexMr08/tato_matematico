@@ -8,9 +8,16 @@ import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-//Parte del codigo se ha hecho con asistencia de IA
 
+/// Pantalla de inicio de sesión mediante la selección de una imagen.
+///
+/// En esta pantalla se muestra un grid de imágenes y el alumno debe pulsar
+/// la imagen correcta para acceder a los juegos.
+///
+/// Se utiliza [LoginImagenService] para generar el grid de imágenes.
 class LoginConImagen extends StatefulWidget {
   final String alumnoId;
 
@@ -30,15 +37,24 @@ class _LoginConImagenState extends State<LoginConImagen> {
   String? _idCorrecta;
   String? _idSeleccionada;
 
+  EstadoLogin _estado = EstadoLogin.normal;
+
   @override
   void initState() {
     super.initState();
     _iniciarLogin();
   }
 
+  /// Carga la configuración de login de seleccion de imagen desde Firebase.
+  ///
+  /// Recupera:
+  /// 1. La imagen correcta.
+  /// 2. Configuración del grid (total de imágenes, modo aleatorio).
+  /// 3. Distractores manuales (si existen).
+  ///
+  /// Se delega la generación del grid a [_service].
   Future<void> _iniciarLogin() async {
     try {
-      // 1. LEER CONFIGURACIÓN (Esto es específico de cada tipo de login)
       final snap = await db
           .child("tato/login/${widget.alumnoId}/seleccionImagen")
           .get();
@@ -50,6 +66,7 @@ class _LoginConImagenState extends State<LoginConImagen> {
 
       final data = Map<String, dynamic>.from(snap.value as Map);
 
+      // Obtenemos la correcta, el total de imágenes y aleatorio
       _idCorrecta = data["idImagenCorrecta"]?.toString();
       int total = int.tryParse("${data["totalImagenes"]}") ?? 6;
       bool aleatorio = data["distractorasAleatorias"]?.toString().toLowerCase() == 'true';
@@ -59,7 +76,7 @@ class _LoginConImagenState extends State<LoginConImagen> {
         manuales = (data["imagenesDistractoras"] as Map).keys.map((k) => k.toString()).toList();
       }
 
-      // 2. PEDIR GRID AL SERVICIO (Aquí nos ahorramos 80 líneas de código)
+      // Delegar la generación del grid al servicio
       if (_idCorrecta != null) {
         imagenesMostradas = await _service.generarGrid(
             idsCorrectos: [_idCorrecta!], // Lo pasamos como lista
@@ -76,33 +93,50 @@ class _LoginConImagenState extends State<LoginConImagen> {
     }
   }
 
+  /// Manejo de interacción al tocar una imagen.
+  ///
+  /// Se resetea al estado normal [EstadoLogin.normal] si había error.
+  /// Se realiza un toggle para la selección de la imagen.
+  void _onImagenTap(String id) {
+    if (_estado != EstadoLogin.normal) {
+      setState(() => _estado = EstadoLogin.normal);
+    }
+
+    setState(() {
+      if (_idSeleccionada == id) {
+        _idSeleccionada = null;
+      } else {
+        _idSeleccionada = id;   // Seleccionar nueva
+      }
+    });
+  }
+
+  /// Compara la imagen seleccionada con la correcta
+  ///
+  /// Si se selecciona correcta, se navega al menú de juegos y se muestra feedback.
+  /// Si se selecciona incorrecta, se deselecciona la imagen y se muestra feedback.
   void _intentarLogin() {
     if (_idSeleccionada == null) return;
 
-    // Recuperamos el nombre del alumno para el mensaje
-    final alumnoHolder = context.read<AlumnoHolder>();
-    String nombreAlumno = alumnoHolder.alumno?.nombre ?? "Alumno";
-
     if (_idSeleccionada == _idCorrecta) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("¡Bienvenido $nombreAlumno!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const GamesMenu()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Contraseña incorrecta, inténtalo de nuevo"),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Opcional: Quitar selección tras error
-      setState(() => _idSeleccionada = null);
+      // ÉXITO
+      setState(() => _estado = EstadoLogin.exito);
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const GamesMenu()),
+          );
+        }
+      });
+    }
+    else {
+      // ERROR
+      setState(() {
+        _estado = EstadoLogin.error;
+        _idSeleccionada = null;
+      });
     }
   }
 
@@ -123,7 +157,6 @@ class _LoginConImagenState extends State<LoginConImagen> {
     if (imagenesMostradas.length == 8) columnas = 4; // (2x4)
     if (imagenesMostradas.length > 8) columnas = 4;  // Fallback para más grandes
 
-    // Ajustamos el ancho máximo de la caja según las columnas para que no queden huecos gigantes
     double maxWidth = columnas * 180.0;
 
     return ScaffoldComunV2(
@@ -140,22 +173,18 @@ class _LoginConImagenState extends State<LoginConImagen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
-                  // 1. INSTRUCCIÓN (Ahora es lo primero)
-                  Text(
-                    "Elige la imagen que es tu contraseña",
-                    style: TextStyle(
-                      fontSize: 24, // Un poco más grande para destacar
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
+                  // TARJETA DE ESTADO DEL LOGIN
+                  LoginStatusCard(
+                    estado: _estado,
+                    mensajeNormal: "Elige la imagen correcta.",
+                    mensajeError: "Intentalo de nuevo.",
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
 
-                  // 2. GRID DE IMÁGENES
+                  // GRID DE IMÁGENES
                   if (imagenesMostradas.isEmpty)
                     const Text("No se pudieron cargar las imágenes")
                   else
@@ -175,13 +204,7 @@ class _LoginConImagenState extends State<LoginConImagen> {
 
                         return GestureDetector(
                           onTap: () {
-                            setState(() {
-                              if (_idSeleccionada == picto.id) {
-                                _idSeleccionada = null;
-                              } else {
-                                _idSeleccionada = picto.id;
-                              }
-                            });
+                            _onImagenTap(picto.id);
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
@@ -195,7 +218,7 @@ class _LoginConImagenState extends State<LoginConImagen> {
                               boxShadow: isSelected
                                   ? [
                                 BoxShadow(
-                                  color: colorScheme.primary.withOpacity(0.3),
+                                  color: colorScheme.primary.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   spreadRadius: 2,
                                 )
@@ -219,25 +242,16 @@ class _LoginConImagenState extends State<LoginConImagen> {
 
                   const SizedBox(height: 40),
 
-                  // 3. BOTÓN ENTRAR
+                  // BOTÓN ENTRAR
                   SizedBox(
-                    width: 300,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: _idSeleccionada == null ? null : _intentarLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      child: const Text("Entrar"),
+                    height: 50,
+                    width: 350,
+                    child: BotonConIcono(
+                        icono: Icons.login_rounded,
+                        texto: "ENTRAR",
+                        fontSize: 20,
+                        radio: 27,
+                        onPressed: _idSeleccionada == null ? null : _intentarLogin,
                     ),
                   ),
 
