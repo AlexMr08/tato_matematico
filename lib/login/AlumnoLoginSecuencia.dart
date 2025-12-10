@@ -8,7 +8,15 @@ import 'package:tato_matematico/gamesMenu.dart';
 import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
+enum EstadoLogin { normal, error, exito }
+
+/// Pantalla de inicio de sesión mediante secuencia de imágenes.
+///
+/// En esta pantalla se le muestra un grid de imágenes al alumno y debe pulsarlas
+/// en orden para acceder a los juegos.
+/// Se utiliza [LoginImagenService] para generar el grid de imágenes.
 class AlumnoLoginSecuencia extends StatefulWidget {
   final String alumnoId;
 
@@ -24,9 +32,10 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
 
   bool cargando = true;
   List<Pictograma> imagenesMostradas = [];
-
   List<String> idsSecuenciaOrdenada = [];
   final List<String> _seleccionUsuario = [];
+
+  EstadoLogin _estado = EstadoLogin.normal;
 
   @override
   void initState() {
@@ -34,9 +43,16 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
     _iniciarLogin();
   }
 
+  /// Carga la configuración de login de secuencia desde Firebase.
+  ///
+  /// Recupera:
+  /// 1. La secuencia correcta (ordenada).
+  /// 2. Configuración del grid (total de imágenes, modo aleatorio).
+  /// 3. Distractores manuales (si existen).
+  ///
+  /// Finalmente llama al servicio para generar el grid visual.
   Future<void> _iniciarLogin() async {
     try {
-      // 1. LEER CONFIGURACIÓN ESPECÍFICA (Secuencia)
       final snap = await _dbRef
           .child("tato")
           .child("login")
@@ -51,16 +67,14 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
 
       final Map<String, dynamic> data = Map<String, dynamic>.from(snap.value as Map);
 
-      // A. Parsear la secuencia correcta (La contraseña)
+      // Obtenemos la secuencia correcta
       if (data["secuenciaCorrecta"] != null && data["secuenciaCorrecta"] is Map) {
         Map<String, String> secuenciaMap = Map<String, String>.from(data["secuenciaCorrecta"]);
-        // Ordenamos las claves (paso_01, paso_02...)
         var clavesOrdenadas = secuenciaMap.keys.toList()..sort();
-        // Guardamos los IDs en orden para validar luego
         idsSecuenciaOrdenada = clavesOrdenadas.map((k) => secuenciaMap[k]!).toList();
       }
 
-      // B. Parsear parámetros del grid
+      // Obtenemos total de imagenes y modo aleatorio
       int total = (data["totalImagenes"] is int)
           ? data["totalImagenes"] as int
           : int.tryParse("${data["totalImagenes"]}") ?? 9;
@@ -69,14 +83,14 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
           ? data["distractorasAleatorias"] as bool
           : (data["distractorasAleatorias"]?.toString().toLowerCase() == 'true');
 
-      // C. Parsear distractores manuales
+      // Obtenemos las distractoras manuales
       List<String> manuales = [];
       if (data["imagenesDistractoras"] != null && data["imagenesDistractoras"] is Map) {
         Map distractoresMap = data["imagenesDistractoras"];
         manuales = distractoresMap.keys.map((k) => k.toString()).toList();
       }
 
-      // 2. PEDIR GRID AL SERVICIO (Lógica simplificada)
+      // Pedimos el grid al servicio de imagenes
       if (idsSecuenciaOrdenada.isNotEmpty) {
         imagenesMostradas = await _service.generarGrid(
             idsCorrectos: idsSecuenciaOrdenada, // Pasamos la lista de la secuencia
@@ -93,13 +107,20 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
     }
   }
 
+  /// Maneja la interacción al tocar una imagen del grid.
+  ///
+  /// Si la imagen estaba seleccionada, se desmarca.
+  /// Si no estaba seleccionada, se añade al final de la selección.
   void _onImagenTap(String id) {
+    // Si el usuario toca algo, volvemos al estado normal (quitamos mensaje de error)
+    if (_estado != EstadoLogin.normal) {
+      setState(() => _estado = EstadoLogin.normal);
+    }
+
     setState(() {
-      // Si ya estaba seleccionada, la quitamos (deshacer selección)
       if (_seleccionUsuario.contains(id)) {
         _seleccionUsuario.remove(id);
       } else {
-        // Si no hemos llegado al límite de pasos, la añadimos
         if (_seleccionUsuario.length < idsSecuenciaOrdenada.length) {
           _seleccionUsuario.add(id);
         }
@@ -107,13 +128,15 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
     });
   }
 
+  /// Compara la contraseña correcta con la selección del usuario.
+  ///
+  /// Comprueba longitud y coincidencia exacta en cada posición.
   void _intentarLogin() {
     final alumnoHolder = context.read<AlumnoHolder>();
     String nombreAlumno = alumnoHolder.alumno?.nombre ?? "Alumno";
 
     // Validar longitud
     if (_seleccionUsuario.length != idsSecuenciaOrdenada.length) {
-      // No debería pasar porque el botón estaría desactivado, pero por seguridad
       return;
     }
 
@@ -127,19 +150,22 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
     }
 
     if (esCorrecto) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("¡Bienvenido $nombreAlumno!"), backgroundColor: Colors.green),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const GamesMenu()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Secuencia incorrecta. Inténtalo de nuevo."), backgroundColor: Colors.red),
-      );
-      // Reiniciamos selección para que pruebe otra vez
+      // EXITO
+      setState(() => _estado = EstadoLogin.exito);
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const GamesMenu()),
+          );
+        }
+      });
+    }
+    else {
+      // ERROR
       setState(() {
+        _estado = EstadoLogin.error;
         _seleccionUsuario.clear();
       });
     }
@@ -154,15 +180,16 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
     if (alumno == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     // --- LÓGICA DEL GRID 2xN ---
-    // Calculamos las columnas para que siempre sean 2 filas aprox.
-    int columnas = 3; // Valor por defecto (2x3)
+    // Calculamos las columnas para que siempre sean 2 filas.
+    int columnas = 3;
     if (imagenesMostradas.length == 4) columnas = 2; // (2x2)
     if (imagenesMostradas.length == 8) columnas = 4; // (2x4)
     if (imagenesMostradas.length > 8) columnas = 4;  // Fallback para más grandes
 
     double maxWidth = columnas * 180.0;
 
-    bool botonActivo = _seleccionUsuario.length == idsSecuenciaOrdenada.length;
+    bool botonEntrarActivo = _seleccionUsuario.length == idsSecuenciaOrdenada.length;
+    bool botonBorrarActivo = _seleccionUsuario.isNotEmpty;
 
     return ScaffoldComunV2(
         titulo: "Incio de Sesion por Secuencia",
@@ -177,20 +204,36 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 20),
 
-                        Text(
-                          "Marca las imágenes en orden (${_seleccionUsuario.length}/${idsSecuenciaOrdenada.length})",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                          textAlign: TextAlign.center,
+                        // BARRA DE ESTADO
+                        _buildStatusCard(context),
+
+                        const SizedBox(height: 10,),
+
+                        // INDICADOR DE PROGRESO PARA LAS SELECCIONADAS
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(idsSecuenciaOrdenada.length, (index) {
+                            bool rellenado = index < _seleccionUsuario.length;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                  color: rellenado ? colorScheme.primary : Colors.transparent,
+                                  border: Border.all(
+                                      color: rellenado ? colorScheme.primary : Colors.grey.shade400,
+                                      width: 2
+                                  ),
+                                  shape: BoxShape.circle
+                              ),
+                            );
+                          }),
                         ),
 
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 15),
 
+                        // GRID DE IMAGENES
                         if (imagenesMostradas.isEmpty)
                           const Text("Error cargando imágenes")
                         else
@@ -212,7 +255,10 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                               bool isSelected = indexSeleccion != -1;
 
                               return GestureDetector(
-                                onTap: () => _onImagenTap(picto.id),
+                                onTap: () {
+                                  Feedback.forTap(context);
+                                  _onImagenTap(picto.id);
+                                },
                                 child: Stack(
                                   children: [
                                     // LA IMAGEN (FONDO)
@@ -226,7 +272,7 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                                           width: isSelected ? 4 : 1,
                                         ),
                                         boxShadow: isSelected
-                                            ? [BoxShadow(color: colorScheme.primary.withOpacity(0.3), blurRadius: 8, spreadRadius: 2)]
+                                            ? [BoxShadow(color: colorScheme.primary.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
                                             : [],
                                       ),
                                       child: ClipRRect(
@@ -238,16 +284,17 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                                       ),
                                     ),
 
-                                    // EL NÚMERO DE ORDEN (BADGE)
+                                    // EL NÚMERO DE ORDEN
                                     if (isSelected)
                                       Align(
                                         alignment: Alignment.topRight,
                                         child: Container(
-                                          width: 32, height: 32,
+                                          width: 40, height: 40,
                                           margin: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                               color: colorScheme.primary,
                                               shape: BoxShape.circle,
+                                              border: Border.all(color: Colors.white, width: 2),
                                               boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]
                                           ),
                                           child: Center(
@@ -256,7 +303,7 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                                               style: TextStyle(
                                                   color: colorScheme.onPrimary,
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 16
+                                                  fontSize: 22
                                               ),
                                             ),
                                           ),
@@ -268,54 +315,46 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                             },
                           ),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 20),
 
                         // BOTONERA
-                        Row(
-                          children: [
-                            // BOTÓN BORRAR
-                            Expanded(
-                              flex: 1,
-                              child: SizedBox(
-                                height: 55,
-                                child: OutlinedButton(
-                                  onPressed: _seleccionUsuario.isEmpty ? null : () {
+                        SizedBox(
+                          width: 350,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // BOTÓN ENTRAR
+                              SizedBox(
+                                height: 50,
+                                child: BotonConIcono(
+                                  icono: Icons.login_rounded,
+                                  texto: "ENTRAR",
+                                  fontSize: 20,
+                                  radio: 27,
+                                  onPressed: botonEntrarActivo ? _intentarLogin : null,
+                                ),
+                              ),
+
+                              const SizedBox(height: 15),
+
+                              // BOTÓN BORRAR
+                              SizedBox(
+                                height: 50,
+                                child: BotonConIcono(
+                                  icono: Icons.delete_outline_rounded,
+                                  texto: "BORRAR TODO",
+                                  fontSize: 20,
+                                  radio: 27,
+                                  onPressed: botonBorrarActivo ? () {
                                     setState(() => _seleccionUsuario.clear());
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                    side: const BorderSide(color: Colors.red),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                  ),
-                                  child: const Icon(Icons.refresh),
+                                  } : null,
                                 ),
                               ),
-                            ),
-
-                            const SizedBox(width: 16),
-
-                            // BOTÓN ENTRAR
-                            Expanded(
-                              flex: 3,
-                              child: SizedBox(
-                                height: 55,
-                                child: ElevatedButton(
-                                  onPressed: botonActivo ? _intentarLogin : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: colorScheme.primary,
-                                    foregroundColor: colorScheme.onPrimary,
-                                    elevation: 4,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                    textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                  child: const Text("Entrar"),
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 15),
                       ],
                     ),
                   ),
@@ -323,35 +362,74 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
               ),
         ),
     );
+  }
 
-    /*return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Inicio de sesion de Alumno',
-          style: TextStyle(fontSize: 20),
+  // WIDGET AUXILIAR PARA BARRA DE ESTADO
+  Widget _buildStatusCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    Color colorFondo;
+    Color colorBorde;
+    Color colorTexto;
+    IconData icono;
+    String texto;
+
+    switch (_estado) {
+      case EstadoLogin.error:
+        colorFondo = colorScheme.errorContainer;
+        colorBorde = colorScheme.error;
+        colorTexto = colorScheme.onErrorContainer;
+        icono = Icons.sentiment_very_dissatisfied_rounded;
+        texto = "Inténtalo de nuevo.";
+        break;
+      case EstadoLogin.exito:
+        colorFondo = Colors.green.shade100;
+        colorBorde = Colors.green;
+        colorTexto = Colors.green.shade900;
+        icono = Icons.sentiment_very_satisfied_rounded;
+        texto = "¡Muy bien!";
+        break;
+      case EstadoLogin.normal:
+      default:
+      // Estilo neutro (parece una instrucción, no un error)
+        colorFondo = colorScheme.surfaceContainerHighest.withValues(alpha: .5);
+        colorBorde = colorScheme.outlineVariant;
+        colorTexto = colorScheme.onSurface;
+        icono = Icons.touch_app_outlined; // Icono de "tocar"
+        texto = "Pulsa las imágenes en el orden correcto";
+        break;
+    }
+
+    return Semantics(
+      liveRegion: true, // Lee los cambios automáticamente
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        decoration: BoxDecoration(
+          color: colorFondo,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colorBorde, width: 1.5),
         ),
-        centerTitle: true,
-        actions: [Padding(padding: const EdgeInsets.only(right: 16))],
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4, crossAxisSpacing: 10, mainAxisSpacing: 10,
-            childAspectRatio: 1.4),
-        itemCount: imagenesMostradas.length,
-        itemBuilder: (context, index) {
-          final picto = imagenesMostradas[index];
-          return InkWell(
-            onTap: () => _tocarImagen(picto),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ImagenStorage(rutaGs: picto.url, fit: BoxFit.cover),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icono, color: colorTexto, size: 28),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                texto,
+                style: TextStyle(
+                  color: colorTexto,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18, // Texto grande y legible
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
-    );*/
+    );
   }
 }
