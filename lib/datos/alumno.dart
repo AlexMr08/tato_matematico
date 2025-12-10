@@ -49,6 +49,7 @@ class Alumno {
   bool sonidoAciertoActivadoJuego1;
   String sonidoFalloJuego1;
   bool sonidoFalloActivadoJuego1;
+  String? sonidoEleccionJuego1;
 
   Juego1Settings juego1Settings;
 
@@ -72,6 +73,7 @@ class Alumno {
     this.sonidoAciertoActivadoJuego1 = true,
     this.sonidoFalloJuego1 = 'Pton',
     this.sonidoFalloActivadoJuego1 = true,
+    this.sonidoEleccionJuego1,
     Juego1Settings? juego1Settings,
     volverDerecha,
     posicionBarra,
@@ -141,6 +143,13 @@ class Alumno {
   Color? get colorSeleccion => _colorSeleccion;
 
   set colorSeleccion(Color? value) {
+    _colorSeleccion = value;
+  }
+
+  // Getter para compatibilidad con `ajustes_sonidos_screen`
+  Color? get colorTextos => _colorSeleccion;
+
+  set colorTextos(Color? value) {
     _colorSeleccion = value;
   }
 
@@ -215,6 +224,7 @@ class Alumno {
       sonidoAciertoActivadoJuego1: data['sonidoAciertoActivadoJuego1'] ?? true,
       sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
       sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
+      sonidoEleccionJuego1: data['sonidoEleccionJuego1'],
       juego1Settings: juego1Settings,
     );
   }
