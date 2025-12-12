@@ -25,9 +25,8 @@ import 'package:tato_matematico/datos/alumno.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 05/12/2025
-/// * **Último cambio:** Se han añadido atributos comunes de los juegos y se ha añadido un metodo para generar aleatorios.
-/// * **Tambien un metodo para subir estadisticas
+/// * **Fecha de modificación:** 12/12/2025
+/// * **Último cambio:** Se ha añadido un metodo de guardado en BD
 ///
 
 class Juego {
@@ -52,6 +51,20 @@ class Juego {
   }) : usaImagenes = max > 10 ? false : usaImagenes,
        cantidad = max - min + 1 < cantidad ? max - min + 1 : cantidad,
        tipoImagenes = tipoImagenes == "" ? "apple" : tipoImagenes;
+
+  void guardarAjustes({
+    required String idAlumno,
+    required int rango,
+    required int cantidad,
+    required String tema,
+    required DatabaseReference dbRef,
+  }) {
+    dbRef.update({"max": rango});
+    dbRef.update({"min": 0});
+    dbRef.update({"cantidad": cantidad});
+    dbRef.update({"tipoImagenes": tema});
+    dbRef.update({"imagenes": tema != "numeros"});
+  }
 
   int generarNuevoNumero() {
     int res;
@@ -129,7 +142,7 @@ class Juego {
 
 class JuegoCard extends StatefulWidget {
   final Juego juego;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Color? color;
 
   const JuegoCard({
@@ -146,20 +159,20 @@ class JuegoCard extends StatefulWidget {
 class _JuegoCardState extends State<JuegoCard> {
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor =
-        widget.color ?? Theme.of(context).colorScheme.primaryContainer;
-    final Color contentColor = getTextColorForBackground(backgroundColor);
+    final bool isDisabled = widget.onTap == null;
 
+    final Color backgroundColor2 = isDisabled
+        ? Colors.grey.shade500
+        : (widget.color ?? Theme.of(context).colorScheme.primaryContainer);
+    final Color contentColor = getTextColorForBackground(backgroundColor2);
     return Card(
-        color: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24), // Bordes más redondeados
-        ),
-        elevation: 6,
-        child: InkWell(
-          onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(24),
-          child: Center(
+      color: backgroundColor2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 6,
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(

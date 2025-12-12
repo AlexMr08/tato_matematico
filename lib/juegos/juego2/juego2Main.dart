@@ -6,7 +6,6 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
 import 'package:tato_matematico/juegos/juego2/juego2State.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
@@ -20,7 +19,7 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
 /// * **Fecha de modificación:** 08/12/2025
-/// * **Último cambio:** Se ha mejorado la consistencia visual entre dispositivos
+/// * **Último cambio:** Se han cambiado los iconos de debajo de los elementos colocados
 ///
 class Juego2Screen extends StatefulWidget {
   final Juego juego;
@@ -104,7 +103,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
           : "Coloca de menor a mayor",
       posicion: posicionBarra,
       hasEstadisticas: false,
-      hasAjustes: true,
+      hasAjustes: false,
       onVolver: () {
         mostrarDialogoSiNoAlumnoV2(
           context,
@@ -117,9 +116,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
           }
         });
       },
-      onAjustes: () {
-        navegar(AjustesJuegoLandscape(juego: widget.juego as Juego2), context);
-      },
+      onAjustes: () {},
       onEstadisticas: () {},
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -147,12 +144,17 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                     bool completado = index < j2s.repeticionesCompletadas;
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Icon(
-                        completado
-                            ? Icons.emoji_emotions_rounded
-                            : Icons.circle,
-                        color: colorTexto,
-                        size: fontSize,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black,
+                        ),
+                        child: Icon(
+                          completado
+                              ? Icons.emoji_emotions_rounded
+                              : Icons.circle,
+                          color: Colors.amberAccent,
+                        ),
                       ),
                     );
                   }),
@@ -223,6 +225,10 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                 spacing: espaciado / 2,
                 runSpacing: 0,
                 children: j2s.numerosAbajo.map((numero) {
+                  bool? estaBien;
+                  if (numero != null) {
+                    estaBien = j2s.estaNumeroBienPosicionado(numero);
+                  }
                   return Column(
                     children: [
                       TarjetaJuego(
@@ -237,12 +243,8 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                             return "$numero, incorrecto";
                           }
                         }(),
-                        isButton:
-                            numero != null &&
-                            !j2s.estaNumeroBienPosicionado(numero),
-                        isEnabled:
-                            numero != null &&
-                            !j2s.estaNumeroBienPosicionado(numero),
+                        isButton: numero != null && !estaBien!,
+                        isEnabled: numero != null && !estaBien!,
                         onTap: () => numero != null
                             ? j2s.devolverNumero(
                                 j2s.numerosAbajo.indexOf(numero),
@@ -258,8 +260,8 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                       Icon(
                         numero != null
                             ? j2s.estaNumeroBienPosicionado(numero)
-                                  ? Icons.emoji_emotions_rounded
-                                  : Icons.report_gmailerrorred
+                                  ? Icons.check_circle
+                                  : Icons.cancel
                             : null,
                         color:
                             alumno.colorSeleccion ??

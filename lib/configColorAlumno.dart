@@ -6,6 +6,8 @@ import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 /// **Nombre de la Clase: `ConfigColorAlumno**
 ///
@@ -185,6 +187,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
                     ? alumno.colorFondo!
                     : Theme.of(context).colorScheme.surface,
               ),
+              BotonSinIcono(texto: "AJUSTES JUEGO 2", onPressed: (){navegar(AjustesJuegoLandscape(juego: alumnoHolder.juego2!), context);})
             ],
           ),
         ),

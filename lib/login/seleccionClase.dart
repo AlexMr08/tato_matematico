@@ -45,12 +45,11 @@ class _SeleccionClaseState extends State<SeleccionClase> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (notInit) {
       size = MediaQuery.sizeOf(context).width;
       em = size < 600;
       notInit = false;
-    }
-    var spacing = em ? 12.0 : 32.0;
+
+      var spacing = em ? 12.0 : 32.0;
     var width = em
         ? (size - spacing - 16 * 2) / 2
         : (size - spacing * 5 - 16 * 2) / 6;

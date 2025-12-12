@@ -78,6 +78,15 @@ class _GamesMenuState extends State<GamesMenu> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    var ah = context.read<AlumnoHolder>();
+    if (!ah.isLoaded) {
+      //ah.cargarJuegos();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
@@ -92,21 +101,9 @@ class _GamesMenuState extends State<GamesMenu> {
 
     PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
 
-    if (alumnoHolder.isLoaded == false || alumnoHolder.juego2 == null) {
-      return ScaffoldAlumno(
-        alumno: alumno,
-        posicion: posicionBarra,
-        textoCabecera: "Menu principal",
-        hasEstadisticas: true,
-        hasAjustes: true,
-        onVolver: () {},
-        onAjustes: () {},
-        onEstadisticas: () {},
-        child: const Center(child: CircularProgressIndicator()),
-      );
+    if (alumnoHolder.juego2 != null) {
+      listaJuegos[1] = alumnoHolder.juego2!;
     }
-
-    listaJuegos[1] = alumnoHolder.juego2!;
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -133,70 +130,70 @@ class _GamesMenuState extends State<GamesMenu> {
         navegar(ConfigColorAlumno(alum: alumno), context);
       },
       onEstadisticas: () {},
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
+      child: alumnoHolder.isLoaded && alumnoHolder.juego2 != null
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
                   Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[0],
-                      onTap: () {
-                        navegar(Juego1Screen(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: JuegoCard(
-                      juego: alumnoHolder.juego2!,
-                      onTap: () {
-                        navegar(
-                          Juego2Screen(
-                            juego: alumnoHolder.juego2!,
-                            alumno: alumno,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos[0],
+                            onTap: () {
+                              navegar(Juego1Screen(), context);
+                            },
+                            color: alumno.colorBotones,
                           ),
-                          context,
-                        );
-                      },
-                      color: alumno.colorBotones,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: JuegoCard(
+                            juego: alumnoHolder.juego2!,
+                            onTap: () {
+                              navegar(
+                                Juego2Screen(
+                                  juego: alumnoHolder.juego2!,
+                                  alumno: alumno,
+                                ),
+                                context,
+                              );
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos[2],
+                            onTap: () {
+                              navegar(Placeholder(), context);
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos[3],
+                            onTap: null,
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[2],
-                      onTap: () {
-                        navegar(Placeholder(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[3],
-                      onTap: () {
-                        navegar(Placeholder(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

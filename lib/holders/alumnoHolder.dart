@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/juegos/juego2/juego2.dart';
+
 import '../datos/alumno.dart';
+import '../juegos/juego2/juego2.dart';
 
 /// **Nombre de la Clase: `AlumnoHolder`**
 ///
@@ -13,8 +14,8 @@ import '../datos/alumno.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 07/12/2025
-/// * **Último cambio:** Se ha añadido lo necesario para cargar los juegos (de momento limitado al 2)
+/// * **Fecha de modificación:** 12/12/2025
+/// * **Último cambio:** Se ha mejorado como se llama al metodo de carga de juegos
 ///
 
 class AlumnoHolder extends ChangeNotifier {
@@ -29,8 +30,9 @@ class AlumnoHolder extends ChangeNotifier {
 
   void setAlumno(Alumno newAlumno) {
     alumno = newAlumno;
-    _escucharCambiosPerfil(newAlumno.id);
     cargarJuegos();
+    _escucharCambiosPerfil(newAlumno.id);
+    _escucharCambiosJuegos(newAlumno.id);
     notifyListeners();
   }
 
@@ -43,7 +45,7 @@ class AlumnoHolder extends ChangeNotifier {
 
     try {
       final snapshot = await dbRef.get();
-      print(snapshot.value);
+      print("SNAPSHOT: ${snapshot.value}");
       if (snapshot.exists && snapshot.value != null) {
         for (var child in snapshot.children) {
           if (child.key == "juego2") {
@@ -52,10 +54,21 @@ class AlumnoHolder extends ChangeNotifier {
             juego2 = Juego2.fromMap(data);
           }
         }
-
         // Avisamos a las vistas que el juego ya está cargado
         notifyListeners();
         isLoaded = true;
+        _escucharCambiosJuegos(alumno!.id);
+      } else {
+        juego2 = Juego2(
+          min: 0,
+          max: 10,
+          cantidad: 8,
+          usaImagenes: false,
+          tipoImagenes: "numeros",
+          ordenDescendente: false,
+        );
+        isLoaded = true;
+        juego2?.guardarAjustes(idAlumno: alumno!.id, rango: 10, cantidad: 8, tema: 'numeros', dbRef: FirebaseDatabase.instance.ref(), orden: false);
         _escucharCambiosJuegos(alumno!.id);
       }
     } catch (e) {
