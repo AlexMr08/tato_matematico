@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:tato_matematico/datos/estadistica.dart';
 
 import '../datos/alumno.dart';
 import '../juegos/juego2/juego2.dart';
@@ -21,8 +22,10 @@ import '../juegos/juego2/juego2.dart';
 class AlumnoHolder extends ChangeNotifier {
   Alumno? alumno;
   Juego2? juego2;
+  Map<String, EstadisticaJuego> estadisticas = {};
   StreamSubscription<DatabaseEvent>? _perfilSubscription;
   StreamSubscription<DatabaseEvent>? _juegosSubscription;
+  StreamSubscription<DatabaseEvent>? _estadisticasSubscription;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
   var isLoaded = false;
 
@@ -31,8 +34,10 @@ class AlumnoHolder extends ChangeNotifier {
   void setAlumno(Alumno newAlumno) {
     alumno = newAlumno;
     cargarJuegos();
+    cargarEstaditicas();
     _escucharCambiosPerfil(newAlumno.id);
     _escucharCambiosJuegos(newAlumno.id);
+    _escucharCambiosEstadisticas(newAlumno.id);
     notifyListeners();
   }
 
@@ -68,7 +73,14 @@ class AlumnoHolder extends ChangeNotifier {
           ordenDescendente: false,
         );
         isLoaded = true;
-        juego2?.guardarAjustes(idAlumno: alumno!.id, rango: 10, cantidad: 8, tema: 'numeros', dbRef: FirebaseDatabase.instance.ref(), orden: false);
+        juego2?.guardarAjustes(
+          idAlumno: alumno!.id,
+          rango: 10,
+          cantidad: 8,
+          tema: 'numeros',
+          dbRef: FirebaseDatabase.instance.ref(),
+          orden: false,
+        );
         _escucharCambiosJuegos(alumno!.id);
       }
     } catch (e) {
@@ -114,12 +126,41 @@ class AlumnoHolder extends ChangeNotifier {
     });
   }
 
+  void _escucharCambiosEstadisticas(String id) {
+    _estadisticasSubscription?.cancel();
+    final perfilRef = _dbRef.child('tato').child('estadisticas').child(id);
+    _estadisticasSubscription = perfilRef.onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+
+        for (var entry in data.entries) {
+          final key = entry.key;
+          final value = Map<dynamic, dynamic>.from(entry.value as Map);
+
+          var estadisticaJuego = EstadisticaJuego.fromMap(key, value);
+
+          estadisticaJuego.estadisticasSemanales.sort((a, b) {
+            return b.fecha.compareTo(a.fecha);
+          });
+
+          estadisticas[key] = estadisticaJuego;
+        }
+        notifyListeners();
+      }
+    });
+  }
+
   void clear() {
     _perfilSubscription?.cancel();
     _perfilSubscription = null;
     _juegosSubscription?.cancel();
     _juegosSubscription = null;
+    _estadisticasSubscription?.cancel();
+    _estadisticasSubscription = null;
     alumno = null;
+    juego2 = null;
+    estadisticas.clear();
+    isLoaded = false;
     notifyListeners();
   }
 
@@ -148,6 +189,67 @@ class AlumnoHolder extends ChangeNotifier {
     if (alumno != null) {
       alumno!.colorSeleccion = color;
       notifyListeners();
+    }
+  }
+
+  Future<void> cargarEstaditicas() async {
+    if (alumno == null) return;
+
+    var dbRef = FirebaseDatabase.instance.ref().child(
+      "tato/estadisticas/${alumno!.id}",
+    );
+
+    try {
+      final snapshot = await dbRef.get();
+
+      // 1. LIMPIAR E INICIALIZAR CON JUEGOS POR DEFECTO
+      estadisticas.clear();
+
+      // Definimos los IDs de tus 4 juegos
+      final juegosIds = ["juego1", "juego2", "juego3", "juego4"];
+
+      // Creamos entradas vacías para todos al principio
+      for (var id in juegosIds) {
+        estadisticas[id] = EstadisticaJuego(
+          juegoId: id,
+          estadisticasSemanales: [],
+        );
+      }
+
+      if (snapshot.exists && snapshot.value != null) {
+        for (var child in snapshot.children) {
+          try {
+            final rawValue = child.value;
+            if (rawValue is Map) {
+              final data = Map<dynamic, dynamic>.from(rawValue);
+              if (child.key != null) {
+                // 2. CREAR EL OBJETO CON DATOS REALES
+                var estadisticaJuego = EstadisticaJuego.fromMap(
+                  child.key!,
+                  data,
+                );
+
+                // Ordenar por fecha (más reciente primero)
+                estadisticaJuego.estadisticasSemanales.sort((a, b) {
+                  return b.fecha.compareTo(a.fecha);
+                });
+
+                // 3. SOBRESCRIBIR LA ENTRADA VACÍA
+                // Si child.key es "juego1", reemplazará al objeto vacío que creamos arriba
+                estadisticas[child.key!] = estadisticaJuego;
+              }
+            }
+          } catch (e) {
+            print(
+              "Error al procesar estadística individual (${child.key}): $e",
+            );
+          }
+        }
+      }
+      // Notificamos sea cual sea el resultado (incluso si solo hay vacíos)
+      notifyListeners();
+    } catch (e) {
+      print("Error general cargando estadisticas: $e");
     }
   }
 
