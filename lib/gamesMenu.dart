@@ -4,10 +4,13 @@ import 'package:tato_matematico/configColorAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
+import 'package:tato_matematico/juegos/juego3/juego3.dart';
+import 'package:tato_matematico/juegos/juego3/juego3Main.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
+
 
 /// **Nombre de la Clase: `GamesMenu**
 ///
@@ -49,15 +52,7 @@ class _GamesMenuState extends State<GamesMenu> {
       tipoImagenes: "",
     ),
     Juego2(1, 10, 8, true, "", true),
-    Juego(
-      id: 'juego3',
-      nombre: 'Juego 3',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
+    Juego3(1, 10, 3, false, "", 2),
     Juego(
       id: 'juego4',
       nombre: 'Juego 4',
@@ -144,6 +139,7 @@ class _GamesMenuState extends State<GamesMenu> {
                       color: alumno.colorBotones,
                     ),
                   ),
+                  
                 ],
               ),
             ),
@@ -155,7 +151,10 @@ class _GamesMenuState extends State<GamesMenu> {
                     child: JuegoCard(
                       juego: listaJuegos[2],
                       onTap: () {
-                        navegar(Placeholder(), context);
+                        navegar(
+                          Juego3Screen(juego: listaJuegos[2], alumno: alumno),
+                          context,
+                        );
                       },
                       color: alumno.colorBotones,
                     ),
