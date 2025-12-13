@@ -23,11 +23,9 @@ String obtenerSemana() {
   DateTime now = DateTime.now();
 
   DateTime lunes = now.subtract(Duration(days: now.weekday - 1));
-  DateTime domingo = lunes.add(const Duration(days: 6));
 
   String f(int n) => n.toString().padLeft(2, '0');
-  String inicio = "${f(lunes.day)}-${f(lunes.month)}-${lunes.year}";
-  String fin = "${f(domingo.day)}/${f(domingo.month)}/${domingo.year}";
+  String inicio = "${(lunes.year)}-${f(lunes.month)}-${f(lunes.day)}";
 
   return inicio;
 }

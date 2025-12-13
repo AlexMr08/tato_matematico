@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/configColorAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/estadisticas.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'datos/estadistica.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
@@ -129,7 +131,9 @@ class _GamesMenuState extends State<GamesMenu> {
       onAjustes: () {
         navegar(ConfigColorAlumno(alum: alumno), context);
       },
-      onEstadisticas: () {},
+      onEstadisticas: () {
+        navegar(EstadisticasPage(), context);
+      },
       child: alumnoHolder.isLoaded && alumnoHolder.juego2 != null
           ? Padding(
               padding: const EdgeInsets.all(16),
