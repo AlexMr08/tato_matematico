@@ -12,9 +12,9 @@ import 'package:tato_matematico/datos/alumno.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se ha añadido documentacion
 ///
 
 class ConfigAlfanumericaScreen extends StatefulWidget {
@@ -62,14 +62,18 @@ class _ConfigAlfanumericaScreenState extends State<ConfigAlfanumericaScreen> {
     super.dispose();
   }
 
-  /// Metodo para encriptar la contraseña con SHA256
+  /// Genera un hash SHA-256 a partir de una contraseña en texto plano.
+  ///
+  /// Se utiliza para añadir seguridad y no guardar texto plano en Firebase.
   String _generarHash(String password) {
     var bytes = utf8.encode(password);
     var digest = sha256.convert(bytes);
     return digest.toString();
   }
 
-  /// Metodo para guardar la nueva contraseña haciendo validaciones
+  /// Valida los campos y guarda la configuración de login en Firebase.
+  ///
+  /// Si está correcto, cifra la contraseña y actualiza el nodo `tato/login/{id}`.
   Future<void> _guardarConfiguracion() async {
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();

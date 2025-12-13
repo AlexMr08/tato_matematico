@@ -12,9 +12,10 @@ import 'package:tato_matematico/edicion/imagenStorage.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Coherencia visual con colores e iconos y
+/// arregaldos bugs de previsualizacion.
 ///
 
 class ConfigSecuenciaScreen extends StatefulWidget {
@@ -56,6 +57,10 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
     _cargarBiblioteca();
   }
 
+  /// Descarga la biblioteca completa de imagenes desde Firebase.
+  ///
+  /// Se utiliza para mostrar el grid de seleccion donde el profesor elige las
+  /// imáganes correctas e incorrectas.
   Future<void> _cargarBiblioteca() async {
     try {
       final snapshot = await _dbRef.child('tato').child('bibliotecaImagenes').get();
@@ -78,6 +83,12 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
     }
   }
 
+  /// Guarda la configuración final de login en Firebase.
+  ///
+  /// Se establece el `tipoLogin` a `secuenciaImagenes`
+  /// y se guarda la secuencia correcta y las distractoras (si hay).
+  ///
+  /// También limpia las configuraciones de otros métodos de login (alfanumérico, imagen única).
   Future<void> _guardarConfiguracion() async {
     setState(() => _isSaving = true);
     try {
@@ -120,7 +131,14 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
     }
   }
 
-  // --- LÓGICA DE CLICK INTELIGENTE ---
+  /// Gestiona la lógica al hacer clic en una imagen de la biblioteca.
+  ///
+  /// Prioridad de acción:
+  /// 1. Si ya es parte de la secuencia o distractor -> La quita (Deseleccionar).
+  /// 2. Si la secuencia **NO** está llena -> La añade al final de la secuencia.
+  /// 3. Si la secuencia **ESTÁ** llena:
+  ///    * **Modo Aleatorio:** Reemplaza el último paso de la secuencia.
+  ///    * **Modo Manual:** Intenta añadirla como distractor (si hay hueco en el grid).
   void _manejarClickImagen(Pictograma img) {
     setState(() {
       // 1. Si ya es parte de la secuencia -> Quitarla

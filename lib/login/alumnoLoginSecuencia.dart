@@ -11,6 +11,12 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Previsualizacion de imagenes seleccionadas y arregaldo bug en previsualizacion
+///
 /// Pantalla de inicio de sesión mediante secuencia de imágenes.
 ///
 /// En esta pantalla se le muestra un grid de imágenes al alumno y debe pulsarlas

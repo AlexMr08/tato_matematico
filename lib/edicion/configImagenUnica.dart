@@ -12,9 +12,9 @@ import 'package:tato_matematico/edicion/imagenStorage.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Coherencia visual, correccion de bugs visuales y documentación.
 ///
 
 class ConfigImagenUnicaScreen extends StatefulWidget {
@@ -54,7 +54,10 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
     _cargarBiblioteca();
   }
 
-  /// Cargar la biblioteca de imagenes desde firebase
+  /// Descarga la biblioteca completa de imagenes desde Firebase.
+  ///
+  /// Se utiliza para mostrar el grid de seleccion donde el profesor elige las
+  /// imáganes correctas e incorrectas.
   Future<void> _cargarBiblioteca() async {
     try {
       final snapshot = await _dbRef
@@ -86,7 +89,11 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
     }
   }
 
-  /// Metodo para guardar la configuracion del login en firebase
+  /// Guarda la configuración final en Firebase bajo `tato/login/{alumnoId}`.
+  ///
+  /// * Establece `tipoLogin` a `seleccionImagen`.
+  /// * Guarda el ID de la correcta y los distractores (si el modo no es aleatorio).
+  /// * Borra las configuraciones de otros métodos de login.
   Future<void> _guardarConfiguracion() async {
     setState(() => _isSaving = true);
 
@@ -128,7 +135,15 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
     }
   }
 
-  // --- INTERACCIÓN: CLICK EN UNA IMAGEN ---
+  /// Gestiona la lógica al pulsar una imagen en el grid de la biblioteca.
+  ///
+  /// Sigue esta jerarquía de decisión:
+  /// 1. Si tocas la imagen **correcta** -> Se deselecciona.
+  /// 2. Si tocas una **distractora** -> Se deselecciona.
+  /// 3. Si **no hay correcta** asignada -> Se asigna como correcta.
+  /// 4. Si **ya hay correcta**:
+  ///    * En modo **Aleatorio**: Reemplaza a la correcta actual.
+  ///    * En modo **Manual**: Se añade como distractora (si hay hueco).
   void _manejarClickImagen(Pictograma img) {
     setState(() {
       // 1. Deseleccionar si tocamos la que ya es correcta
