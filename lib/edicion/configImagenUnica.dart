@@ -366,7 +366,6 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
           // --- ZONA SUPERIOR (RESUMEN) ---
           Container(
             padding: const EdgeInsets.all(12),
-            color: Colors.grey[100],
             child: Column(
               children: [
                 // HUECO IMAGEN CORRECTA
@@ -380,29 +379,30 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                       ? () => setState(() => _selectedCorrectImageId = null)
                       : null,
                   child: Container(
+                    key: ValueKey("correct_${_selectedCorrectImageId ?? 'none'}"),
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(
-                        color: hayCorrecta ? Colors.green : Colors.grey,
+                        color: hayCorrecta ? colorScheme.primary : colorScheme.outlineVariant,
                         width: hayCorrecta ? 4 : 2,
                       ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         if (hayCorrecta)
                           BoxShadow(
-                            color: Colors.green.withValues(alpha: 0.2),
+                            color: colorScheme.primary.withValues(alpha: .2),
                             blurRadius: 5,
                           ),
                       ],
                     ),
                     child: hayCorrecta
                         ? _previewImagen(_selectedCorrectImageId!)
-                        : const Icon(
+                        : Icon(
                             Icons.lock_outline,
                             size: 40,
-                            color: Colors.grey,
+                            color: colorScheme.outlineVariant,
                           ),
                   ),
                 ),
@@ -420,14 +420,11 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
 
                   const SizedBox(height: 5),
 
-                  SizedBox(
-                    height: 50,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      // Ponemos tantos huecos como imagenes distractoras hagan falta
-                      itemCount: distractoresNecesarios,
-                      itemBuilder: (context, index) {
-                        // Averiguar si el hueco esta lleno
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(distractoresNecesarios, (index) {
                         String? id;
                         if (index < _selectedDistractoras.keys.length) {
                           id = _selectedDistractoras.keys.elementAt(index);
@@ -436,10 +433,11 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                         return InkWell(
                           onTap: id != null
                               ? () => setState(
-                                  () => _selectedDistractoras.remove(id),
-                                )
+                                () => _selectedDistractoras.remove(id),
+                          )
                               : null,
                           child: Container(
+                            key: ValueKey("dist_$index${id ?? 'none'}"),
                             width: 50,
                             height: 50,
                             margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -447,27 +445,27 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                               color: Colors.white,
                               border: Border.all(
                                 color: id != null
-                                    ? Colors.red
-                                    : Colors.grey[300]!,
+                                    ? colorScheme.error
+                                    : colorScheme.outlineVariant,
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: id != null
                                 ? _previewImagen(id)
-                                : const Icon(Icons.add, color: Colors.grey),
+                                : Icon(Icons.add, color: colorScheme.outlineVariant),
                           ),
                         );
-                      },
+                      }),
                     ),
                   ),
                 ] else
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Text(
                       "El resto de imágenes serán aleatorias.",
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
-                        color: Colors.grey,
+                        color: colorScheme.secondary,
                       ),
                     ),
                   ),
@@ -475,7 +473,7 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
             ),
           ),
 
-          const Divider(height: 1),
+          Divider(height: 1, color: colorScheme.outlineVariant),
 
           // --- ZONA INFERIOR (BIBLIOTECA GRID) ---
           Expanded(
@@ -508,9 +506,9 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 border: esCorrecta
-                                    ? Border.all(color: Colors.green, width: 4)
+                                    ? Border.all(color: colorScheme.primary, width: 4)
                                     : esDistractor
-                                    ? Border.all(color: Colors.red, width: 3)
+                                    ? Border.all(color: colorScheme.error, width: 3)
                                     : null,
                               ),
                               child: ClipRRect(
@@ -527,18 +525,17 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                               Align(
                                 alignment: Alignment.topRight,
                                 child: Container(
-                                  padding: const EdgeInsets.all(2),
+                                  width: 32, height: 32,
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: esCorrecta ? colorScheme.primary : colorScheme.error,
                                     shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
                                   ),
                                   child: Icon(
                                     esCorrecta
-                                        ? Icons.check_circle
-                                        : Icons.remove_circle,
-                                    color: esCorrecta
-                                        ? Colors.green
-                                        : Colors.red,
+                                        ? Icons.check
+                                        : Icons.close,
+                                    color: Colors.white,
                                     size: 20,
                                   ),
                                 ),
@@ -559,14 +556,15 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
                   ? _guardarConfiguracion
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primaryContainer,
-                foregroundColor: colorScheme.onPrimaryContainer,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.zero,
                 ),
+                disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: .12),
               ),
               child: _isSaving
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? CircularProgressIndicator(color: colorScheme.onPrimary)
                   : Text(
                       listoParaGuardar
                           ? "GUARDAR CONFIGURACION"

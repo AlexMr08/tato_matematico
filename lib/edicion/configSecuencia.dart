@@ -349,6 +349,7 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                           child: Column(
                             children: [
                               Container(
+                                key: ValueKey("${index}_${idPaso ?? 'vacio'}"),
                                 width: 70, height: 70,
                                 decoration: BoxDecoration(
                                     color: colorScheme.surface,
@@ -358,22 +359,23 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                                         width: idPaso != null ? 3 : 2
                                     ),
                                     borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [if(idPaso != null) BoxShadow(color: colorScheme.primary.withOpacity(0.2), blurRadius: 5)]
+                                    boxShadow: [if(idPaso != null) BoxShadow(color: colorScheme.primary.withValues(alpha: 0.2), blurRadius: 5)]
                                 ),
                                 child: idPaso != null
                                     ? _previewImagen(idPaso)
                                     : Center(child: Text("${index + 1}", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.outlineVariant))),
                               ),
-                              const SizedBox(height: 4),
-                              Text("Paso ${index+1}", style: const TextStyle(fontSize: 10)),
                             ],
                           ),
                         ),
                         // Flechita excepto en el último
                         if (index < _sequenceLength - 1)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 20), // Ajustado para centrar con la caja
-                            child: Icon(Icons.arrow_right_alt, color: colorScheme.outline),
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 20),
+                            child: Icon(
+                                Icons.arrow_forward_rounded,
+                                color: colorScheme.outline
+                            ),
                           ),
                       ],
                     );
@@ -387,19 +389,20 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                   Text("DISTRACTORES ($distractoresActuales / $distractoresNecesarios)",
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 5),
-                  SizedBox(
-                    height: 50,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: distractoresNecesarios,
-                      itemBuilder: (context, index) {
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(distractoresNecesarios, (index) {
                         String? id;
                         if (index < _selectedDistractoras.keys.length) {
                           id = _selectedDistractoras.keys.elementAt(index);
                         }
+
                         return InkWell(
                           onTap: id != null ? () => setState(() => _selectedDistractoras.remove(id)) : null,
                           child: Container(
+                              key: ValueKey("dist_${index}_${id ?? 'vacio'}"),
                               width: 50, height: 50,
                               margin: const EdgeInsets.symmetric(horizontal: 4),
                               decoration: BoxDecoration(
@@ -414,13 +417,19 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                                   : Icon(Icons.add, color: colorScheme.outlineVariant)
                           ),
                         );
-                      },
+                      }),
                     ),
-                  )
+                  ),
                 ] else
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("El resto se rellena automáticamente.", style: TextStyle(fontStyle: FontStyle.italic, color: colorScheme.secondary)),
+                    child: Text(
+                        "El resto de imágenes serán aleatorias.",
+                        style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: colorScheme.secondary
+                        )
+                    ),
                   ),
               ],
             ),
@@ -471,16 +480,19 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                         Align(
                           alignment: Alignment.topRight,
                           child: Container(
-                            width: 24, height: 24,
+                            width: 32, height: 32,
                             decoration: BoxDecoration(
                                 color: esParteSecuencia ? colorScheme.primary : colorScheme.error,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5)
+                                border: Border.all(
+                                    color: Colors.white,
+                                    width: 2
+                                )
                             ),
                             child: Center(
                               child: esParteSecuencia
-                                  ? Text("${indexSecuencia + 1}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))
-                                  : const Icon(Icons.close, color: Colors.white, size: 14),
+                                  ? Text("${indexSecuencia + 1}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))
+                                  : const Icon(Icons.close, color: Colors.white, size: 20),
                             ),
                           ),
                         )
