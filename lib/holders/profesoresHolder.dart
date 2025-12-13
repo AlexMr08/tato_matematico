@@ -10,8 +10,8 @@ import 'package:tato_matematico/datos/profesor.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
 
@@ -34,20 +34,19 @@ class ProfesoresHolder extends ChangeNotifier {
   List<Profesor> get profesores => _profesores;
 
   void init() {
-    if (escuchando) return;
-
-    // 2. RECONEXIÓN RÁPIDA: Si ya tenemos datos en memoria (porque entramos y salimos),
-    // solo volvemos a conectar los listeners sin descargar todo de nuevo.
-    if (_profesores.isNotEmpty) {
-      print("reconecto");
-      _attachListeners();
-      return;
+    if (!escuchando) {
+      // 2. RECONEXIÓN RÁPIDA: Si ya tenemos datos en memoria (porque entramos y salimos),
+      // solo volvemos a conectar los listeners sin descargar todo de nuevo.
+      if (_profesores.isNotEmpty) {
+        print("reconecto");
+        _attachListeners();
+      } else {
+        // 3. PRIMERA VEZ: Si la lista está vacía, descargamos y conectamos.
+        _loadProfesores().then((_) {
+          _attachListeners();
+        });
+      }
     }
-
-    // 3. PRIMERA VEZ: Si la lista está vacía, descargamos y conectamos.
-    _loadProfesores().then((_) {
-      _attachListeners();
-    });
   }
 
   // 1. Carga inicial masiva
@@ -83,12 +82,32 @@ class ProfesoresHolder extends ChangeNotifier {
   }
 
   void _onChildAdded(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
+    if (event.snapshot.value != null) {
+      final key = event.snapshot.key!;
 
-    if (_profesores.any((a) => a.id == key)) {
-      //Actualizamos el profesor
-      print("actualizooo");
+      if (_profesores.any((a) => a.id == key)) {
+        //Actualizamos el profesor
+        print("actualizooo");
+        final key = event.snapshot.key!;
+        final index = _profesores.indexWhere((a) => a.id == key);
+        final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+
+        final profesorActualizado = Profesor.fromMap(key, data);
+
+        if (index != -1) {
+          _profesores[index] = profesorActualizado;
+          notifyListeners();
+        }
+      } else {
+        final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+        _profesores.add(Profesor.fromMap(key, data));
+        notifyListeners();
+      }
+    }
+  }
+
+  void _onChildChanged(DatabaseEvent event) {
+    if (event.snapshot.value != null) {
       final key = event.snapshot.key!;
       final index = _profesores.indexWhere((a) => a.id == key);
       final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
@@ -99,43 +118,29 @@ class ProfesoresHolder extends ChangeNotifier {
         _profesores[index] = profesorActualizado;
         notifyListeners();
       }
-    } else {
-      final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-      _profesores.add(Profesor.fromMap(key, data));
-      notifyListeners();
-    }
-  }
-
-  void _onChildChanged(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
-    final index = _profesores.indexWhere((a) => a.id == key);
-    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-
-    final profesorActualizado = Profesor.fromMap(key, data);
-
-    if (index != -1) {
-      _profesores[index] = profesorActualizado;
-      notifyListeners();
     }
   }
 
   void _onChildRemoved(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
-    _profesores.removeWhere((a) => a.id == key);
-    notifyListeners();
+    if (event.snapshot.value != null) {
+      final key = event.snapshot.key!;
+      _profesores.removeWhere((a) => a.id == key);
+      notifyListeners();
+    }
   }
 
   // === MÉTODOS DE UTILIDAD ===
 
   // Obtener un profesor específico
   Profesor? obtenerProfesorPorId(String id) {
+    Profesor? obtenido;
     try {
-      return _profesores.firstWhere((a) => a.id == id);
+      obtenido = _profesores.firstWhere((a) => a.id == id);
     } catch (e) {
-      return null;
+      obtenido = null;
     }
+
+    return obtenido;
   }
 
   void desconectar() {

@@ -9,8 +9,8 @@ import 'package:tato_matematico/juegos/juego2/juego2.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 06/12/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se ha creado la clase
 ///
 class Juego2State with ChangeNotifier {
@@ -34,8 +34,12 @@ class Juego2State with ChangeNotifier {
   Juego2State(this.juego, this.alumno);
 
   bool estaNumeroBienPosicionado(int num) {
-    if (!numerosOrdenados.contains(num)) return false;
-    return numerosOrdenados.indexOf(num) == numerosAbajo.indexOf(num);
+    bool estanbien;
+    if (!numerosOrdenados.contains(num)) estanbien = false;
+    else
+    estanbien = numerosOrdenados.indexOf(num) == numerosAbajo.indexOf(num);
+
+    return estanbien;
   }
 
   void moverNumero(int numero) {
@@ -74,18 +78,17 @@ class Juego2State with ChangeNotifier {
   void _verificarEstadoFinalizacion() {
     if (numerosAbajo.contains(null)) {
       finalizado = false;
-      return;
-    }
-
-    bool correcto = true;
-    for (int i = 0; i < numerosOrdenados.length; i++) {
-      if (numerosAbajo[i] != numerosOrdenados[i]) {
-        correcto = false;
-        break;
+    } else {
+      bool correcto = true;
+      for (int i = 0; i < numerosOrdenados.length; i++) {
+        if (numerosAbajo[i] != numerosOrdenados[i]) {
+          correcto = false;
+          break;
+        }
       }
-    }
 
-    finalizado = correcto;
+      finalizado = correcto;
+    }
   }
 
   void iniciarJuego() {

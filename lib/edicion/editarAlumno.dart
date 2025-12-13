@@ -21,8 +21,8 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 07/12/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se ha mejorado la responsividad
 ///
 
@@ -107,14 +107,10 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     final nuevoNombre = _nombreController.text.trim();
     if (nuevoNombre.isEmpty) {
       snackBarAviso(context, 'El nombre no puede estar vacío.');
-      return;
-    }
-    if (nuevoNombre == alumno.nombre) {
+    } else if (nuevoNombre == alumno.nombre) {
       // Si no hay cambios, simplemente salimos del modo edición.
       setState(() => _isEditingName = false);
-      return;
-    }
-    try {
+    } else try {
       // Actualizamos la base de datos
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
         'nombre': nuevoNombre,

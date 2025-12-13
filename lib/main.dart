@@ -14,6 +14,19 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import 'holders/profesorHolder.dart';
 
+/// **Nombre de la Clase: `main`**
+///
+/// **Descripción:** Main del programa
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se han hecho la documentación
+///
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

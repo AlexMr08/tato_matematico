@@ -16,8 +16,8 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 02/12/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
 ///
 
@@ -220,7 +220,7 @@ class Alumno {
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) return null;
+    if (imagenLocal.isEmpty) _cachedImage = null;
     // La versión FINAL añade el null-aware operator para inicializar una sola vez
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
@@ -265,30 +265,27 @@ class Alumno {
 
   // Lógica de obtención de imagen mejorada
   Future<File?> obtenerImagen(Directory tempDir) async {
-    // 1. Caché en RAM (File? foto)
-    if (foto != null) return foto;
 
-    // 2. Caché en Disco (imagenLocal)
+    // 1. Caché en Disco (imagenLocal)
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
         foto = archivoDisco;
-        return foto;
+      }
+    } else {
+
+      // 2. Descarga
+      await descargarImagen(tempDir);
+
+      if (imagenLocal.isNotEmpty) {
+        final archivoRecienDescargado = File(imagenLocal);
+        if (await archivoRecienDescargado.exists()) {
+          foto = archivoRecienDescargado;
+        }
       }
     }
 
-    // 3. Descarga
-    await descargarImagen(tempDir);
-
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
-
-    return null;
+    return foto;
   }
 }
 

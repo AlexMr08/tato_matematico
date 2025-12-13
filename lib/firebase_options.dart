@@ -2,20 +2,34 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
+/// **Nombre de la Clase: `firebase_options`**
+///
+/// **Descripción:** configuraciones de Firebase
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se han hecho cambios de calidad
+///
+
+
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
+    FirebaseOptions tipo;
     if (kIsWeb) {
-      return web;
+      tipo = web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        tipo = android;
       case TargetPlatform.iOS:
-        return ios;
+        tipo = ios;
       case TargetPlatform.macOS:
-        return macos;
+        tipo = macos;
       case TargetPlatform.windows:
-        return windows;
+        tipo = windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -26,6 +40,8 @@ class DefaultFirebaseOptions {
           'DefaultFirebaseOptions are not supported for this platform.',
         );
     }
+
+    return tipo;
   }
 
   static const FirebaseOptions web = FirebaseOptions(

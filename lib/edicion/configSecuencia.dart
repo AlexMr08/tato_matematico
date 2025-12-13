@@ -12,7 +12,7 @@ import 'package:tato_matematico/edicion/imagenStorage.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Última modificación por:** Gonzalo Alganza Luque
 /// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Coherencia visual con colores e iconos y
 /// arregaldos bugs de previsualizacion.
@@ -141,26 +141,14 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
   ///    * **Modo Manual:** Intenta añadirla como distractor (si hay hueco en el grid).
   void _manejarClickImagen(Pictograma img) {
     setState(() {
-      // 1. Si ya es parte de la secuencia -> Quitarla
+
       if (_orderedSequenceIds.contains(img.id)) {
         _orderedSequenceIds.remove(img.id);
-        return;
-      }
-
-      // 2. Si es distractora -> Quitarla
-      if (_selectedDistractoras.containsKey(img.id)) {
+      } else if (_selectedDistractoras.containsKey(img.id)) {
         _selectedDistractoras.remove(img.id);
-        return;
-      }
-
-      // 3. Si la secuencia NO está llena -> Añadir al final
-      if (_orderedSequenceIds.length < _sequenceLength) {
+      } else if (_orderedSequenceIds.length < _sequenceLength) {
         _orderedSequenceIds.add(img.id);
-        return;
-      }
-
-      // 4. Si secuencia llena...
-      if (_isRandom) {
+      } else if (_isRandom) {
         // Modo Aleatorio: Reemplazar el último paso (comportamiento opcional)
         _orderedSequenceIds.removeLast();
         _orderedSequenceIds.add(img.id);

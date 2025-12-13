@@ -13,9 +13,9 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Última modificación por:** Gonzalo Alganza Luque
 /// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Refactorizacion para cumplir con accesibilidad y arreglados bugs
+/// * **Último cambio:** Cambios de Calidad
 ///
 /// Pantalla de inicio de sesión mediante la selección de una imagen.
 ///
@@ -121,27 +121,27 @@ class _alumnoLoginImagenState extends State<alumnoLoginImagen> {
   /// Si se selecciona correcta, se navega al menú de juegos y se muestra feedback.
   /// Si se selecciona incorrecta, se deselecciona la imagen y se muestra feedback.
   void _intentarLogin() {
-    if (_idSeleccionada == null) return;
+    if (_idSeleccionada != null) {
+      if (_idSeleccionada == _idCorrecta) {
+        // ÉXITO
+        setState(() => _estado = EstadoLogin.exito);
 
-    if (_idSeleccionada == _idCorrecta) {
-      // ÉXITO
-      setState(() => _estado = EstadoLogin.exito);
-
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const GamesMenu()),
-          );
-        }
-      });
-    }
-    else {
-      // ERROR
-      setState(() {
-        _estado = EstadoLogin.error;
-        _idSeleccionada = null;
-      });
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const GamesMenu()),
+            );
+          }
+        });
+      }
+      else {
+        // ERROR
+        setState(() {
+          _estado = EstadoLogin.error;
+          _idSeleccionada = null;
+        });
+      }
     }
   }
 

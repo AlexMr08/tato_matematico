@@ -10,8 +10,8 @@ import 'package:tato_matematico/datos/clase.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
 class ClasesHolder extends ChangeNotifier {
@@ -73,37 +73,40 @@ class ClasesHolder extends ChangeNotifier {
   }
 
   void _onClaseAgregada(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
+    if (event.snapshot.value != null) {
+      final key = event.snapshot.key!;
 
-    // Evitamos duplicados si la carga inicial ya lo trajo
-    if (_clases.any((c) => c.id == key)) return;
-
-    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-    _clases.add(Clase.fromMap(key, data));
-    _ordenarClases();
-    notifyListeners();
+      // Evitamos duplicados si la carga inicial ya lo trajo
+      if (_clases.any((c) => c.id != key)) {
+        final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+        _clases.add(Clase.fromMap(key, data));
+        _ordenarClases();
+        notifyListeners();
+      }
+    }
   }
 
   void _onClaseCambiada(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
-    final index = _clases.indexWhere((c) => c.id == key);
-    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-    final claseActualizada = Clase.fromMap(key, data);
+    if (event.snapshot.value != null) {
+      final key = event.snapshot.key!;
+      final index = _clases.indexWhere((c) => c.id == key);
+      final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+      final claseActualizada = Clase.fromMap(key, data);
 
-    if (index != -1) {
-      _clases[index] = claseActualizada;
-      _ordenarClases();
-      notifyListeners();
+      if (index != -1) {
+        _clases[index] = claseActualizada;
+        _ordenarClases();
+        notifyListeners();
+      }
     }
   }
 
   void _onClaseEliminada(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
-    _clases.removeWhere((c) => c.id == key);
-    notifyListeners();
+    if (event.snapshot.value != null) {
+      final key = event.snapshot.key!;
+      _clases.removeWhere((c) => c.id == key);
+      notifyListeners();
+    }
   }
 
   // Ordenar: Más recientes primero (puedes cambiar la lógica aquí)
@@ -113,11 +116,14 @@ class ClasesHolder extends ChangeNotifier {
 
   // Método útil para obtener una clase específica por ID
   Clase? obtenerClasePorId(String id) {
+    Clase? obtenido;
     try {
-      return _clases.firstWhere((c) => c.id == id);
+      obtenido = _clases.firstWhere((c) => c.id == id);
     } catch (e) {
-      return null;
+      obtenido = null;
     }
+
+    return obtenido;
   }
 
   @override
