@@ -7,9 +7,9 @@ import 'package:tato_matematico/datos/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
-import 'package:tato_matematico/login/AlumnoLoginSecuencia.dart';
-import 'package:tato_matematico/login/alumnoLogin.dart';
-import 'package:tato_matematico/login/LoginConImagen.dart';
+import 'package:tato_matematico/login/alumnoLoginSecuencia.dart';
+import 'package:tato_matematico/login/alumnoLoginAlfanumerica.dart';
+import 'package:tato_matematico/login/alumnoLoginImagen.dart';
 
 /// **Nombre de la Clase: `SeleccionAlumno`**
 ///
@@ -137,7 +137,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
                                   setState(() {
                                     if (tipo == "seleccionImagen") {
                                       navegar(
-                                        LoginConImagen(alumnoId: alumno.id),
+                                        alumnoLoginImagen(alumnoId: alumno.id),
                                         context,
                                       );
                                     } else if (tipo == "secuenciaImagenes") {
@@ -148,7 +148,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
                                         context,
                                       );
                                     } else if (tipo == "alfanumerica") {
-                                      navegar(AlumnoLogIn(), context);
+                                      navegar(AlumnoLoginAlfanumerica(), context);
                                     }
                                   });
                                 }
@@ -240,11 +240,11 @@ class GridAlumnos extends StatelessWidget {
             context.read<AlumnoHolder>().setAlumno(alumno);
             cargarTipoLogin(alumno.id).then((tipo) {
               if (tipo == "seleccionImagen") {
-                navegar(LoginConImagen(alumnoId: alumno.id), context);
+                navegar(alumnoLoginImagen(alumnoId: alumno.id), context);
               } else if (tipo == "secuenciaImagenes") {
                 navegar(AlumnoLoginSecuencia(alumnoId: alumno.id), context);
               } else if (tipo == "alfanumerica") {
-                navegar(AlumnoLogIn(), context);
+                navegar(AlumnoLoginAlfanumerica(), context);
               }
             });
           },

@@ -11,23 +11,28 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Refactorizacion para cumplir con accesibilidad y arreglados bugs
+///
 /// Pantalla de inicio de sesión mediante la selección de una imagen.
 ///
 /// En esta pantalla se muestra un grid de imágenes y el alumno debe pulsar
 /// la imagen correcta para acceder a los juegos.
 ///
 /// Se utiliza [LoginImagenService] para generar el grid de imágenes.
-class LoginConImagen extends StatefulWidget {
+class alumnoLoginImagen extends StatefulWidget {
   final String alumnoId;
 
-  const LoginConImagen({super.key, required this.alumnoId});
+  const alumnoLoginImagen({super.key, required this.alumnoId});
 
   @override
-  State<LoginConImagen> createState() => _LoginConImagenState();
+  State<alumnoLoginImagen> createState() => _alumnoLoginImagenState();
 }
 
-class _LoginConImagenState extends State<LoginConImagen> {
+class _alumnoLoginImagenState extends State<alumnoLoginImagen> {
   final _service = LoginImagenService();
   final db = FirebaseDatabase.instance.ref();
 

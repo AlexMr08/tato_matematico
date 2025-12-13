@@ -11,6 +11,12 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Previsualizacion de imagenes seleccionadas y arregaldo bug en previsualizacion
+///
 /// Pantalla de inicio de sesión mediante secuencia de imágenes.
 ///
 /// En esta pantalla se le muestra un grid de imágenes al alumno y debe pulsarlas
@@ -212,25 +218,7 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                         const SizedBox(height: 10,),
 
                         // INDICADOR DE PROGRESO PARA LAS SELECCIONADAS
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(idsSecuenciaOrdenada.length, (index) {
-                            bool rellenado = index < _seleccionUsuario.length;
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 6),
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                  color: rellenado ? colorScheme.primary : Colors.transparent,
-                                  border: Border.all(
-                                      color: rellenado ? colorScheme.primary : Colors.grey.shade400,
-                                      width: 2
-                                  ),
-                                  shape: BoxShape.circle
-                              ),
-                            );
-                          }),
-                        ),
+                        _buildSecuenciaVisual(colorScheme),
 
                         const SizedBox(height: 15),
 
@@ -257,7 +245,6 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
 
                               return GestureDetector(
                                 onTap: () {
-                                  Feedback.forTap(context);
                                   _onImagenTap(picto.id);
                                 },
                                 child: Stack(
@@ -319,40 +306,40 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                         const SizedBox(height: 20),
 
                         // BOTONERA
-                        SizedBox(
-                          width: 350,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // BOTÓN ENTRAR
-                              SizedBox(
-                                height: 50,
-                                child: BotonConIcono(
-                                  icono: Icons.login_rounded,
-                                  texto: "ENTRAR",
-                                  fontSize: 20,
-                                  radio: 27,
-                                  onPressed: botonEntrarActivo ? _intentarLogin : null,
-                                ),
-                              ),
-
-                              const SizedBox(height: 15),
-
-                              // BOTÓN BORRAR
-                              SizedBox(
-                                height: 50,
+                        Row(
+                          children: [
+                            // 1. BOTÓN BORRAR
+                            Expanded(
+                              child: SizedBox(
+                                height: 55, // Altura cómoda
                                 child: BotonConIcono(
                                   icono: Icons.delete_outline_rounded,
-                                  texto: "BORRAR TODO",
-                                  fontSize: 20,
+                                  texto: "BORRAR",
+                                  fontSize: 18,
                                   radio: 27,
                                   onPressed: botonBorrarActivo ? () {
                                     setState(() => _seleccionUsuario.clear());
                                   } : null,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+
+                            const SizedBox(width: 15),
+
+                            // 2. BOTÓN ENTRAR
+                            Expanded(
+                              child: SizedBox(
+                                height: 55,
+                                child: BotonConIcono(
+                                  icono: Icons.login_rounded,
+                                  texto: "ENTRAR",
+                                  fontSize: 18,
+                                  radio: 27,
+                                  onPressed: botonEntrarActivo ? _intentarLogin : null,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
 
                         const SizedBox(height: 15),
@@ -362,6 +349,78 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
                 ),
               ),
         ),
+    );
+  }
+  /// Construye la fila de cajas con imágenes seleccionadas y flechas.
+  Widget _buildSecuenciaVisual(ColorScheme colorScheme) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(idsSecuenciaOrdenada.length, (index) {
+
+          // Verificar si este paso ya tiene imagen seleccionada
+          String? idSeleccionado;
+          Pictograma? picto;
+
+          if (index < _seleccionUsuario.length) {
+            idSeleccionado = _seleccionUsuario[index];
+            // Buscamos el objeto Pictograma correspondiente al ID seleccionado
+            try {
+              picto = imagenesMostradas.firstWhere((p) => p.id == idSeleccionado);
+            } catch (e) {
+              // Si no está en imagenesMostradas (raro), picto se queda null
+            }
+          }
+
+          return Row(
+            children: [
+              // CAJA DEL PASO
+              Container(
+                key: ValueKey("${index}_${idSeleccionado ?? 'vacio'}"),
+                width: 70, height: 70,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                        color: idSeleccionado != null ? colorScheme.primary : colorScheme.outlineVariant,
+                        width: idSeleccionado != null ? 3 : 2
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: idSeleccionado != null
+                        ? [BoxShadow(color: colorScheme.primary.withValues(alpha: 0.2), blurRadius: 5)]
+                        : []
+                ),
+                child: picto != null
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: ImagenStorage(rutaGs: picto.url, fit: BoxFit.cover),
+                )
+                    : Center(
+                  child: Text(
+                      "${index + 1}",
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.outlineVariant
+                      )
+                  ),
+                ),
+              ),
+
+              // FLECHA (si no es el último)
+              if (index < idsSecuenciaOrdenada.length - 1)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Icon(
+                    Icons.arrow_forward_rounded,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 24,
+                  ),
+                ),
+            ],
+          );
+        }),
+      ),
     );
   }
 }
