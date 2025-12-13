@@ -36,7 +36,7 @@ class ProfesoresHolder extends ChangeNotifier {
   void init() {
     if (!escuchando) {
       // 2. RECONEXIÓN RÁPIDA: Si ya tenemos datos en memoria (porque entramos y salimos),
-      // solo volvemos a conectar los listeners sin descargar todito de nuevo.
+      // solo volvemos a conectar los listeners sin descargarlo de nuevo.
       if (_profesores.isNotEmpty) {
         print("reconecto");
         _attachListeners();
