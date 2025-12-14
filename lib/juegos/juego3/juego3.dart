@@ -23,7 +23,7 @@ class Juego3 extends Juego {
     super.cantidad = 6,
     super.usaImagenes = false,
     super.tipoImagenes = "numeros",
-    this.cantContenedores = 2,
+    this.cantContenedores = 3,
   }) : super(
         id: 'juego3',
         nombre: 'Juego 3',
