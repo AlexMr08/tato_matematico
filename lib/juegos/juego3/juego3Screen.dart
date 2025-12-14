@@ -10,7 +10,6 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/juegos/juego3/juego3State.dart';
 import 'package:tato_matematico/juegos/juego3/juego3.dart';
 
-
 /// **Nombre de la Clase: `Juego3Screen**
 ///
 /// **Descripción:** Clase que representa visualmente el tercer juego de la aplicación.
@@ -20,7 +19,7 @@ import 'package:tato_matematico/juegos/juego3/juego3.dart';
 /// * **Autor Original:** Andrés Ignacio Mardones Domcke
 /// * **Última modificación por:** Andrés Ignacio Mardones Domcke
 /// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Arreglos en la interfaz gráfica de los contenedores  
+/// * **Último cambio:** Arreglos en la interfaz gráfica de los contenedores
 ///
 class Juego3Screen extends StatefulWidget {
   final Juego juego;
@@ -122,7 +121,8 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                         completado
                             ? Icons.emoji_emotions_rounded
                             : Icons.circle,
-                        color: alumno.colorSeleccion ??
+                        color:
+                            alumno.colorSeleccion ??
                             Theme.of(context).colorScheme.onSurface,
                         size: 24,
                       ),
@@ -141,35 +141,50 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                       spacing: 24,
                       runSpacing: 24,
                       children: j3s.numeros
-                      .asMap()
-                      .map((index, numero) => MapEntry(
-                            index,
-                            TarjetaJuego(
-                              tamano: 110,
-                              label: "Mover $numero",
-                              isButton: true,
-                              isEnabled: true,
-                              radio: 16,
-                              onTap: () {
-                                if(numeroSeleccionado != null && numeroSeleccionado![1] == index){
-                                  setState(() {numeroSeleccionado = null;});
-                                  return;
-                                }
-                                setState(() {numeroSeleccionado = [numero, index];});
-                              },
-                              colorFondo: 
-                                numeroSeleccionado != null ?
-                                (numeroSeleccionado![1] == index ?
-                                Color.fromRGBO(41, 217, 203, 1) :
-                                alumno.colorBotones ?? Theme.of(context).colorScheme.primaryContainer)
-                                : alumno.colorBotones ?? Theme.of(context).colorScheme.primaryContainer,
-                              imagenes: imagenes,
-                              tipoImagen: tipoImagen,
-                              numero: numero,
+                          .asMap()
+                          .map(
+                            (index, numero) => MapEntry(
+                              index,
+                              TarjetaJuego(
+                                tamano: 110,
+                                label: "Mover $numero",
+                                isButton: true,
+                                isEnabled: true,
+                                radio: 16,
+                                onTap: () {
+                                  if (numeroSeleccionado != null &&
+                                      numeroSeleccionado![1] == index) {
+                                    setState(() {
+                                      numeroSeleccionado = null;
+                                    });
+                                    return;
+                                  }
+                                  setState(() {
+                                    numeroSeleccionado = [numero, index];
+                                  });
+                                },
+                                colorFondo: numeroSeleccionado != null
+                                    ? (numeroSeleccionado![1] == index
+                                          ? alumno.colorSeleccion ??
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.tertiaryContainer
+                                          : alumno.colorBotones ??
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.primaryContainer)
+                                    : alumno.colorBotones ??
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.primaryContainer,
+                                imagenes: imagenes,
+                                tipoImagen: tipoImagen,
+                                numero: numero,
+                              ),
                             ),
-                          ))
-                      .values
-                      .toList(),
+                          )
+                          .values
+                          .toList(),
                     )
                   : Center(
                       child: Text(
@@ -202,110 +217,138 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                 return Column(
                   children: [
                     Semantics(
-                      label: "Contenedor ${indexContenedor + 1}, con números ${contenedor.whereType<int>().join(', ')}",
+                      label:
+                          "Contenedor ${indexContenedor + 1}, con números ${contenedor.whereType<int>().join(', ')}",
                       button: true,
                       enabled: true,
                       excludeSemantics: true,
                       child: InkWell(
                         onTap: () {
                           if (numeroSeleccionado == null) return;
-                          j3s.moverNumero(numeroSeleccionado, indexContenedor, contenedor.indexOf(null));
+                          j3s.moverNumero(
+                            numeroSeleccionado,
+                            indexContenedor,
+                            contenedor.indexOf(null),
+                          );
                           setState(() {
                             numeroSeleccionado = null;
                           });
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                          color: alumno.colorBotones,
-                          border: Border.all(color: colorTexto, width: 2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.all(8.0),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // --- IMAGEN DEL CONTENEDOR ---
-                            Container(
-                              width: 280,
-                              height: 280,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage('assets/images/bote.png'),
-                                  fit: BoxFit.contain,
+                            color: alumno.colorBotones,
+                            border: Border.all(color: colorTexto, width: 2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(8.0),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // --- IMAGEN DEL CONTENEDOR ---
+                              Container(
+                                width: 280,
+                                height: 280,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage('assets/images/bote.png'),
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
-                            ),
 
-                            // --- SLOTS DENTRO DEL CONTENEDOR ---
-                            Positioned(
-                              top: 80,
-                              child: SizedBox(
-                                width: 180, // límite interior del bote
-                                child: Wrap(
-                                  alignment: WrapAlignment.center,
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  children: contenedor.asMap().entries.map((entry) {
-                                  final indexSlot = entry.key;    // índice REAL del slot
-                                  final numero = entry.value;     // valor del slot
+                              // --- SLOTS DENTRO DEL CONTENEDOR ---
+                              Positioned(
+                                top: 80,
+                                child: SizedBox(
+                                  width: 180, // límite interior del bote
+                                  child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: contenedor.asMap().entries.map((
+                                      entry,
+                                    ) {
+                                      final indexSlot =
+                                          entry.key; // índice REAL del slot
+                                      final numero =
+                                          entry.value; // valor del slot
 
-                                  return 
-                                      numero != null ? 
-                                      TarjetaJuego(
-                                        tamano: 65,
-                                        label: "$numero en contenedor ${indexContenedor + 1}",
-                                        isButton: true,
-                                        isEnabled: true,
-                                        radio: 8,
-                                        onTap: () {
-                                            // Cambiar una carta por otra
-                                            if(numeroSeleccionado != null){
-                                              j3s.devolverNumero(indexSlot, indexContenedor);
-                                              j3s.moverNumero(numeroSeleccionado, indexContenedor, indexSlot);
-                                              setState(() { numeroSeleccionado = null; });
-                                            }
-                                            // Devolver carta al área de números
-                                            else{
-                                              j3s.devolverNumero(indexSlot, indexContenedor);
-                                              if(mostrarIncorrectos) setState(() { mostrarIncorrectos = false; });
-                                            }
-                                        },
-                                        colorFondo: alumno.colorFondo ??
-                                            Theme.of(context).colorScheme.primaryContainer,
-                                        imagenes: imagenes,
-                                        tipoImagen: tipoImagen,
-                                        numero: numero,
-                                      ) 
-                                      : SizedBox(width: 70, height: 70,);  
-                                }).toList(),
+                                      return numero != null
+                                          ? TarjetaJuego(
+                                              tamano: 65,
+                                              label:
+                                                  "$numero en contenedor ${indexContenedor + 1}",
+                                              isButton: true,
+                                              isEnabled: true,
+                                              radio: 8,
+                                              onTap: () {
+                                                // Cambiar una carta por otra
+                                                if (numeroSeleccionado !=
+                                                    null) {
+                                                  j3s.devolverNumero(
+                                                    indexSlot,
+                                                    indexContenedor,
+                                                  );
+                                                  j3s.moverNumero(
+                                                    numeroSeleccionado,
+                                                    indexContenedor,
+                                                    indexSlot,
+                                                  );
+                                                  setState(() {
+                                                    numeroSeleccionado = null;
+                                                  });
+                                                }
+                                                // Devolver carta al área de números
+                                                else {
+                                                  j3s.devolverNumero(
+                                                    indexSlot,
+                                                    indexContenedor,
+                                                  );
+                                                  if (mostrarIncorrectos)
+                                                    setState(() {
+                                                      mostrarIncorrectos =
+                                                          false;
+                                                    });
+                                                }
+                                              },
+                                              colorFondo:
+                                                  alumno.colorFondo ??
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .primaryContainer,
+                                              imagenes: imagenes,
+                                              tipoImagen: tipoImagen,
+                                              numero: numero,
+                                            )
+                                          : SizedBox(width: 70, height: 70);
+                                    }).toList(),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                      )
                     ),
                     // Indicador de incorrecto
-                    mostrarIncorrectos ? 
-                      j3s.contenedoresIncorrectos.contains(indexContenedor) ?
-                        Icon(
-                          Icons.cancel,
-                          size: 50,
-                        color:
-                            alumno.colorSeleccion ??
-                            Theme.of(context).colorScheme.onSurface,
-                        )
-                      : Icon( 
-                          Icons.check_circle,
-                          size: 24,
-                        color:
-                            alumno.colorSeleccion ??
-                            Theme.of(context).colorScheme.onSurface,
-                        )
-                    : SizedBox(height: 1),
+                    mostrarIncorrectos
+                        ? j3s.contenedoresIncorrectos.contains(indexContenedor)
+                              ? Icon(
+                                  Icons.cancel,
+                                  size: 50,
+                                  color:
+                                      alumno.colorSeleccion ??
+                                      Theme.of(context).colorScheme.onSurface,
+                                )
+                              : Icon(
+                                  Icons.check_circle,
+                                  size: 24,
+                                  color:
+                                      alumno.colorSeleccion ??
+                                      Theme.of(context).colorScheme.onSurface,
+                                )
+                        : SizedBox(height: 1),
                   ],
-
                 );
               }).toList(),
             ),
@@ -319,15 +362,18 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                 colorFondo: alumno.colorBotones,
                 onPressed: j3s.numeros.isEmpty
                     ? () {
-                        bool esCorrecto = j3s.verificarSolucion(j3s.contenedores, j3s.soluciones);
+                        bool esCorrecto = j3s.verificarSolucion(
+                          j3s.contenedores,
+                          j3s.soluciones,
+                        );
                         bool juegoTerminado = j3s.finalizarJuego(esCorrecto);
                         if (!esCorrecto) {
                           mostrarIncorrectos = true;
-                        } else if(juegoTerminado){
-                          mostrarDialogoSiguienteAlumnoV2(
+                        } else if (juegoTerminado) {
+                          mostrarDialogoSalirReiniciarAlumnoV2(
                             context,
                             "Lo has hecho increible!!!",
-                            "¿Quieres volver a jugar?, Si quieres volver a jugar pulsa en reiniciar, si no, pulsa en salir.",
+                            "¿Quieres volver a jugar?, Si quieres volver a jugar pulsa en empezar de nuevo, si no, pulsa en volver al menú.",
                             alumno.colorFondo ??
                                 Theme.of(context).colorScheme.surface,
                             alumno.colorBotones ??
@@ -342,8 +388,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                               }
                             }
                           });
-                        }
-                        else{
+                        } else {
                           mostrarDialogoSiguienteAlumnoV2(
                             context,
                             "Lo has hecho increible!!!",

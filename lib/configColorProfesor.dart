@@ -5,7 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
+import 'datos/juego.dart';
+import 'juegos/juego2/juego2Ajustes.dart';
+import 'juegos/tarjetaJuego.dart';
 import 'widgetsAuxiliares/ScaffoldComunV2.dart';
 
 /// **Nombre de la Clase: `ConfigColorProfesor`**
@@ -91,11 +95,12 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
     );
   }
 
-  Widget _colorTile(String ref, String label, Color color) {
+  Widget _colorTile(String ref, String label, Color color, Color background) {
+    var colorTexto = getTextColorForBackground(background);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
+        Text(label, style: TextStyle(fontSize: 16, color: colorTexto)),
         InkWell(
           onTap: () => _showColorPicker(ref, label, color),
           child: Container(
@@ -103,7 +108,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
             height: 48,
             decoration: BoxDecoration(
               color: color,
-              border: Border.all(color: Colors.black26),
+              border: Border.all(color: colorTexto, width: 2),
               borderRadius: BorderRadius.circular(6),
             ),
           ),
@@ -117,6 +122,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
     Alumno alumno;
     alumnoHolder = context.watch<AlumnoHolder>();
     alumno = alumnoHolder.alumno!;
+    Map<String, Juego> listaJuegos = alumnoHolder.listaJuegos;
 
     return ScaffoldComunV2(
       titulo: 'Ajustes comunes de color',
@@ -124,6 +130,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
         padding: const EdgeInsets.all(8.0),
         child: Center(
           child: Column(
+            spacing: 8,
             children: [
               _colorTile(
                 "colorFondo",
@@ -131,30 +138,288 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
                 alumno.colorFondo != null
                     ? alumno.colorFondo!
                     : Theme.of(context).colorScheme.surface,
+                alumno.colorFondo != null
+                    ? alumno.colorFondo!
+                    : Theme.of(context).colorScheme.surface,
               ),
-              SizedBox(height: 8),
+
               _colorTile(
                 "colorBarraNav",
                 "Color de la barra de navegacion",
                 alumno.colorBarraNav != null
                     ? alumno.colorBarraNav!
                     : Theme.of(context).colorScheme.primary,
+                alumno.colorFondo != null
+                    ? alumno.colorFondo!
+                    : Theme.of(context).colorScheme.surface,
               ),
-              SizedBox(height: 8),
+
               _colorTile(
                 "colorBotones",
                 "Color de los botones",
                 alumno.colorBotones != null
                     ? alumno.colorBotones!
                     : Theme.of(context).colorScheme.primaryContainer,
+                alumno.colorFondo != null
+                    ? alumno.colorFondo!
+                    : Theme.of(context).colorScheme.surface,
               ),
-              SizedBox(height: 8),
+
               _colorTile(
                 "colorSeleccion",
                 "Color del boton seleccionado",
                 alumno.colorSeleccion != null
                     ? alumno.colorSeleccion!
-                    : Theme.of(context).colorScheme.onPrimaryContainer,
+                    : Theme.of(context).colorScheme.tertiaryContainer,
+                alumno.colorFondo != null
+                    ? alumno.colorFondo!
+                    : Theme.of(context).colorScheme.surface,
+              ),
+              _colorTile(
+                "colorContenedor",
+                "Color de los contenedores",
+                alumno.colorContenedor != null
+                    ? alumno.colorContenedor!
+                    : Theme.of(context).colorScheme.surfaceContainer,
+                alumno.colorFondo != null
+                    ? alumno.colorFondo!
+                    : Theme.of(context).colorScheme.surface,
+              ),
+              Text(
+                "Vista previa",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: getTextColorForBackground(
+                    alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 16,
+                children: [
+                  BotonSinIconoAlumno(
+                    texto: "Boton de prueba activado",
+                    onPressed: () {},
+                    colorFondo:
+                        alumno.colorBotones ??
+                        Theme.of(context).colorScheme.primaryContainer,
+                  ),
+                  BotonSinIconoAlumno(
+                    texto: "Boton de prueba desactivado",
+                    onPressed: null,
+                    colorFondo:
+                        alumno.colorBotones ??
+                        Theme.of(context).colorScheme.primaryContainer,
+                    colorDisabled:
+                        alumno.colorFondo ??
+                        Theme.of(context).colorScheme.surface,
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color:
+                          alumno.colorContenedor ??
+                          Theme.of(context).colorScheme.surfaceContainer,
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      runAlignment: WrapAlignment.start,
+                      spacing: 32 / 2,
+                      runSpacing: 0,
+                      children: [
+                        Column(
+                          children: [
+                            TarjetaJuego(
+                              key: ValueKey(0),
+                              tamano: 140,
+                              radio: 12,
+                              label: "Contenedor vacío",
+                              isButton: false,
+                              isEnabled: false,
+                              onTap: () {},
+                              colorFondo:
+                                  alumno.colorBotones ??
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                              imagenes: false,
+                              tipoImagen: "numeros",
+                              numero: 2,
+                            ),
+                            Icon(
+                              Icons.cancel,
+                              color: getTextColorForBackground(
+                                alumno.colorContenedor ??
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            TarjetaJuego(
+                              key: ValueKey(1),
+                              tamano: 140,
+                              radio: 12,
+                              label: "Contenedor vacío",
+                              isButton: false,
+                              isEnabled: false,
+                              onTap: () {},
+                              colorFondo:
+                                  alumno.colorSeleccion ??
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.tertiaryContainer,
+                              imagenes: true,
+                              tipoImagen: "apple",
+                              numero: 2,
+                            ),
+                            Icon(
+                              Icons.cancel,
+                              color: getTextColorForBackground(
+                                alumno.colorContenedor ??
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            TarjetaJuego(
+                              key: ValueKey(2),
+                              tamano: 140,
+                              radio: 12,
+                              label: "Contenedor vacío",
+                              isButton: false,
+                              isEnabled: false,
+                              onTap: () {},
+                              colorFondo:
+                                  alumno.colorBotones ??
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                              imagenes: true,
+                              tipoImagen: "ball",
+                              numero: 2,
+                            ),
+                            Icon(
+                              Icons.cancel,
+                              color: getTextColorForBackground(
+                                alumno.colorContenedor ??
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            TarjetaJuego(
+                              key: ValueKey(0),
+                              tamano: 140,
+                              radio: 12,
+                              label: "Contenedor vacío",
+                              isButton: false,
+                              isEnabled: false,
+                              onTap: () {},
+                              colorFondo:
+                                  alumno.colorBotones ??
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                              imagenes: true,
+                              tipoImagen: "turtle",
+                              numero: 2,
+                            ),
+                            Icon(
+                              Icons.cancel,
+                              color: getTextColorForBackground(
+                                alumno.colorContenedor ??
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            TarjetaJuego(
+                              key: ValueKey(0),
+                              tamano: 140,
+                              radio: 12,
+                              label: "Contenedor vacío",
+                              isButton: false,
+                              isEnabled: false,
+                              onTap: () {},
+                              colorFondo:
+                                  alumno.colorBotones ??
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                              imagenes: true,
+                              tipoImagen: "car",
+                              numero: 2,
+                            ),
+                            Icon(
+                              Icons.cancel,
+                              color: getTextColorForBackground(
+                                alumno.colorContenedor ??
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            TarjetaJuego(
+                              key: ValueKey(0),
+                              tamano: 140,
+                              radio: 12,
+                              label: "Contenedor vacío",
+                              isButton: false,
+                              isEnabled: false,
+                              onTap: () {},
+                              colorFondo:
+                                  alumno.colorBotones ??
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                              imagenes: true,
+                              tipoImagen: "flower",
+                              numero: 2,
+                            ),
+                            Icon(
+                              Icons.cancel,
+                              color: getTextColorForBackground(
+                                alumno.colorContenedor ??
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

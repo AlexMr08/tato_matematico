@@ -57,16 +57,10 @@ class AlumnoHolder extends ChangeNotifier {
 
   Future<void> cargarJuegos() async {
     listaJuegos = {
-      "juego1": Juego(
-        id: "juego1",
-        nombre: "Juego 1",
-      ),
+      "juego1": Juego(id: "juego1", nombre: "Juego 1"),
       "juego2": Juego2(),
       "juego3": Juego3(),
-      "juego4": Juego(
-        id: "juego4",
-        nombre: "Juego 4",
-      ),
+      "juego4": Juego(id: "juego4", nombre: "Juego 4"),
     };
     if (alumno != null) {
       // Apuntamos específicamente al nodo del juego 2
@@ -85,6 +79,9 @@ class AlumnoHolder extends ChangeNotifier {
             // Si tienes clases específicas (Juego2) úsalas, si no, la genérica.
             if (child.key == "juego2") {
               listaJuegos[child.key!] = Juego2.fromMap(data);
+            } else if (child.key == "juego3") {
+              print("Creando instancia de Juego3 para ${child.key}");
+              listaJuegos[child.key!] = Juego3.fromMap(data);
             } else {
               listaJuegos[child.key!] = Juego.fromMap(data);
             }
@@ -109,7 +106,9 @@ class AlumnoHolder extends ChangeNotifier {
           final juegoData = Map<dynamic, dynamic>.from(value as Map);
           if (key == 'juego2') {
             listaJuegos[key] = Juego2.fromMap(juegoData);
-          } else {
+          }else if(key == 'juego3'){
+            listaJuegos[key] = Juego3.fromMap(juegoData);
+          }else {
             listaJuegos[key] = Juego.fromMap(juegoData);
           }
         });

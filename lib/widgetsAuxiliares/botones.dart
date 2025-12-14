@@ -335,6 +335,7 @@ class BotonSinIconoAlumno extends StatelessWidget {
   // Nuevos parámetros
   final Color? colorFondo;
   final Color? colorTexto;
+  final Color? colorDisabled;
 
   const BotonSinIconoAlumno({
     super.key,
@@ -346,6 +347,7 @@ class BotonSinIconoAlumno extends StatelessWidget {
     this.radio,
     this.colorFondo,
     this.colorTexto,
+    this.colorDisabled
   });
 
   @override
@@ -365,7 +367,7 @@ class BotonSinIconoAlumno extends StatelessWidget {
                 : Theme.of(context).colorScheme.onPrimaryContainer),
 
         // --- CORRECCIÓN CONTRASTE UNIVERSAL ---
-        disabledForegroundColor: Colors.grey,
+        disabledForegroundColor: getTextColorForBackground(colorDisabled ?? Colors.grey),
         disabledBackgroundColor: Colors.grey.withAlpha(
           (255 / 100 * 35).floor(),
         ),

@@ -270,9 +270,15 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize:
-                            MainAxisSize.min, // Importante para el scroll
+                        mainAxisSize: MainAxisSize.min,
                         children: [
+                          Text(
+                            "🥳🥳Lo has consegido🥳🥳",
+                            style: TextStyle(
+                              fontSize: sizeEmoji,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           Text(
                             titulo,
                             style: TextStyle(
@@ -291,9 +297,9 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: esMovil ? 30 : 60),
+                          SizedBox(height: esMovil ? 16 : 24),
                           Row(
-                            spacing: 8,
+                            spacing: 16,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Expanded(
@@ -382,7 +388,7 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
                             MainAxisSize.min, // Importante para el scroll
                         children: [
                           Text(
-                            "🥳🥳🥳🥳",
+                            "🥳🥳Ya estas mas cerca🥳🥳",
                             style: TextStyle(
                               fontSize: sizeEmoji,
                               fontWeight: FontWeight.bold,
@@ -406,9 +412,9 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: esMovil ? 30 : 60),
+                          SizedBox(height: esMovil ? 16 : 24),
                           Row(
-                            spacing: 8,
+                            spacing: 16,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Expanded(
@@ -508,9 +514,11 @@ String obtenerAnoAcademico() {
 
   // Consideramos que el curso empieza en Septiembre
   if (currentMonth >= 9) {
-    anoAcademico = "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
+    anoAcademico =
+        "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
   } else {
-    anoAcademico = "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
+    anoAcademico =
+        "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
   }
 
   return anoAcademico;
