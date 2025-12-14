@@ -6,9 +6,11 @@ import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/estadisticasAlumno.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Screen.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/juegos/juego3/juego3Screen.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
+
 
 /// **Nombre de la Clase: `GamesMenu**
 ///
@@ -128,7 +130,13 @@ class _GamesMenuState extends State<GamesMenu> {
                           child: JuegoCard(
                             juego: listaJuegos["juego3"]!,
                             onTap: () {
-                              navegar(Placeholder(), context);
+                              navegar(
+                                Juego3Screen(
+                                  juego: listaJuegos["juego3"]!,
+                                  alumno: alumno,
+                                ),
+                                context,
+                              );
                             },
                             color: alumno.colorBotones,
                           ),

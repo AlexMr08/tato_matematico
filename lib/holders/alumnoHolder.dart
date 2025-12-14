@@ -7,6 +7,7 @@ import 'package:tato_matematico/datos/estadistica.dart';
 import '../datos/alumno.dart';
 import '../datos/juego.dart';
 import '../juegos/juego2/juego2.dart';
+import '../juegos/juego3/juego3.dart';
 
 /// **Nombre de la Clase: `AlumnoHolder`**
 ///
@@ -61,10 +62,7 @@ class AlumnoHolder extends ChangeNotifier {
         nombre: "Juego 1",
       ),
       "juego2": Juego2(),
-      "juego3": Juego(
-        id: "juego3",
-        nombre: "Juego 3",
-      ),
+      "juego3": Juego3(),
       "juego4": Juego(
         id: "juego4",
         nombre: "Juego 4",
