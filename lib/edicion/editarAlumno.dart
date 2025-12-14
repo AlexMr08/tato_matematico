@@ -586,8 +586,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
               child: DropdownButtonFormField<int>(
                 value: posicionBarra,
                 items: const [
-                  DropdownMenuItem(value: 0, child: Text("Abajo")),
-                  DropdownMenuItem(value: 1, child: Text("Arriba")),
+                  DropdownMenuItem(value: 0, child: Text("Arriba")),
+                  DropdownMenuItem(value: 1, child: Text("Abajo")),
                   DropdownMenuItem(value: 2, child: Text("Izquierda")),
                   DropdownMenuItem(value: 3, child: Text("Derecha")),
                 ],
