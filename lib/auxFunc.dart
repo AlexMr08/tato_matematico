@@ -273,7 +273,7 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            "🥳🥳Lo has consegido🥳🥳",
+                            "🥳🥳Lo has conseguido🥳🥳",
                             style: TextStyle(
                               fontSize: sizeEmoji,
                               fontWeight: FontWeight.bold,
@@ -388,7 +388,7 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
                             MainAxisSize.min, // Importante para el scroll
                         children: [
                           Text(
-                            "🥳🥳Ya estas mas cerca🥳🥳",
+                            "🥳🥳Ya estás mas cerca🥳🥳",
                             style: TextStyle(
                               fontSize: sizeEmoji,
                               fontWeight: FontWeight.bold,

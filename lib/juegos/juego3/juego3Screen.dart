@@ -18,8 +18,8 @@ import 'package:tato_matematico/juegos/juego3/juego3.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Andrés Ignacio Mardones Domcke
 /// * **Última modificación por:** Andrés Ignacio Mardones Domcke
-/// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Arreglos en la interfaz gráfica de los contenedores
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Tamaños dinámicos de tarjetas y contenedores
 ///
 class Juego3Screen extends StatefulWidget {
   final Juego juego;
@@ -71,6 +71,21 @@ class _Juego3ScreenState extends State<Juego3Screen> {
     var imagenes = widget.juego.usaImagenes;
     var tipoImagen = widget.juego.tipoImagenes;
 
+    final double tamanoBote = 300.0;
+    final double paddingInterior = tamanoBote * 0.12;
+
+    final int totalSlots = j3s.contenedores[0].length;
+    final int columnas = totalSlots <= 6 ? 2 : 3;
+
+    final double espacio = 5.0;
+
+    // tamaño base de tarjeta (puede ajustarse)
+    final double tamanoTarjeta = columnas == 2 ? 70.0 : 60.0;
+
+    // ancho EXACTO necesario para forzar columnas
+    final double anchoInterior = columnas * tamanoTarjeta + (columnas - 1) * espacio;
+
+
     return ScaffoldAlumno(
       alumno: alumno,
       textoCabecera: "Reparte el mismo número en cada recipiente",
@@ -107,7 +122,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                   Text(
                     "REPETICIONES DEL JUEGO: ",
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: colorTexto,
                     ),
@@ -117,14 +132,17 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                     bool completado = index < j3s.repeticionesCompletadas;
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Icon(
-                        completado
-                            ? Icons.emoji_emotions_rounded
-                            : Icons.circle,
-                        color:
-                            alumno.colorSeleccion ??
-                            Theme.of(context).colorScheme.onSurface,
-                        size: 24,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black,
+                        ),
+                        child: Icon(
+                          completado
+                              ? Icons.emoji_emotions_rounded
+                              : Icons.circle,
+                          color: Colors.amberAccent,
+                        ),
                       ),
                     );
                   }),
@@ -197,14 +215,6 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                       ),
                     ),
             ),
-            Text(
-              "Recipientes",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: colorTexto,
-              ),
-            ),
 
             // --- ZONA DE RESULTADO ---
             Wrap(
@@ -223,6 +233,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                       enabled: true,
                       excludeSemantics: true,
                       child: InkWell(
+                        splashColor: Colors.transparent,
                         onTap: () {
                           if (numeroSeleccionado == null) return;
                           j3s.moverNumero(
@@ -246,8 +257,8 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                             children: [
                               // --- IMAGEN DEL CONTENEDOR ---
                               Container(
-                                width: 280,
-                                height: 280,
+                                width: tamanoBote,
+                                height: tamanoBote,
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage('assets/images/bote.png'),
@@ -258,13 +269,13 @@ class _Juego3ScreenState extends State<Juego3Screen> {
 
                               // --- SLOTS DENTRO DEL CONTENEDOR ---
                               Positioned(
-                                top: 80,
+                                top: paddingInterior + 40,
                                 child: SizedBox(
-                                  width: 180, // límite interior del bote
+                                  width: anchoInterior, // límite interior del bote
                                   child: Wrap(
                                     alignment: WrapAlignment.center,
-                                    spacing: 6,
-                                    runSpacing: 6,
+                                    spacing: espacio,
+                                    runSpacing: espacio,
                                     children: contenedor.asMap().entries.map((
                                       entry,
                                     ) {
@@ -275,7 +286,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
 
                                       return numero != null
                                           ? TarjetaJuego(
-                                              tamano: 65,
+                                              tamano: tamanoTarjeta,
                                               label:
                                                   "$numero en contenedor ${indexContenedor + 1}",
                                               isButton: true,
@@ -304,11 +315,12 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                                                     indexSlot,
                                                     indexContenedor,
                                                   );
-                                                  if (mostrarIncorrectos)
+                                                  if (mostrarIncorrectos) {
                                                     setState(() {
                                                       mostrarIncorrectos =
                                                           false;
                                                     });
+                                                  }
                                                 }
                                               },
                                               colorFondo:
@@ -320,7 +332,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                                               tipoImagen: tipoImagen,
                                               numero: numero,
                                             )
-                                          : SizedBox(width: 70, height: 70);
+                                          : SizedBox(width: tamanoTarjeta, height: tamanoTarjeta);
                                     }).toList(),
                                   ),
                                 ),
@@ -342,7 +354,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                                 )
                               : Icon(
                                   Icons.check_circle,
-                                  size: 24,
+                                  size: 50,
                                   color:
                                       alumno.colorSeleccion ??
                                       Theme.of(context).colorScheme.onSurface,
