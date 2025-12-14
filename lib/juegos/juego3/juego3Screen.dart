@@ -83,8 +83,8 @@ class _Juego3ScreenState extends State<Juego3Screen> {
     final double tamanoTarjeta = columnas == 2 ? 70.0 : 60.0;
 
     // ancho EXACTO necesario para forzar columnas
-    final double anchoInterior = columnas * tamanoTarjeta + (columnas - 1) * espacio;
-
+    final double anchoInterior =
+        columnas * tamanoTarjeta + (columnas - 1) * espacio;
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -247,7 +247,9 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: alumno.colorBotones,
+                            color:
+                                alumno.colorContenedor ??
+                                Theme.of(context).colorScheme.surfaceContainer,
                             border: Border.all(color: colorTexto, width: 2),
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -271,7 +273,8 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                               Positioned(
                                 top: paddingInterior + 40,
                                 child: SizedBox(
-                                  width: anchoInterior, // límite interior del bote
+                                  width:
+                                      anchoInterior, // límite interior del bote
                                   child: Wrap(
                                     alignment: WrapAlignment.center,
                                     spacing: espacio,
@@ -324,7 +327,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                                                 }
                                               },
                                               colorFondo:
-                                                  alumno.colorFondo ??
+                                                  alumno.colorBotones ??
                                                   Theme.of(context)
                                                       .colorScheme
                                                       .primaryContainer,
@@ -332,7 +335,10 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                                               tipoImagen: tipoImagen,
                                               numero: numero,
                                             )
-                                          : SizedBox(width: tamanoTarjeta, height: tamanoTarjeta);
+                                          : SizedBox(
+                                              width: tamanoTarjeta,
+                                              height: tamanoTarjeta,
+                                            );
                                     }).toList(),
                                   ),
                                 ),
