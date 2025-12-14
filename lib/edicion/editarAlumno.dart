@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/edicion/ajustesSonidoProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/configColorProfesor.dart';
@@ -16,6 +17,8 @@ import 'package:tato_matematico/juegos/juego2/juego2AjustesProfe.dart';
 import 'package:tato_matematico/juegos/juego2/juego2ScreenProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
+import '../juegos/juego3/juego3ScreenProfe.dart';
+
 /// **Nombre de la Clase: `EditarAlumno`**
 ///
 /// **Descripción:** clase que permite editar los datos de un alumno.
@@ -24,8 +27,8 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Se han añadido los ajustes del juego 2, aunque he quitado los del juego 1 por ahora.
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se han añadido los ajustes de color y sonido de una mejor forma
 ///
 
 class EditarAlumno extends StatefulWidget {
@@ -305,7 +308,10 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                 const SizedBox(width: 8),
                 Text(
                   titulo,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -326,10 +332,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                   ),
                 ),
                 Expanded(
-                  child: BotonSinIcono(
-                    texto: "Probar",
-                    onPressed: onProbar,
-                  ),
+                  child: BotonSinIcono(texto: "Probar", onPressed: onProbar),
                 ),
               ],
             ),
@@ -339,6 +342,101 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     );
   }
 
+  Widget _buildBloqueGeneral({
+    required String titulo,
+    required bool permisoSonido,
+    required bool permisoColor,
+    required Function(bool) onColoresChanged,
+    required Function(bool) onSonidosChanged,
+    required VoidCallback onConfigurar,
+    required VoidCallback onProbar,
+    required Alumno alumno,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.settings_accessibility),
+                const SizedBox(width: 8),
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    value: posicionBarra,
+                    items: const [
+                      DropdownMenuItem(value: 0, child: Text("Arriba")),
+                      DropdownMenuItem(value: 1, child: Text("Abajo")),
+                      DropdownMenuItem(value: 2, child: Text("Izquierda")),
+                      DropdownMenuItem(value: 3, child: Text("Derecha")),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => posicionBarra = value!),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: "Posición botones principales",
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BotonIcono(
+                  icono: Icons.save_alt_outlined,
+                  onPressed: () => _guardarBarra(alumno),
+                ),
+              ],
+            ),
+            SwitchListTile(
+              title: const Text('Permitir cambios de color'),
+              value: permisoColor,
+              onChanged: onColoresChanged,
+            ),
+            SwitchListTile(
+              title: const Text('Permitir ajustes de sonido'),
+              value: permisoSonido,
+              onChanged: onSonidosChanged,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: BotonConIcono(
+                    texto: "Colores",
+                    onPressed: onConfigurar,
+                    icono: Icons.palette,
+                  ),
+                ),
+                Expanded(
+                  child: BotonConIcono(
+                    texto: "Sonido",
+                    onPressed: onProbar,
+                    icono: Icons.volume_up,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   // --- NUEVA FUNCIÓN PARA GUARDAR PERMISOS DEL JUEGO ---
   void _guardarPermisoJuego1(Alumno alumno, String permiso, bool valor) async {
@@ -483,36 +581,67 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       ],
     );
 
+    Widget bloqueGeneral = _buildBloqueGeneral(
+      titulo: "Ajustes Accesibilidad",
+      permisoSonido: alumno.permisoSonido,
+      permisoColor: alumno.permisoColor,
+      onColoresChanged: (val) => _guardarPermiso(alumno, 'permisoColor', val),
+      onSonidosChanged: (val) => _guardarPermiso(alumno, 'permisoSonido', val),
+      onConfigurar: () => navegar(ConfigColorProfesor(alum: alumno), context),
+      onProbar: () => navegar(AjustesSonidosProfesor(), context),
+      alumno: alumno,
+    );
+
     Widget bloqueJuego1 = _buildBloqueJuego(
       titulo: "Juego 1",
       permisoValor: alumno.permisoAjustesJuego1,
-      onPermisoChanged: (val) => _guardarPermiso(alumno, 'permisoAjustesJuego1', val),
-      onConfigurar: () => navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
-      onProbar: () => navegar(Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno), context),
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego1', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onProbar: () => navegar(
+        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        context,
+      ),
     );
 
     Widget bloqueJuego2 = _buildBloqueJuego(
       titulo: "Juego 2",
       permisoValor: alumno.permisoAjustesJuego2,
-      onPermisoChanged: (val) => _guardarPermiso(alumno, 'permisoAjustesJuego2', val),
-      onConfigurar: () => navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
-      onProbar: () => navegar(Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno), context),
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego2', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onProbar: () => navegar(
+        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        context,
+      ),
     );
 
     Widget bloqueJuego3 = _buildBloqueJuego(
       titulo: "Juego 3",
       permisoValor: alumno.permisoAjustesJuego3,
-      onPermisoChanged: (val) => _guardarPermiso(alumno, 'permisoAjustesJuego3', val),
-      onConfigurar: () => navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
-      onProbar: () => navegar(Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno), context),
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego3', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego3"]!), context),
+      onProbar: () => navegar(
+        Juego3ScreenProfe(juego: listaJuegos["juego3"]!, alumno: alumno),
+        context,
+      ),
     );
 
     Widget bloqueJuego4 = _buildBloqueJuego(
       titulo: "Juego 4",
       permisoValor: alumno.permisoAjustesJuego4,
-      onPermisoChanged: (val) => _guardarPermiso(alumno, 'permisoAjustesJuego4', val),
-      onConfigurar: () => navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
-      onProbar: () => navegar(Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno), context),
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego4', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onProbar: () => navegar(
+        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        context,
+      ),
     );
 
     // -------------------------------------------------------------------------
@@ -608,14 +737,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
         const SizedBox(height: 16),
 
         // Botón Colores
-        BotonConIcono(
-          icono: Icons.palette,
-          radio: 16,
-          texto: "Colores",
-          onPressed: () {
-            navegar(ConfigColorProfesor(alum: alumno), context);
-          },
-        ),
+        bloqueGeneral,
         const SizedBox(height: 16),
 
         // Ajustes Juego 1
@@ -689,15 +811,15 @@ class _EditarAlumnoState extends State<EditarAlumno> {
               child: Column(
                 children: [
                   bloquePerfil,
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
                   const Divider(thickness: 2),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
                   bloquePassword,
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
                   const Divider(thickness: 2),
-                  const SizedBox(height: 30),
-                  bloqueAccesibilidad,
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 16),
+                  bloqueGeneral,
+                  const SizedBox(height: 16),
                   bloqueJuego1,
                   const SizedBox(width: 16),
                   bloqueJuego2,
@@ -713,6 +835,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
             return Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
+                spacing: 8,
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,7 +844,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
                       const SizedBox(width: 16),
                       Expanded(flex: 1, child: bloquePassword),
                       const SizedBox(width: 16),
-                      Expanded(flex: 1, child: bloqueAccesibilidad),
+                      Expanded(flex: 1, child: bloqueGeneral),
                     ],
                   ),
                   Row(

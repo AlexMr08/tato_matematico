@@ -5,9 +5,6 @@ import 'dart:typed_data';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
-// Asumo que tienes una clase Juego1Settings en el path especificado
-// y que la clase Alumno se está definiendo aquí.
-
 /// **Nombre de la Clase: `Alumno`**
 ///
 /// **Descripción:** clase que representa a un alumno en el sistema.
@@ -17,7 +14,7 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
 /// * **Fecha de modificación:** 14/12/2025
-/// * **Último cambio:** Se ha añadido el campo para los ajustes del juego 2
+/// * **Último cambio:** Se han añadido los campos para los ajustes de color y sonido
 ///
 
 class Alumno {
@@ -41,6 +38,8 @@ class Alumno {
   bool permisoAjustesJuego2;
   bool permisoAjustesJuego3;
   bool permisoAjustesJuego4;
+  bool permisoColor;
+  bool permisoSonido;
 
   // Ajustes de sonido Juego 1
   String? vozJuego1;
@@ -81,6 +80,8 @@ class Alumno {
     this.permisoAjustesJuego2 = true,
     this.permisoAjustesJuego3 = true,
     this.permisoAjustesJuego4 = true,
+    this.permisoColor = true,
+    this.permisoSonido = true,
     // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
   }) : _imagen = imagen,
        juego1Settings =
@@ -247,6 +248,8 @@ class Alumno {
       permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
       permisoAjustesJuego3: data['permisoAjustesJuego3'] ?? true,
       permisoAjustesJuego4: data['permisoAjustesJuego4'] ?? true,
+      permisoColor: data['permisoColor'] ?? true,
+      permisoSonido: data['permisoSonido'] ?? true,
     );
   }
 

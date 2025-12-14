@@ -18,7 +18,7 @@ import '../juegos/juego3/juego3.dart';
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
 /// * **Fecha de modificación:** 14/12/2025
-/// * **Último cambio:** Se ha mejorado como se llama al metodo de carga de juegos y se han añadido las estadisticas
+/// * **Último cambio:** Se ha añadido setContenedor
 ///
 
 class AlumnoHolder extends ChangeNotifier {
@@ -199,6 +199,13 @@ class AlumnoHolder extends ChangeNotifier {
   void setColorSeleccion(Color color) {
     if (alumno != null) {
       alumno!.colorSeleccion = color;
+      notifyListeners();
+    }
+  }
+
+  void setColorContenedor(Color color) {
+    if (alumno != null) {
+      alumno!.colorContenedor = color;
       notifyListeners();
     }
   }

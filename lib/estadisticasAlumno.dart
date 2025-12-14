@@ -16,8 +16,8 @@ import 'datos/alumno.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Se ha creado la clase y su funcionalidad
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha mejorado la interfaz de usuario
 ///
 
 class EstadisticasAlumno extends StatefulWidget {
@@ -133,8 +133,7 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 16,
                 children: [
-                  SizedBox(
-                    width: 190,
+                  Expanded(
                     child: BotonConIconoAlumno(
                       icono: Icons.arrow_back,
                       texto: "Semana anterior",
@@ -159,7 +158,7 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                       color: Theme.of(context).colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.onTertiary,
+                        color: Theme.of(context).colorScheme.onTertiaryContainer,
                       ),
                     ),
                     child: Column(
@@ -192,8 +191,8 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: 190,
+                  Expanded(
+                    flex: 1,
                     child: BotonConIconoAlumno(
                       iconAlignment: IconAlignment.end,
                       icono: Icons.arrow_forward,
@@ -247,8 +246,7 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 16,
                 children: [
-                  SizedBox(
-                    width: 190,
+                  Expanded(
                     child: BotonConIconoAlumno(
                       icono: Icons.arrow_back,
                       texto: "Juego anterior",
@@ -291,8 +289,7 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: 190,
+                  Expanded(
                     child: BotonConIconoAlumno(
                       iconAlignment: IconAlignment.end,
                       icono: Icons.arrow_forward,

@@ -210,8 +210,8 @@ class BotonIcono extends StatelessWidget {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha creado la clase y su funcionalidad
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha corregido el color del texto en estado deshabilitado
 ///
 class BotonConIconoAlumno extends StatelessWidget {
   final dynamic icono;
@@ -225,6 +225,7 @@ class BotonConIconoAlumno extends StatelessWidget {
   // Nuevos parámetros
   final Color? colorFondo;
   final Color? colorTexto;
+  final Color? colorDisabled;
 
   const BotonConIconoAlumno({
     super.key,
@@ -237,6 +238,7 @@ class BotonConIconoAlumno extends StatelessWidget {
     this.radio,
     this.colorFondo,
     this.colorTexto,
+    this.colorDisabled,
   }) : assert(
          icono is IconData || icono is String,
          'El icono debe ser un String o un IconData',
@@ -268,6 +270,7 @@ class BotonConIconoAlumno extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: widgetIcono,
+
       iconAlignment: iconAlignment ?? IconAlignment.start,
       label: Text(
         texto,
@@ -277,41 +280,28 @@ class BotonConIconoAlumno extends StatelessWidget {
         ),
       ),
       style: ElevatedButton.styleFrom(
-        // 1. Usamos el colorFondo si existe, si no, el del tema
         backgroundColor:
             colorFondo ?? Theme.of(context).colorScheme.primaryContainer,
 
-        // 2. Calculamos el color del texto/icono
         foregroundColor:
             colorTexto ??
             (colorFondo != null
                 ? getTextColorForBackground(colorFondo!)
                 : Theme.of(context).colorScheme.onPrimaryContainer),
 
-        // --- CORRECCIÓN CONTRASTE UNIVERSAL ---
-        disabledForegroundColor: Colors.grey,
+        disabledForegroundColor: getTextColorForBackground(
+          colorDisabled ?? Colors.grey,
+        ),
         disabledBackgroundColor: Colors.grey.withAlpha(
           (255 / 100 * 35).floor(),
         ),
 
-        // -------------------------------------
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        shape: RoundedRectangleBorder(
-          side: BorderSide(
-            // El borde también debe coincidir con el fondo personalizado
-            color: onPressed == null
-                ? Colors.transparent
-                : (colorFondo ??
-                      Theme.of(context).colorScheme.primaryContainer),
-          ),
-          borderRadius: BorderRadius.circular(radio ?? 24),
-        ),
         elevation: 0,
       ),
     );
   }
 }
-
 
 /// **Nombre de la Clase: `BotonSinIconoAlumno`**
 ///
@@ -321,8 +311,8 @@ class BotonConIconoAlumno extends StatelessWidget {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha creado la clase y su funcionalidad
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Corregido el color del texto en estado deshabilitado
 ///
 class BotonSinIconoAlumno extends StatelessWidget {
   final String texto;
@@ -347,7 +337,7 @@ class BotonSinIconoAlumno extends StatelessWidget {
     this.radio,
     this.colorFondo,
     this.colorTexto,
-    this.colorDisabled
+    this.colorDisabled,
   });
 
   @override
@@ -355,28 +345,25 @@ class BotonSinIconoAlumno extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        // 1. Usamos el colorFondo si existe, si no, el del tema
         backgroundColor:
             colorFondo ?? Theme.of(context).colorScheme.primaryContainer,
 
-        // 2. Calculamos el color del texto/icono
         foregroundColor:
             colorTexto ??
             (colorFondo != null
                 ? getTextColorForBackground(colorFondo!)
                 : Theme.of(context).colorScheme.onPrimaryContainer),
 
-        // --- CORRECCIÓN CONTRASTE UNIVERSAL ---
-        disabledForegroundColor: getTextColorForBackground(colorDisabled ?? Colors.grey),
+        disabledForegroundColor: getTextColorForBackground(
+          colorDisabled ?? Colors.grey,
+        ),
         disabledBackgroundColor: Colors.grey.withAlpha(
           (255 / 100 * 35).floor(),
         ),
 
-        // -------------------------------------
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         shape: RoundedRectangleBorder(
           side: BorderSide(
-            // El borde también debe coincidir con el fondo personalizado
             color: onPressed == null
                 ? Colors.transparent
                 : (colorFondo ??

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // <--- Importante para SystemUiOverlayStyle
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 
@@ -6,17 +7,17 @@ enum PosicionBarra { arriba, abajo, izquierda, derecha }
 
 /// **Nombre de la Clase: `AlumnoScaffold`**
 ///
-/// **Descripción:** Clase que genera el Scaffold común para las pantallas del alumno,
+/// **Descripción:** Clase que genera el Scaffold común para las pantallas del alumno.
 ///
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Convertido a StatefulWidget y arreglado color nav bar sistema
 ///
 
-class ScaffoldAlumno extends StatelessWidget {
+class ScaffoldAlumno extends StatefulWidget {
   final Widget child;
   final PosicionBarra posicion;
   final Alumno alumno;
@@ -41,23 +42,34 @@ class ScaffoldAlumno extends StatelessWidget {
   });
 
   @override
+  State<ScaffoldAlumno> createState() => _ScaffoldAlumnoState();
+}
+
+class _ScaffoldAlumnoState extends State<ScaffoldAlumno> {
+  @override
   Widget build(BuildContext context) {
-    final barra = _construirBarra(context);
+
+    var posicionFinal = widget.posicion;
+    if (MediaQuery.of(context).size.width < 600) {
+      posicionFinal = PosicionBarra.arriba;
+    }
+
+    final barra = _construirBarra(context, posicionFinal);
 
     Widget body;
-    switch (posicion) {
+    switch (posicionFinal) {
       case PosicionBarra.arriba:
         body = Column(
           children: [
             barra,
-            Expanded(child: child),
+            Expanded(child: widget.child),
           ],
         );
         break;
       case PosicionBarra.abajo:
         body = Column(
           children: [
-            Expanded(child: child),
+            Expanded(child: widget.child),
             barra,
           ],
         );
@@ -66,91 +78,86 @@ class ScaffoldAlumno extends StatelessWidget {
         body = Row(
           children: [
             barra,
-            Expanded(child: child),
+            Expanded(child: widget.child),
           ],
         );
         break;
       case PosicionBarra.derecha:
         body = Row(
           children: [
-            Expanded(child: child),
+            Expanded(child: widget.child),
             barra,
           ],
         );
         break;
     }
 
-    final Color appBarColor =
-        alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: appBarColor,
-        foregroundColor: getTextColorForBackground(appBarColor),
+        backgroundColor:
+            widget.alumno.colorBarraNav ??
+            Theme.of(context).colorScheme.primary,
+        foregroundColor: getTextColorForBackground(
+          widget.alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary,
+        ),
         title: Text(
-          textoCabecera,
+          widget.textoCabecera,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       backgroundColor:
-          alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
+          widget.alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
       body: PopScope(
         canPop: false,
         onPopInvokedWithResult: (bool didPop, Object? result) async {
           if (didPop) return;
-          onVolver();
+          widget.onVolver();
         },
         child: SafeArea(child: body),
       ),
     );
   }
 
-  Widget _construirBarra(BuildContext context) {
+  Widget _construirBarra(BuildContext context, PosicionBarra posicionActual) {
     final bool esHorizontal =
-        posicion == PosicionBarra.arriba || posicion == PosicionBarra.abajo;
+        posicionActual == PosicionBarra.arriba ||
+        posicionActual == PosicionBarra.abajo;
 
     final Color navColor =
-        alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+        widget.alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
 
     final List<Widget> botones = [
-      //if (alumno.volverDerecha == false)
       _BotonNav(
         icon: Icons.arrow_back,
         label: "Volver",
-        onTap: onVolver,
+        onTap: widget.onVolver,
         color: navColor,
       ),
-      hasAjustes
+      widget.hasAjustes
           ? _BotonNav(
               icon: Icons.settings,
               label: "Ajustes",
-              onTap: onAjustes,
+              onTap: widget.onAjustes,
               color: navColor,
             )
-          : SizedBox(),
-      hasEstadisticas
+          : const SizedBox(),
+      widget.hasEstadisticas
           ? _BotonNav(
               icon: Icons.bar_chart,
               label: "Estadísticas",
-              onTap: onEstadisticas,
+              onTap: widget.onEstadisticas,
               color: navColor,
             )
-          : SizedBox(),
-      /*if (alumno.volverDerecha == true)
-       _BotonNav(
-          icon: Icons.arrow_back,
-          label: "Volver",
-          onTap: onVolver,
-          color: navColor,
-        ),
-       */
+          : const SizedBox(),
     ];
 
     return Container(
-      width: esHorizontal ? double.infinity : 100, // Barra lateral más ancha
-      height: esHorizontal ? 90 : double.infinity, // Barra horizontal más alta
+      // Si es horizontal, ancho infinito. Si es vertical, ancho fijo (100).
+      // Si es horizontal, alto fijo (90). Si es vertical, alto infinito.
+      width: esHorizontal ? double.infinity : 100,
+      height: esHorizontal ? 90 : double.infinity,
       color: navColor,
       child: esHorizontal
           ? Row(children: botones.map((b) => Expanded(child: b)).toList())
@@ -188,12 +195,12 @@ class _BotonNav extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: contentColor, size: 36), // Icono más grande
+              Icon(icon, color: contentColor, size: 36),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 16, // Texto más grande
+                  fontSize: 16,
                   color: contentColor,
                   fontWeight: FontWeight.bold,
                 ),

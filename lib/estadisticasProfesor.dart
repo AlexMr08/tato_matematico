@@ -15,8 +15,8 @@ import 'datos/alumno.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Se ha creado la clase y su funcionalidad
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha mejorado la interfaz de usuario
 ///
 
 class EstadisticasProfesor extends StatefulWidget {
@@ -142,15 +142,17 @@ class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 16,
                 children: [
-                  BotonConIcono(
-                    icono: Icons.arrow_back,
-                    texto: "Anterior",
-                    onPressed:
-                        (estadistica.estadisticasSemanales.isNotEmpty &&
-                            semanaSeleccionada <
-                                estadistica.estadisticasSemanales.length - 1)
-                        ? () => semanaAnterior()
-                        : null,
+                  Expanded(
+                    child: BotonConIcono(
+                      icono: Icons.arrow_back,
+                      texto: "Semana anterior",
+                      onPressed:
+                          (estadistica.estadisticasSemanales.isNotEmpty &&
+                              semanaSeleccionada <
+                                  estadistica.estadisticasSemanales.length - 1)
+                          ? () => semanaAnterior()
+                          : null,
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -158,21 +160,27 @@ class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onTertiaryContainer,
+                      ),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           estadistica.estadisticasSemanales.isNotEmpty
-                              ? "SEMANA ${_obtenerRangoSemana(estadistica.estadisticasSemanales[semanaSeleccionada].fecha)}"
-                              : "SIN DATOS",
+                              ? "Semana ${_obtenerRangoSemana(estadistica.estadisticasSemanales[semanaSeleccionada].fecha)}"
+                              : "Sin datos",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onTertiaryContainer,
                           ),
                         ),
                         Text(
@@ -182,19 +190,23 @@ class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Colors.blue.shade600,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onTertiaryContainer,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  BotonConIcono(
-                    iconAlignment: IconAlignment.end,
-                    icono: Icons.arrow_forward,
-                    texto: "Siguiente",
-                    onPressed: (semanaSeleccionada > 0)
-                        ? () => semanaSiguiente()
-                        : null,
+                  Expanded(
+                    child: BotonConIcono(
+                      iconAlignment: IconAlignment.end,
+                      icono: Icons.arrow_forward,
+                      texto: "Semana siguiente",
+                      onPressed: (semanaSeleccionada > 0)
+                          ? () => semanaSiguiente()
+                          : null,
+                    ),
                   ),
                 ],
               ),
@@ -236,12 +248,14 @@ class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 16,
                 children: [
-                  BotonConIcono(
-                    icono: Icons.arrow_back,
-                    texto: "Anterior",
-                    onPressed: (juegoSeleccionado > 1)
-                        ? () => juegoAnterior()
-                        : null,
+                  Expanded(
+                    child: BotonConIcono(
+                      icono: Icons.arrow_back,
+                      texto: "Juego anterior",
+                      onPressed: (juegoSeleccionado > 1)
+                          ? () => juegoAnterior()
+                          : null,
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -249,9 +263,13 @@ class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onTertiaryContainer,
+                      ),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -261,19 +279,23 @@ class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onTertiaryContainer,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  BotonConIcono(
-                    iconAlignment: IconAlignment.end,
-                    icono: Icons.arrow_forward,
-                    texto: "Siguiente",
-                    onPressed: (juegoSeleccionado < 4)
-                        ? () => juegoSiguiente()
-                        : null,
+                  Expanded(
+                    child: BotonConIcono(
+                      iconAlignment: IconAlignment.end,
+                      icono: Icons.arrow_forward,
+                      texto: "Juego siguiente",
+                      onPressed: (juegoSeleccionado < 4)
+                          ? () => juegoSiguiente()
+                          : null,
+                    ),
                   ),
                 ],
               ),
