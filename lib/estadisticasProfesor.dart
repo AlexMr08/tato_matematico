@@ -4,7 +4,7 @@ import 'package:tato_matematico/datos/estadistica.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/graficoResultados.dart';
-import 'ScaffoldComunV2.dart';
+import 'widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'datos/alumno.dart';
 
 /// **Nombre de la Clase: `EstadisticasProfesor`**

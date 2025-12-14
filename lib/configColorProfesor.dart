@@ -6,7 +6,7 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 
-import 'ScaffoldComunV2.dart';
+import 'widgetsAuxiliares/ScaffoldComunV2.dart';
 
 /// **Nombre de la Clase: `ConfigColorProfesor`**
 ///
@@ -115,7 +115,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
   @override
   Widget build(BuildContext context) {
     Alumno alumno;
-    alumnoHolder = context.read<AlumnoHolder>();
+    alumnoHolder = context.watch<AlumnoHolder>();
     alumno = alumnoHolder.alumno!;
 
     return ScaffoldComunV2(

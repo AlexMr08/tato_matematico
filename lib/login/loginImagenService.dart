@@ -1,6 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:tato_matematico/pictograma.dart';
+import 'package:tato_matematico/datos/pictograma.dart';
 
 /// Servicio encargado de la lógica de negocio para login con imagenes.
 ///

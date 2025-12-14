@@ -1,8 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/pictograma.dart';
+import 'package:tato_matematico/datos/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
 
 /// **Nombre de la Clase: `ConfigImagenUnicaScreen`**

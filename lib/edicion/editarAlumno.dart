@@ -3,7 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/configColorProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
@@ -16,7 +16,6 @@ import 'package:tato_matematico/juegos/juego2/juego2AjustesProfe.dart';
 import 'package:tato_matematico/juegos/juego2/juego2ScreenProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-import '../juegos/juego2/juego2.dart';
 
 /// **Nombre de la Clase: `EditarAlumno`**
 ///
@@ -114,22 +113,24 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     } else if (nuevoNombre == alumno.nombre) {
       // Si no hay cambios, simplemente salimos del modo edición.
       setState(() => _isEditingName = false);
-    } else try {
-      // Actualizamos la base de datos
-      await _dbRef.child('tato/alumnos/${alumno.id}').update({
-        'nombre': nuevoNombre,
-      });
+    } else {
+      try {
+        // Actualizamos la base de datos
+        await _dbRef.child('tato/alumnos/${alumno.id}').update({
+          'nombre': nuevoNombre,
+        });
 
-      // Actualizamos el estado local
-      alumno.nombre = nuevoNombre;
-      context.read<AlumnoHolder>().setAlumno(alumno);
+        // Actualizamos el estado local
+        alumno.nombre = nuevoNombre;
+        context.read<AlumnoHolder>().setAlumno(alumno);
 
-      snackBarExito(context, 'Nombre actualizado correctamente.');
-    } catch (e) {
-      snackBarError(context, 'Error al actualizar el nombre: $e');
-    } finally {
-      // Salimos del modo edición
-      setState(() => _isEditingName = false);
+        snackBarExito(context, 'Nombre actualizado correctamente.');
+      } catch (e) {
+        snackBarError(context, 'Error al actualizar el nombre: $e');
+      } finally {
+        // Salimos del modo edición
+        setState(() => _isEditingName = false);
+      }
     }
   }
 
@@ -307,11 +308,14 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   }
 
   void _guardarPermiso(Alumno alumno, String permiso, bool valor) async {
+    print(
+      "Guardando permiso $permiso con valor $valor del alumno ${alumno.id}",
+    );
     try {
       await _dbRef.child('tato/alumnos/${alumno.id}').update({permiso: valor});
     } catch (e) {
       if (mounted) {
-        snackBarError(context, 'Error al guardar el permiso: $e');
+        snackBarError(context, 'Error al guardar el permiso');
       }
     }
   }
@@ -320,7 +324,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final alumno = Provider.of<AlumnoHolder>(context).alumno;
-    final listaJuegos = Provider.of<AlumnoHolder>(context).listaJuegos;
+    final listaJuegos = context.read<AlumnoHolder>().listaJuegos;
+    final juego2 = listaJuegos["juego2"];
 
     if (alumno == null) {
       // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.

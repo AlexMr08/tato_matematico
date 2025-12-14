@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -216,6 +215,7 @@ class Alumno {
       sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
       sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
       juego1Settings: juego1Settings,
+      permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
     );
   }
 
@@ -281,7 +281,6 @@ class Alumno {
         foto = archivoDisco;
       }
     } else {
-
       // 2. Descarga
       await descargarImagen(tempDir);
 
@@ -363,21 +362,25 @@ class AlumnViewCard extends StatelessWidget {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se ha añadido un boton para acceder a las estadisticas
 ///
 
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
+  final VoidCallback onEstadisticasTap;
+  final bool verStats;
 
   const TeacherViewCard({
-    super.key, // Versión FINAL: Se añade Key
+    super.key,
     required this.alumno,
     required this.onTap,
     required this.icono,
-  }); // Versión FINAL: Se usa Key
+    required this.onEstadisticasTap,
+    this.verStats = false,
+  });
 
   @override
   State<TeacherViewCard> createState() => _TeacherViewCardState();
@@ -403,7 +406,24 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: IconButton(icon: widget.icono, onPressed: widget.onTap),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ?widget.verStats
+                ? IconButton(
+                    icon: const Icon(Icons.bar_chart),
+                    tooltip: 'Ver Estadísticas',
+                    onPressed: widget.verStats
+                        ? () {
+                            widget.onEstadisticasTap();
+                          }
+                        : null,
+                  )
+                : null,
+            IconButton(icon: widget.icono, onPressed: widget.onTap),
+          ],
+        ),
+
         onTap: null,
       ),
     );

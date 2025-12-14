@@ -2,7 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
@@ -10,7 +10,6 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-import 'juegos/juego2/juego2.dart';
 
 /// **Nombre de la Clase: `ConfigColorAlumno**
 ///
@@ -120,7 +119,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
   @override
   Widget build(BuildContext context) {
     Alumno alumno;
-    alumnoHolder = context.read<AlumnoHolder>();
+    alumnoHolder = context.watch<AlumnoHolder>();
     alumno = alumnoHolder.alumno!;
     Map<String, Juego> listaJuegos = alumnoHolder.listaJuegos;
 
@@ -196,10 +195,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
                 onPressed: alumno.permisoAjustesJuego2
                     ? () {
                         navegar(
-                          Juego2Ajustes(
-                            juego:
-                                listaJuegos["juego2"]!,
-                          ),
+                          Juego2Ajustes(juego: listaJuegos["juego2"]!),
                           context,
                         );
                       }
