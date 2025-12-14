@@ -89,10 +89,16 @@ class _FotoPerfilState extends State<FotoPerfil> {
   }
 
   String _iniciales(String nombre) {
-    if (nombre.isEmpty) return "";
-    var parts = nombre.trim().split(" ");
-    if (parts.length >= 2) return "${parts[0][0]}${parts[1][0]}".toUpperCase();
-    return parts[0][0].toUpperCase(); // Caso solo un nombre
+    String iniciales;
+    if (nombre.isEmpty) iniciales = "";
+    else {
+      var parts = nombre.trim().split(" ");
+      if (parts.length >= 2)
+        iniciales = "${parts[0][0]}${parts[1][0]}".toUpperCase();
+      else
+        iniciales = parts[0][0].toUpperCase(); // Caso solo un nombre
+    }
+    return iniciales;
   }
 
   @override

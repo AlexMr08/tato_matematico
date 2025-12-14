@@ -12,7 +12,7 @@ import 'package:tato_matematico/edicion/imagenStorage.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Última modificación por:** Gonzalo Alganza Luque
 /// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Coherencia visual, correccion de bugs visuales y documentación.
 ///
@@ -149,23 +149,14 @@ class _ConfigImagenUnicaScreenState extends State<ConfigImagenUnicaScreen> {
       // 1. Deseleccionar si tocamos la que ya es correcta
       if (_selectedCorrectImageId == img.id) {
         _selectedCorrectImageId = null;
-        return;
-      }
-
-      // 2. Deseleccionar si tocamos una distractora (Modo Manual)
-      if (_selectedDistractoras.containsKey(img.id)) {
+      } else if (_selectedDistractoras.containsKey(img.id)) {
+        // 2. Deseleccionar si tocamos una distractora (Modo Manual)
         _selectedDistractoras.remove(img.id);
-        return;
-      }
-
-      // 3. Si no hay correcta, asignarla
-      if (_selectedCorrectImageId == null) {
+      } else if (_selectedCorrectImageId == null) {
+        // 3. Si no hay correcta, asignarla
         _selectedCorrectImageId = img.id;
-        return;
-      }
-
-      // 4. Si ya hay correcta, que se hace con la nueva
-      if (_isRandom) {
+      } else if (_isRandom) {
+        // 4. Si ya hay correcta, que se hace con la nueva
         // En modo aleatorio, reemplazamos la correcta
         _selectedCorrectImageId = img.id;
       } else {

@@ -26,7 +26,7 @@ import '../juegos/juego2/juego2.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 07/12/2025
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se han añadido los ajustes del juego 2, aunque he quitado los del juego 1 por ahora.
 ///
 
@@ -36,6 +36,20 @@ class EditarAlumno extends StatefulWidget {
   @override
   State<EditarAlumno> createState() => _EditarAlumnoState();
 }
+
+/*
+  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
+  - Se ha cambiado el nombre sin problema, actualizandose en la base de datos
+  - Si no se edita el nombre, no se actualiza
+  - El cambio de contrasena alfanumerica funciona correctamente
+  - Se han probado todas las posiciones de la barra, y funcionan correctamente
+  - Se ha probado el cambio de color de un alumno en concreto y
+    se ha guardado y reflejeado correctamente.
+  - Se ha cambiado la imagen de perfil.
+
+  Queda pendiente:
+  - Probar configurar contrasenas imagen y secuencia imagen
+   */
 
 class _EditarAlumnoState extends State<EditarAlumno> {
   String tipoPassword = "alfanumerica";
@@ -75,12 +89,6 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   }
 
   void _irAConfiguracion(BuildContext context, Alumno alumno) {
-    // Guardamos el tipo antes de ir
-    _dbRef.child('tato/alumnos/${alumno.id}').update({
-      'tipoPassword': tipoPassword,
-    });
-    context.read<AlumnoHolder>().setAlumno(alumno);
-
     Widget pantallaDestino;
 
     switch (tipoPassword) {
@@ -103,14 +111,10 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     final nuevoNombre = _nombreController.text.trim();
     if (nuevoNombre.isEmpty) {
       snackBarAviso(context, 'El nombre no puede estar vacío.');
-      return;
-    }
-    if (nuevoNombre == alumno.nombre) {
+    } else if (nuevoNombre == alumno.nombre) {
       // Si no hay cambios, simplemente salimos del modo edición.
       setState(() => _isEditingName = false);
-      return;
-    }
-    try {
+    } else try {
       // Actualizamos la base de datos
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
         'nombre': nuevoNombre,
@@ -151,18 +155,26 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
       File imageFile = File(pickedFile.path);
 
-      // 1. Borrar imagen anterior si existe
+      // ---------------------------------------------------------
+      // 1. Borrar imagen anterior si existe para no acumular basura
+      // ---------------------------------------------------------
       if (alumno.imagen != null && alumno.imagen!.isNotEmpty) {
         try {
+          // Intentamos borrar la imagen antigua del Storage.
+          // refFromURL funciona con URLs gs:// y https://
           await FirebaseStorage.instance.refFromURL(alumno.imagen!).delete();
         } catch (e) {
+          // Si falla (ej. no existe el archivo o no tiene permisos), solo logueamos y seguimos
           print(
             "No se pudo borrar la imagen anterior (quizás ya no existe): $e",
           );
         }
       }
 
+      // ---------------------------------------------------------
       // 2. Subir nueva imagen
+      // ---------------------------------------------------------
+      // Usamos timestamp para que el nombre sea único y evitar problemas de caché en la nube y local
       String fileName =
           '${alumno.id}_${DateTime.now().millisecondsSinceEpoch}_perfil.jpg';
       Reference ref = FirebaseStorage.instance.ref().child('alumnos/$fileName');
@@ -180,6 +192,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       alumno.imagen = gsUrl;
       alumno.imagenLocal = imageFile.path;
 
+      // Limpiar cache (aunque el setter de imagen ya lo hace, no está de más si no se usó el setter)
       alumno.invalidarCachedImage();
 
       // 5. Notificar cambios
@@ -241,6 +254,11 @@ class _EditarAlumnoState extends State<EditarAlumno> {
 
   void _guardarBarra(Alumno alumno) async {
     final nuevoValor = posicionBarra;
+
+    // if (nuevoNombre == alumno.nombre) {
+    //   // Si no hay cambios, simplemente salimos del modo edición.
+    //   return;
+    // }
     try {
       // Actualizamos la base de datos
       await _dbRef.child('tato/alumnos/${alumno.id}').update({
@@ -266,7 +284,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     }
   }
 
-  // --- FUNCIÓN PARA GUARDAR PERMISOS DEL JUEGO ---
+  // --- NUEVA FUNCIÓN PARA GUARDAR PERMISOS DEL JUEGO ---
   void _guardarPermisoJuego1(Alumno alumno, String permiso, bool valor) async {
     try {
       await _dbRef.child('tato/alumnos/${alumno.id}').update({permiso: valor});
@@ -305,6 +323,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     final listaJuegos = Provider.of<AlumnoHolder>(context).listaJuegos;
 
     if (alumno == null) {
+      // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 

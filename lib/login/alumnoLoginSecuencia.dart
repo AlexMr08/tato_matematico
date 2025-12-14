@@ -13,9 +13,9 @@ import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Última modificación por:** Gonzalo Alganza Luque
 /// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Previsualizacion de imagenes seleccionadas y arregaldo bug en previsualizacion
+/// * **Último cambio:** Cambios de Calidad
 ///
 /// Pantalla de inicio de sesión mediante secuencia de imágenes.
 ///
@@ -140,38 +140,36 @@ class _AlumnoLoginSecuenciaState extends State<AlumnoLoginSecuencia> {
   void _intentarLogin() {
     final alumnoHolder = context.read<AlumnoHolder>();
     // Validar longitud
-    if (_seleccionUsuario.length != idsSecuenciaOrdenada.length) {
-      return;
-    }
-
-    // Validar orden estricto: El item 0 del usuario debe ser el item 0 de la secuencia
-    bool esCorrecto = true;
-    for (int i = 0; i < idsSecuenciaOrdenada.length; i++) {
-      if (_seleccionUsuario[i] != idsSecuenciaOrdenada[i]) {
-        esCorrecto = false;
-        break;
-      }
-    }
-
-    if (esCorrecto) {
-      // EXITO
-      setState(() => _estado = EstadoLogin.exito);
-
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const GamesMenu()),
-          );
+    if (_seleccionUsuario.length == idsSecuenciaOrdenada.length) {
+      // Validar orden estricto: El item 0 del usuario debe ser el item 0 de la secuencia
+      bool esCorrecto = true;
+      for (int i = 0; i < idsSecuenciaOrdenada.length; i++) {
+        if (_seleccionUsuario[i] != idsSecuenciaOrdenada[i]) {
+          esCorrecto = false;
+          break;
         }
-      });
-    }
-    else {
-      // ERROR
-      setState(() {
-        _estado = EstadoLogin.error;
-        _seleccionUsuario.clear();
-      });
+      }
+
+      if (esCorrecto) {
+        // EXITO
+        setState(() => _estado = EstadoLogin.exito);
+
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const GamesMenu()),
+            );
+          }
+        });
+      }
+      else {
+        // ERROR
+        setState(() {
+          _estado = EstadoLogin.error;
+          _seleccionUsuario.clear();
+        });
+      }
     }
   }
 

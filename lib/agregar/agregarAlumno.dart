@@ -28,7 +28,6 @@ class AgregarAlumno extends StatefulWidget {
 
 class _AgregarAlumnoState extends State<AgregarAlumno> with AlumnoLogic {
   final _nombreController = TextEditingController();
-  int res = 0;
   late FirebaseDatabase _db;
 
   @override

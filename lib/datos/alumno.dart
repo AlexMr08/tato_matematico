@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -215,7 +216,6 @@ class Alumno {
       sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
       sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
       juego1Settings: juego1Settings,
-      permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
     );
   }
 
@@ -223,6 +223,8 @@ class Alumno {
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
+    if (imagenLocal.isEmpty) _cachedImage = null;
+    // La versión FINAL añade el null-aware operator para inicializar una sola vez
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
@@ -277,22 +279,21 @@ class Alumno {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
         foto = archivoDisco;
-        return foto;
+      }
+    } else {
+
+      // 2. Descarga
+      await descargarImagen(tempDir);
+
+      if (imagenLocal.isNotEmpty) {
+        final archivoRecienDescargado = File(imagenLocal);
+        if (await archivoRecienDescargado.exists()) {
+          foto = archivoRecienDescargado;
+        }
       }
     }
 
-    // 3. Descarga
-    await descargarImagen(tempDir);
-
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
-
-    return null;
+    return foto;
   }
 }
 
@@ -362,25 +363,21 @@ class AlumnViewCard extends StatelessWidget {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Se ha añadido un boton para acceder a las estadisticas
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
 
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
-  final VoidCallback onEstadisticasTap;
-  final bool verStats;
 
   const TeacherViewCard({
-    super.key,
+    super.key, // Versión FINAL: Se añade Key
     required this.alumno,
     required this.onTap,
     required this.icono,
-    required this.onEstadisticasTap,
-    this.verStats = false,
-  });
+  }); // Versión FINAL: Se usa Key
 
   @override
   State<TeacherViewCard> createState() => _TeacherViewCardState();
@@ -406,24 +403,7 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ?widget.verStats
-                ? IconButton(
-                    icon: const Icon(Icons.bar_chart),
-                    tooltip: 'Ver Estadísticas',
-                    onPressed: widget.verStats
-                        ? () {
-                            widget.onEstadisticasTap();
-                          }
-                        : null,
-                  )
-                : null,
-            IconButton(icon: widget.icono, onPressed: widget.onTap),
-          ],
-        ),
-
+        trailing: IconButton(icon: widget.icono, onPressed: widget.onTap),
         onTap: null,
       ),
     );

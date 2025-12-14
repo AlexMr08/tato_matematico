@@ -18,9 +18,9 @@ import 'package:tato_matematico/login/alumnoLoginImagen.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 07/12/2025
-/// * **Último cambio:** Se ha hecho cambios en el diseño para adaptarlo a moviles
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Cambios de Calidad
 ///
 
 class SeleccionAlumno extends StatefulWidget {

@@ -2,6 +2,18 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
 
+/// **Nombre de la Clase: `auxFunc`**
+///
+/// **Descripción:** Archivo con funciones que tienen distintas funcionalidades.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se han hecho cambios de calidad
+///
+
 // --- Función de utilidad para el color del texto ---
 Color getTextColorForBackground(Color backgroundColor) {
   return backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
@@ -35,7 +47,8 @@ PosicionBarra getPosicionBarra(int? numBarra) {
 /// @param context El contexto de la aplicación.
 /// @param titulo El título del diálogo.
 /// @param contenido El contenido del diálogo.
-/// @description Muestra un diálogo de confirmación con dos opciones: "Sí" y "No". Nos hemos apoyado en gemini para hacerla responsiva
+/// @description Muestra un diálogo de confirmación con dos opciones: "Sí" y "No".
+/// Nos hemos apoyado en gemini para hacerla responsiva
 ///
 
 Future<bool?> mostrarDialogoSiNoAlumnoV2(
@@ -491,13 +504,16 @@ String obtenerAnoAcademico() {
   final now = DateTime.now();
   final int currentYear = now.year;
   final int currentMonth = now.month;
+  String anoAcademico;
 
   // Consideramos que el curso empieza en Septiembre
   if (currentMonth >= 9) {
-    return "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
+    anoAcademico = "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
   } else {
-    return "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
+    anoAcademico = "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
   }
+
+  return anoAcademico;
 }
 
 void snackBarError(BuildContext context, String mensaje) {
