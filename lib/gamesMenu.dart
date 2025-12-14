@@ -3,11 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/configColorAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
-import 'package:tato_matematico/estadisticas.dart';
-import 'package:tato_matematico/juegos/juego2/juego2.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
+import 'package:tato_matematico/estadisticasAlumno.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Screen.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
-import 'datos/estadistica.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
@@ -20,8 +18,8 @@ import 'datos/juego.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 07/12/2025
-/// * **Último cambio:** Se ha añadido el juego 2 correctamente
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha añadido un mapa de juegos
 ///
 
 class GamesMenu extends StatefulWidget {
@@ -41,71 +39,21 @@ class GamesMenu extends StatefulWidget {
 
 class _GamesMenuState extends State<GamesMenu> {
   late Alumno alumno;
-  late final List<Juego> listaJuegos = [
-    Juego(
-      id: 'juego1',
-      nombre: 'Juego 1',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego2(
-      min: 1,
-      max: 20,
-      cantidad: 12,
-      ordenDescendente: true,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego(
-      id: 'juego3',
-      nombre: 'Juego 3',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego(
-      id: 'juego4',
-      nombre: 'Juego 4',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    var ah = context.read<AlumnoHolder>();
-    if (!ah.isLoaded) {
-      //ah.cargarJuegos();
-    }
-  }
+  late Map<String, Juego> listaJuegos;
 
   @override
   Widget build(BuildContext context) {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
 
-    if (alumnoHolder.alumno == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (navigator.canPop()) navigator.pop();
-      });
-      return const SizedBox.shrink();
+    if (alumnoHolder.alumno == null || !alumnoHolder.areGamesLoaded) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
     alumno = alumnoHolder.alumno!;
+    listaJuegos = alumnoHolder.listaJuegos;
 
     PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
-
-    if (alumnoHolder.juego2 != null) {
-      listaJuegos[1] = alumnoHolder.juego2!;
-    }
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -132,9 +80,11 @@ class _GamesMenuState extends State<GamesMenu> {
         navegar(ConfigColorAlumno(alum: alumno), context);
       },
       onEstadisticas: () {
-        navegar(EstadisticasPage(), context);
+        navegar(EstadisticasAlumno(), context);
       },
-      child: alumnoHolder.isLoaded && alumnoHolder.juego2 != null
+      child:
+          alumnoHolder.areGamesLoaded &&
+              alumnoHolder.listaJuegos["juego2"] != null
           ? Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -144,7 +94,7 @@ class _GamesMenuState extends State<GamesMenu> {
                       children: [
                         Expanded(
                           child: JuegoCard(
-                            juego: listaJuegos[0],
+                            juego: listaJuegos["juego1"]!,
                             onTap: () {
                               navegar(Juego1Screen(), context);
                             },
@@ -154,11 +104,11 @@ class _GamesMenuState extends State<GamesMenu> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: JuegoCard(
-                            juego: alumnoHolder.juego2!,
+                            juego: listaJuegos["juego2"]!,
                             onTap: () {
                               navegar(
                                 Juego2Screen(
-                                  juego: alumnoHolder.juego2!,
+                                  juego: listaJuegos["juego2"]!,
                                   alumno: alumno,
                                 ),
                                 context,
@@ -176,7 +126,7 @@ class _GamesMenuState extends State<GamesMenu> {
                       children: [
                         Expanded(
                           child: JuegoCard(
-                            juego: listaJuegos[2],
+                            juego: listaJuegos["juego3"]!,
                             onTap: () {
                               navegar(Placeholder(), context);
                             },
@@ -186,7 +136,7 @@ class _GamesMenuState extends State<GamesMenu> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: JuegoCard(
-                            juego: listaJuegos[3],
+                            juego: listaJuegos["juego4"]!,
                             onTap: null,
                             color: alumno.colorBotones,
                           ),

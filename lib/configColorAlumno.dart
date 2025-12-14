@@ -4,10 +4,13 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
+
+import 'juegos/juego2/juego2.dart';
 
 /// **Nombre de la Clase: `ConfigColorAlumno**
 ///
@@ -17,8 +20,8 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha creado la clase
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha cambiado el boton
 ///
 
 class ConfigColorAlumno extends StatefulWidget {
@@ -119,6 +122,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
     Alumno alumno;
     alumnoHolder = context.read<AlumnoHolder>();
     alumno = alumnoHolder.alumno!;
+    Map<String, Juego> listaJuegos = alumnoHolder.listaJuegos;
 
     PosicionBarra posicionBarra = switch (alumno.posicionBarra) {
       0 => PosicionBarra.arriba,
@@ -187,7 +191,20 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
                     ? alumno.colorFondo!
                     : Theme.of(context).colorScheme.surface,
               ),
-              BotonSinIcono(texto: "AJUSTES JUEGO 2", onPressed: (){navegar(AjustesJuegoLandscape(juego: alumnoHolder.juego2!), context);})
+              BotonSinIconoAlumno(
+                texto: "AJUSTES JUEGO 2",
+                onPressed: alumno.permisoAjustesJuego2
+                    ? () {
+                        navegar(
+                          Juego2Ajustes(
+                            juego:
+                                listaJuegos["juego2"]!,
+                          ),
+                          context,
+                        );
+                      }
+                    : null,
+              ),
             ],
           ),
         ),

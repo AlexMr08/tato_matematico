@@ -13,8 +13,8 @@ import 'package:tato_matematico/datos/alumno.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se han añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se han hecho los parametros opcionales en el constructor
 ///
 
 /// **Nombre de la Clase: `JuegoCard`**
@@ -42,15 +42,27 @@ class Juego {
   Juego({
     required this.id,
     required this.nombre,
-    required this.min,
-    required this.max,
-    required int cantidad,
-    required bool usaImagenes,
-    required String tipoImagenes,
-    this.icono,
+    this.min = 0,
+    this.max = 10,
+    int cantidad = 8,
+    bool usaImagenes = false,
+    String tipoImagenes = "numeros",
+    this.icono = Icons.videogame_asset,
   }) : usaImagenes = max > 10 ? false : usaImagenes,
        cantidad = max - min + 1 < cantidad ? max - min + 1 : cantidad,
        tipoImagenes = tipoImagenes == "" ? "apple" : tipoImagenes;
+
+  factory Juego.fromMap(Map<dynamic, dynamic> data) {
+    return Juego(
+      id: data["id"] ?? "juego1",
+      nombre: data["nombre"] ?? "Juego 1",
+      min: data["min"] ?? 1,
+      max: data["max"] ?? 10,
+      cantidad: data["cantidad"] ?? 8,
+      usaImagenes: data["imagenes"] ?? false,
+      tipoImagenes: data["tipoImagenes"] ?? "numeros",
+    );
+  }
 
   void guardarAjustes({
     required String idAlumno,
@@ -88,43 +100,45 @@ class Juego {
     required int omisiones,
     required Alumno alumno,
   }) async {
-    if (omisiones == 0 && aciertos == 0 && errores == 0) return;
+    if (omisiones != 0 || aciertos != 0 || errores != 0) {
+      // 1. Obtenemos la semana actual para la ruta en la BD
+      String semana = obtenerSemana();
 
-    // 1. Obtenemos la semana actual para la ruta en la BD
-    String semana = obtenerSemana();
-
-    // 2. Referencia a las estadísticas de este juego y semana
-    var dbRef = FirebaseDatabase.instance.ref().child(
-      "tato/estadisticas/${alumno.id}/$id/$semana",
-    );
-
-    // 3. Realizamos la transaccion
-    await dbRef.runTransaction((Object? data) {
-      // Si no existen datos previos en esa ruta, creamos el mapa inicial
-      if (data == null) {
-        return Transaction.success({
-          "aciertos": aciertos,
-          "errores": errores,
-          "omisiones": omisiones,
-        });
-      }
-
-      // Si existen datos, los leemos y los incrementamos
-      final Map<String, dynamic> estadisticas = Map<String, dynamic>.from(
-        data as Map,
+      // 2. Referencia a las estadísticas de este juego y semana
+      var dbRef = FirebaseDatabase.instance.ref().child(
+        "tato/estadisticas/${alumno.id}/$id/$semana",
       );
 
-      int aciertosPrevios = (estadisticas['aciertos'] as int?) ?? 0;
-      int erroresPrevios = (estadisticas['errores'] as int?) ?? 0;
-      int omisionesPrevias = (estadisticas['omisiones'] as int?) ?? 0;
+      // 3. Realizamos la transaccion
+      await dbRef.runTransaction((Object? data) {
+        // Si no existen datos previos en esa ruta, creamos el mapa inicial
 
-      estadisticas['aciertos'] = aciertosPrevios + aciertos;
-      estadisticas['errores'] = erroresPrevios + errores;
-      estadisticas['omisiones'] = omisionesPrevias + omisiones;
+        Map<String, dynamic> stats = {};
 
-      // Devolvemos los datos actualizados para que se guarden
-      return Transaction.success(estadisticas);
-    });
+        if (data == null) {
+          stats = {
+            "aciertos": aciertos,
+            "errores": errores,
+            "omisiones": omisiones,
+          };
+        } else {
+          // Si existen datos, los leemos y los incrementamos
+          final Map<String, dynamic> estadisticas = Map<String, dynamic>.from(
+            data as Map,
+          );
+
+          int aciertosPrevios = (estadisticas['aciertos'] as int?) ?? 0;
+          int erroresPrevios = (estadisticas['errores'] as int?) ?? 0;
+          int omisionesPrevias = (estadisticas['omisiones'] as int?) ?? 0;
+
+          stats['aciertos'] = aciertosPrevios + aciertos;
+          stats['errores'] = erroresPrevios + errores;
+          stats['omisiones'] = omisionesPrevias + omisiones;
+        }
+        // Devolvemos los datos actualizados para que se guarden
+        return Transaction.success(stats);
+      });
+    }
   }
 }
 

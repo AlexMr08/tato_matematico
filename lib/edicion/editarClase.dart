@@ -147,6 +147,7 @@ class _EditarClaseState extends State<EditarClase> {
                                   });
                             }
                           },
+                          onEstadisticasTap: () {},
                           icono: Icon(Icons.add),
                         );
                       },
@@ -366,7 +367,7 @@ class _EditarClaseState extends State<EditarClase> {
                                     );
                                   });
                             },
-                            icono: Icon(Icons.remove_circle),
+                            icono: Icon(Icons.remove_circle), onEstadisticasTap: () {},
                           );
                         },
                       ),
@@ -569,7 +570,7 @@ class _EditarClaseState extends State<EditarClase> {
                                 icono: const Icon(
                                   Icons.delete,
                                   color: Colors.red,
-                                ),
+                                ), onEstadisticasTap: () {},
                               );
                             },
                           ),

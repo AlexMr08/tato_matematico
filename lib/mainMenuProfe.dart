@@ -4,8 +4,9 @@ import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/agregar/agregarClase.dart';
 import 'package:tato_matematico/agregar/agregarProfesor.dart';
 import 'package:tato_matematico/edicion/editarAlumno.dart';
-import 'package:tato_matematico/edicion/editarClaseV2.dart';
+import 'package:tato_matematico/edicion/editarClase.dart';
 import 'package:tato_matematico/edicion/editarProfesor.dart';
+import 'package:tato_matematico/estadisticasProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
@@ -329,9 +330,18 @@ class _MainMenuProfeState extends State<MainMenuProfe> {
                     onTap: () {
                       context.read<AlumnoHolder>().setAlumno(
                         _alumnosFiltrados[index],
+                        initStats: false,
                       );
                       navegar(EditarAlumno(), context);
                     },
+                    onEstadisticasTap: () {
+                      context.read<AlumnoHolder>().setAlumno(
+                        _alumnosFiltrados[index],
+                        initJuegos: false,
+                      );
+                      navegar(EstadisticasProfesor(), context);
+                    },
+                    verStats: true,
                     icono: Icon(Icons.edit),
                   );
                 },

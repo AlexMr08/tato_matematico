@@ -10,8 +10,8 @@ import 'package:tato_matematico/juegos/juego2/juego2.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 06/12/2025
-/// * **Último cambio:** Se ha creado la clase
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se ha añadido un parametro en el finalizarJuego para diferenciar si lo llama el profe
 ///
 class Juego2State with ChangeNotifier {
   final Juego2 juego;
@@ -34,8 +34,9 @@ class Juego2State with ChangeNotifier {
   Juego2State(this.juego, this.alumno);
 
   bool estaNumeroBienPosicionado(int num) {
-    if (!numerosOrdenados.contains(num)) return false;
-    return numerosOrdenados.indexOf(num) == numerosAbajo.indexOf(num);
+    bool res = false;
+    res = numerosOrdenados.indexOf(num) == numerosAbajo.indexOf(num);
+    return res;
   }
 
   void moverNumero(int numero) {
@@ -72,20 +73,16 @@ class Juego2State with ChangeNotifier {
   }
 
   void _verificarEstadoFinalizacion() {
-    if (numerosAbajo.contains(null)) {
-      finalizado = false;
-      return;
-    }
-
-    bool correcto = true;
-    for (int i = 0; i < numerosOrdenados.length; i++) {
-      if (numerosAbajo[i] != numerosOrdenados[i]) {
-        correcto = false;
-        break;
+    if (!numerosAbajo.contains(null)) {
+      bool correcto = true;
+      for (int i = 0; i < numerosOrdenados.length; i++) {
+        if (numerosAbajo[i] != numerosOrdenados[i]) {
+          correcto = false;
+          break;
+        }
       }
+      finalizado = correcto;
     }
-
-    finalizado = correcto;
   }
 
   void iniciarJuego() {
@@ -109,13 +106,13 @@ class Juego2State with ChangeNotifier {
     iniciarJuego();
   }
 
-  bool finalizarJuego() {
+  bool finalizarJuego({bool profe = false}) {
     aciertos += 1;
     repeticionesCompletadas += 1;
 
     bool juegoTerminado = todasLasRepeticionesHechas();
 
-    if (juegoTerminado) {
+    if (juegoTerminado && !profe) {
       juego.subirEstadisticas(
         aciertos: aciertos,
         errores: errores,

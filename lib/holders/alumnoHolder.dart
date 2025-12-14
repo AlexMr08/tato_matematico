@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/estadistica.dart';
 
 import '../datos/alumno.dart';
+import '../datos/juego.dart';
 import '../juegos/juego2/juego2.dart';
 
 /// **Nombre de la Clase: `AlumnoHolder`**
@@ -15,76 +16,88 @@ import '../juegos/juego2/juego2.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 12/12/2025
-/// * **Último cambio:** Se ha mejorado como se llama al metodo de carga de juegos
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha mejorado como se llama al metodo de carga de juegos y se han añadido las estadisticas
 ///
 
 class AlumnoHolder extends ChangeNotifier {
   Alumno? alumno;
-  Juego2? juego2;
+  Map<String, Juego> listaJuegos = {};
+
   Map<String, EstadisticaJuego> estadisticas = {};
   StreamSubscription<DatabaseEvent>? _perfilSubscription;
   StreamSubscription<DatabaseEvent>? _juegosSubscription;
   StreamSubscription<DatabaseEvent>? _estadisticasSubscription;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-  var isLoaded = false;
+  var areGamesLoaded = false;
+  var areStatsLoaded = false;
 
   AlumnoHolder({this.alumno});
 
-  void setAlumno(Alumno newAlumno) {
+  void setAlumno(
+    Alumno newAlumno, {
+    bool initStats = true,
+    bool initJuegos = true,
+  }) {
     alumno = newAlumno;
-    cargarJuegos();
-    cargarEstaditicas();
+    if (initJuegos) {
+      print("Cargando juegos...");
+      cargarJuegos();
+      _escucharCambiosJuegos(newAlumno.id);
+    }
+    if (initStats) {
+      print("Cargando estadisticas...");
+      cargarEstaditicas();
+      _escucharCambiosEstadisticas(newAlumno.id);
+    }
     _escucharCambiosPerfil(newAlumno.id);
-    _escucharCambiosJuegos(newAlumno.id);
-    _escucharCambiosEstadisticas(newAlumno.id);
     notifyListeners();
   }
 
   Future<void> cargarJuegos() async {
-    if (alumno == null) return;
-    // Apuntamos específicamente al nodo del juego 2
-    var dbRef = FirebaseDatabase.instance.ref().child(
-      "tato/juegos/${alumno!.id}",
-    );
+    listaJuegos = {
+      "juego1": Juego(
+        id: "juego1",
+        nombre: "Juego 1",
+      ),
+      "juego2": Juego2(),
+      "juego3": Juego(
+        id: "juego3",
+        nombre: "Juego 3",
+      ),
+      "juego4": Juego(
+        id: "juego4",
+        nombre: "Juego 4",
+      ),
+    };
+    if (alumno != null) {
+      // Apuntamos específicamente al nodo del juego 2
+      var dbRef = FirebaseDatabase.instance.ref().child(
+        "tato/juegos/${alumno!.id}",
+      );
 
-    try {
-      final snapshot = await dbRef.get();
-      print("SNAPSHOT: ${snapshot.value}");
-      if (snapshot.exists && snapshot.value != null) {
-        for (var child in snapshot.children) {
-          if (child.key == "juego2") {
-            // Convertimos los datos de Firebase (que suelen ser dynamic) a Map<String, dynamic>
+      try {
+        final snapshot = await dbRef.get();
+        print("SNAPSHOT: ${snapshot.value}");
+        if (snapshot.exists && snapshot.value != null) {
+          for (var child in snapshot.children) {
             final data = Map<String, dynamic>.from(child.value as Map);
-            juego2 = Juego2.fromMap(data);
+
+            // Fábrica dinámica:
+            // Si tienes clases específicas (Juego2) úsalas, si no, la genérica.
+            if (child.key == "juego2") {
+              listaJuegos[child.key!] = Juego2.fromMap(data);
+            } else {
+              listaJuegos[child.key!] = Juego.fromMap(data);
+            }
           }
+          notifyListeners();
+          areGamesLoaded = true;
+          _escucharCambiosJuegos(alumno!.id);
         }
-        // Avisamos a las vistas que el juego ya está cargado
-        notifyListeners();
-        isLoaded = true;
-        _escucharCambiosJuegos(alumno!.id);
-      } else {
-        juego2 = Juego2(
-          min: 0,
-          max: 10,
-          cantidad: 8,
-          usaImagenes: false,
-          tipoImagenes: "numeros",
-          ordenDescendente: false,
-        );
-        isLoaded = true;
-        juego2?.guardarAjustes(
-          idAlumno: alumno!.id,
-          rango: 10,
-          cantidad: 8,
-          tema: 'numeros',
-          dbRef: FirebaseDatabase.instance.ref(),
-          orden: false,
-        );
-        _escucharCambiosJuegos(alumno!.id);
+      } catch (e) {
+        print("Error cargando configuración del Juego 2: $e");
       }
-    } catch (e) {
-      print("Error cargando configuración del Juego 2: $e");
     }
   }
 
@@ -94,13 +107,14 @@ class AlumnoHolder extends ChangeNotifier {
     _juegosSubscription = juegosRef.onValue.listen((event) {
       if (event.snapshot.value != null) {
         final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-        if (data.containsKey('juego2')) {
-          final juego2Data = Map<dynamic, dynamic>.from(data['juego2'] as Map);
-          juego2 = Juego2.fromMap(juego2Data);
-        }
-        if (data.containsKey('juego1')) {
-          print("TODO");
-        }
+        data.forEach((key, value) {
+          final juegoData = Map<dynamic, dynamic>.from(value as Map);
+          if (key == 'juego2') {
+            listaJuegos[key] = Juego2.fromMap(juegoData);
+          } else {
+            listaJuegos[key] = Juego.fromMap(juegoData);
+          }
+        });
       }
     });
   }
@@ -158,9 +172,9 @@ class AlumnoHolder extends ChangeNotifier {
     _estadisticasSubscription?.cancel();
     _estadisticasSubscription = null;
     alumno = null;
-    juego2 = null;
+    listaJuegos.clear();
     estadisticas.clear();
-    isLoaded = false;
+    areGamesLoaded = false;
     notifyListeners();
   }
 
@@ -218,35 +232,23 @@ class AlumnoHolder extends ChangeNotifier {
 
       if (snapshot.exists && snapshot.value != null) {
         for (var child in snapshot.children) {
-          try {
-            final rawValue = child.value;
-            if (rawValue is Map) {
-              final data = Map<dynamic, dynamic>.from(rawValue);
-              if (child.key != null) {
-                // 2. CREAR EL OBJETO CON DATOS REALES
-                var estadisticaJuego = EstadisticaJuego.fromMap(
-                  child.key!,
-                  data,
-                );
+          final rawValue = child.value;
+          if (rawValue is Map) {
+            final data = Map<dynamic, dynamic>.from(rawValue);
+            if (child.key != null) {
+              // 2. CREAR EL OBJETO CON DATOS REALES
+              var estadisticaJuego = EstadisticaJuego.fromMap(child.key!, data);
 
-                // Ordenar por fecha (más reciente primero)
-                estadisticaJuego.estadisticasSemanales.sort((a, b) {
-                  return b.fecha.compareTo(a.fecha);
-                });
+              estadisticaJuego.estadisticasSemanales.sort((a, b) {
+                return b.fecha.compareTo(a.fecha);
+              });
 
-                // 3. SOBRESCRIBIR LA ENTRADA VACÍA
-                // Si child.key es "juego1", reemplazará al objeto vacío que creamos arriba
-                estadisticas[child.key!] = estadisticaJuego;
-              }
+              estadisticas[child.key!] = estadisticaJuego;
             }
-          } catch (e) {
-            print(
-              "Error al procesar estadística individual (${child.key}): $e",
-            );
           }
         }
       }
-      // Notificamos sea cual sea el resultado (incluso si solo hay vacíos)
+      areStatsLoaded = true;
       notifyListeners();
     } catch (e) {
       print("Error general cargando estadisticas: $e");

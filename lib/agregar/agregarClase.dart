@@ -122,7 +122,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                               Navigator.of(context).pop(true);
                             }
                           },
-                          icono: Icon(Icons.add),
+                          icono: Icon(Icons.add), onEstadisticasTap: () {  },
                         );
                       },
                     ),
@@ -447,7 +447,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                           );
                         });
                       },
-                      icono: Icon(Icons.remove_circle),
+                      icono: Icon(Icons.remove_circle), onEstadisticasTap: () {  },
                     );
                   },
                 ),

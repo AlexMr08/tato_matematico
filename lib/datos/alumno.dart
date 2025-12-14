@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -17,8 +16,8 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 02/12/2025
-/// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha añadido el campo para los ajustes del juego 2
 ///
 
 class Alumno {
@@ -36,6 +35,8 @@ class Alumno {
   bool permisoAjustesJuego1;
   bool permisoEstadisticasJuego1;
   bool mostrarPuntuacionJuego1;
+
+  bool permisoAjustesJuego2;
 
   // Ajustes de sonido Juego 1
   String? vozJuego1;
@@ -72,6 +73,7 @@ class Alumno {
     Juego1Settings? juego1Settings,
     volverDerecha,
     posicionBarra,
+    this.permisoAjustesJuego2 = true,
     // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
   }) : _imagen = imagen,
        juego1Settings =
@@ -213,6 +215,7 @@ class Alumno {
       sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
       sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
       juego1Settings: juego1Settings,
+      permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
     );
   }
 
@@ -220,8 +223,6 @@ class Alumno {
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) return null;
-    // La versión FINAL añade el null-aware operator para inicializar una sola vez
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
@@ -266,7 +267,10 @@ class Alumno {
   // Lógica de obtención de imagen mejorada
   Future<File?> obtenerImagen(Directory tempDir) async {
     // 1. Caché en RAM (File? foto)
-    if (foto != null) return foto;
+    File? res;
+    if (foto != null) {
+      res = foto;
+    }
 
     // 2. Caché en Disco (imagenLocal)
     if (imagenLocal.isNotEmpty) {
@@ -358,21 +362,25 @@ class AlumnViewCard extends StatelessWidget {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se ha añadido un boton para acceder a las estadisticas
 ///
 
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
+  final VoidCallback onEstadisticasTap;
+  final bool verStats;
 
   const TeacherViewCard({
-    super.key, // Versión FINAL: Se añade Key
+    super.key,
     required this.alumno,
     required this.onTap,
     required this.icono,
-  }); // Versión FINAL: Se usa Key
+    required this.onEstadisticasTap,
+    this.verStats = false,
+  });
 
   @override
   State<TeacherViewCard> createState() => _TeacherViewCardState();
@@ -398,7 +406,24 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: IconButton(icon: widget.icono, onPressed: widget.onTap),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ?widget.verStats
+                ? IconButton(
+                    icon: const Icon(Icons.bar_chart),
+                    tooltip: 'Ver Estadísticas',
+                    onPressed: widget.verStats
+                        ? () {
+                            widget.onEstadisticasTap();
+                          }
+                        : null,
+                  )
+                : null,
+            IconButton(icon: widget.icono, onPressed: widget.onTap),
+          ],
+        ),
+
         onTap: null,
       ),
     );

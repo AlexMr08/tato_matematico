@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
@@ -10,27 +11,27 @@ import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 
 import '../../datos/juego.dart';
 
-/// **Nombre de la Clase: `Juego2Ajustes**
+/// **Nombre de la Clase: `Juego2AjustesProfe**
 ///
-/// **Descripción:** Clase con el widget de ajustes del juego 2
+/// **Descripción:** Clase con el widget de ajustes del juego 2 para el profesor
 ///
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 12/12/2025
-/// * **Último cambio:** Se ha cambiado el layout y la llamada al metodo de guardado
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se creado la clase
 ///
 
-class Juego2Ajustes extends StatefulWidget {
+class Juego2AjustesProfe extends StatefulWidget {
   final Juego juego;
-  const Juego2Ajustes({super.key, required this.juego});
+  const Juego2AjustesProfe({super.key, required this.juego});
 
   @override
-  State<Juego2Ajustes> createState() => _Juego2AjustesState();
+  State<Juego2AjustesProfe> createState() => _Juego2AjustesProfeState();
 }
 
-class _Juego2AjustesState extends State<Juego2Ajustes> {
+class _Juego2AjustesProfeState extends State<Juego2AjustesProfe> {
   // Estados
   late int _rangoSeleccionado;
   late bool _ordenSeleccionado;
@@ -52,17 +53,16 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
   @override
   Widget build(BuildContext context) {
     alum = context.read<AlumnoHolder>().alumno!;
-    PosicionBarra pos = getPosicionBarra(alum.posicionBarra);
 
     // 1. Detectar tamaño de pantalla
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 800; // Punto de corte
 
-    return ScaffoldAlumno(
-      posicion: pos,
-      alumno: alum,
-      textoCabecera: 'Ajustes - juego 2',
-      onVolver: () {
+    return ScaffoldComunV2(
+      titulo: "Juego 2 - Ajustes",
+      subtitulo: alum.nombre,
+      iconoLeading: Icons.arrow_back,
+      funcionLeading: () {
         juego2.guardarAjustes(
           idAlumno: alum.id,
           rango: _rangoSeleccionado,
@@ -71,13 +71,13 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
           dbRef: FirebaseDatabase.instance.ref(),
           orden: _ordenSeleccionado,
         );
-        Navigator.pop(context);
+        if (mounted) {
+          setState(() {
+            Navigator.pop(context);
+          });
+        }
       },
-      onAjustes: () {},
-      onEstadisticas: () {},
-      hasAjustes: false,
-      hasEstadisticas: false,
-      child: Padding(
+      cuerpo: Padding(
         // Menos padding en móvil para aprovechar espacio
         padding: EdgeInsets.symmetric(
           horizontal: isMobile ? 16.0 : 32.0,
