@@ -122,7 +122,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                   Text(
                     "REPETICIONES DEL JUEGO: ",
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: colorTexto,
                     ),
@@ -156,7 +156,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                   ? Wrap(
                       alignment: WrapAlignment.center,
                       runAlignment: WrapAlignment.start,
-                      spacing: 24,
+                      spacing: 16,
                       runSpacing: 24,
                       children: j3s.numeros
                           .asMap()
@@ -208,7 +208,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                       child: Text(
                         "No quedan números",
                         style: TextStyle(
-                          fontSize: 48,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: colorTexto,
                         ),
@@ -220,8 +220,8 @@ class _Juego3ScreenState extends State<Juego3Screen> {
             Wrap(
               alignment: WrapAlignment.start,
               runAlignment: WrapAlignment.start,
-              spacing: 30,
-              runSpacing: 30,
+              spacing: 24,
+              runSpacing: 24,
               children: j3s.contenedores.map((contenedor) {
                 final indexContenedor = j3s.contenedores.indexOf(contenedor);
                 return Column(

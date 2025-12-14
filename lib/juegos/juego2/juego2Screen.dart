@@ -132,7 +132,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "REPETICIONES: ",
+                    "REPETICIONES DEL JUEGO: ",
                     style: TextStyle(
                       fontSize: fontSize,
                       fontWeight: FontWeight.bold,
