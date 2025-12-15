@@ -63,8 +63,6 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
     }
     alumno = alumnoHolder.alumno!;
 
-    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
-
     var colorTexto = alumno.colorFondo != null
         ? getTextColorForBackground(alumno.colorFondo!)
         : Theme.of(context).colorScheme.onSurface;

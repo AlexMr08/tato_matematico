@@ -16,7 +16,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tato_matematico/juegos/juego2/juego2AjustesProfe.dart';
 import 'package:tato_matematico/juegos/juego2/juego2ScreenProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
+import 'package:tato_matematico/juegos/juego3/juego3AjustesProfe.dart';
 import '../juegos/juego3/juego3ScreenProfe.dart';
 
 /// **Nombre de la Clase: `EditarAlumno`**
@@ -624,7 +624,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       onPermisoChanged: (val) =>
           _guardarPermiso(alumno, 'permisoAjustesJuego3', val),
       onConfigurar: () =>
-          navegar(Juego2AjustesProfe(juego: listaJuegos["juego3"]!), context),
+          navegar(Juego3AjustesProfe(juego: listaJuegos["juego3"]!), context),
       onProbar: () => navegar(
         Juego3ScreenProfe(juego: listaJuegos["juego3"]!, alumno: alumno),
         context,

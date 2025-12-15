@@ -1,8 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
-import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego3/juego3.dart';
@@ -22,15 +21,15 @@ import '../../datos/juego.dart';
 /// * **Último cambio:** Se ha creado la interfaz de ajustes del juego 3
 ///
 
-class Juego3Ajustes extends StatefulWidget {
+class Juego3AjustesProfe extends StatefulWidget {
   final Juego juego;
-  const Juego3Ajustes({super.key, required this.juego});
+  const Juego3AjustesProfe({super.key, required this.juego});
 
   @override
-  State<Juego3Ajustes> createState() => _Juego3AjustesState();
+  State<Juego3AjustesProfe> createState() => _Juego3AjustesProfeState();
 }
 
-class _Juego3AjustesState extends State<Juego3Ajustes> {
+class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
   // Estados
   late int _rangoSeleccionado;
   late int _cantidadPreguntas;
@@ -52,17 +51,16 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
   @override
   Widget build(BuildContext context) {
     alum = context.read<AlumnoHolder>().alumno!;
-    PosicionBarra pos = getPosicionBarra(alum.posicionBarra);
 
     // 1. Detectar tamaño de pantalla
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 800; // Punto de corte
 
-    return ScaffoldAlumno(
-      posicion: pos,
-      alumno: alum,
-      textoCabecera: 'Ajustes - juego 3',
-      onVolver: () {
+    return ScaffoldComunV2(
+      titulo: 'Juego 3 - Ajustes',
+      subtitulo: alum.nombre,
+      iconoLeading: Icons.arrow_back,
+      funcionLeading: () {
         juego3.guardarAjustes(
           idAlumno: alum.id,
           rango: _rangoSeleccionado,
@@ -71,13 +69,13 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
           dbRef: FirebaseDatabase.instance.ref(),
           cantContenedores: _cantContenedores,
         );
-        Navigator.pop(context);
+        if (mounted) {
+          setState(() {
+            Navigator.pop(context);
+          });
+      }
       },
-      onAjustes: () {},
-      onEstadisticas: () {},
-      hasAjustes: false,
-      hasEstadisticas: false,
-      child: Padding(
+      cuerpo: Padding(
         // Menos padding en móvil para aprovechar espacio
         padding: EdgeInsets.symmetric(
           horizontal: isMobile ? 16.0 : 32.0,
