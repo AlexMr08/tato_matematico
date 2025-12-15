@@ -71,7 +71,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
     var imagenes = widget.juego.usaImagenes;
     var tipoImagen = widget.juego.tipoImagenes;
 
-    final double tamanoBote =  j3s.contenedores.length > 3 ? 250.0 : 300.0;
+    final double tamanoBote = j3s.contenedores.length > 3 ? 250.0 : 300.0;
     final double paddingInterior = tamanoBote * 0.12;
 
     final int totalSlots = j3s.contenedores[0].length;
@@ -354,16 +354,18 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                               ? Icon(
                                   Icons.cancel,
                                   size: 50,
-                                  color:
-                                      alumno.colorSeleccion ??
-                                      Theme.of(context).colorScheme.onSurface,
+                                  color: getTextColorForBackground(
+                                    alumno.colorFondo ??
+                                        Theme.of(context).colorScheme.surface,
+                                  ),
                                 )
                               : Icon(
                                   Icons.check_circle,
                                   size: 50,
-                                  color:
-                                      alumno.colorSeleccion ??
-                                      Theme.of(context).colorScheme.onSurface,
+                                  color: getTextColorForBackground(
+                                    alumno.colorFondo ??
+                                        Theme.of(context).colorScheme.surface,
+                                  ),
                                 )
                         : SizedBox(height: 1),
                   ],
@@ -373,7 +375,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
             // --- BOTÓN ACEPTAR ---
             Align(
               alignment: Alignment.bottomRight,
-              child: BotonSinIcono(
+              child: BotonSinIconoAlumno(
                 texto: "Aceptar",
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
