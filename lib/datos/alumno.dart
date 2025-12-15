@@ -14,7 +14,7 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
 /// * **Fecha de modificación:** 14/12/2025
-/// * **Último cambio:** Se han añadido los campos para los ajustes de color y sonido
+/// * **Último cambio:** Se ha eliminado el volverDerecha
 ///
 
 class Alumno {
@@ -27,7 +27,6 @@ class Alumno {
   Color? _colorBotones;
   Color? _colorSeleccion;
   Color? _colorContenedor;
-  bool _volverDerecha = false;
   int? posicionBarra;
   File? foto;
 
@@ -88,9 +87,6 @@ class Alumno {
            juego1Settings ??
            Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
     // El cuerpo del constructor permanece igual
-    if (volverDerecha != null) {
-      _volverDerecha = volverDerecha;
-    }
     if (colorFondo != null) {
       _colorFondo = colorFondo;
     }
@@ -136,12 +132,6 @@ class Alumno {
     _colorContenedor = color;
   }
 
-  bool get volverDerecha => _volverDerecha;
-
-  set volverDerecha(bool value) {
-    _volverDerecha = value;
-  }
-
   Color? get colorBarraNav => _colorBarraNav;
 
   set colorBarraNav(Color? value) {
@@ -163,7 +153,7 @@ class Alumno {
   @override
   String toString() {
     // Usamos _imagen en lugar de imagen, ya que es el campo real
-    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen, volverDerecha: $volverDerecha}';
+    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen';
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
