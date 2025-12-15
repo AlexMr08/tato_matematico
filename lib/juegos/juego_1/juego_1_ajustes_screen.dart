@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/ajustes/ajustes_generales_screen.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego_1/ajustes_numeros_screen.dart';
-import 'package:tato_matematico/juegos/juego_1/ajustes_sonidos_screen.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 
 class Juego1AjustesScreen extends StatelessWidget {
@@ -58,17 +58,14 @@ class Juego1AjustesScreen extends StatelessWidget {
             ),
             _buildSettingsCard(
               context,
-              'Ajustes sonidos',
-              Icons.music_note,
+              'Ajustes Generales',
+              Icons.settings,
               () async {
-                final result = await Navigator.of(context).push(
+                await Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const AjustesSonidosScreen(),
+                    builder: (context) => const AjustesGeneralesScreen(),
                   ),
                 );
-                if (result == true && context.mounted) {
-                  Navigator.of(context).pop(true);
-                }
               },
             ),
           ],

@@ -5,21 +5,6 @@ import 'dart:typed_data';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
-// Asumo que tienes una clase Juego1Settings en el path especificado
-// y que la clase Alumno se está definiendo aquí.
-
-/// **Nombre de la Clase: `Alumno`**
-///
-/// **Descripción:** clase que representa a un alumno en el sistema.
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 02/12/2025
-/// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
-///
-
 class Alumno {
   String id;
   String nombre;
@@ -36,7 +21,7 @@ class Alumno {
   bool permisoEstadisticasJuego1;
   bool mostrarPuntuacionJuego1;
 
-  // Ajustes de sonido Juego 1
+  // Ajustes de sonido Juego 1 (antiguos)
   String? vozJuego1;
   double ttsRateJuego1;
   double ttsVolumeJuego1;
@@ -47,12 +32,21 @@ class Alumno {
   bool sonidoFalloActivadoJuego1;
   String? sonidoEleccionJuego1;
 
+  // Ajustes de sonido Globales (nuevos)
+  String? sonidoEleccion;
+  String sonidoAcierto;
+  bool sonidoAciertoActivado;
+  String sonidoFallo;
+  bool sonidoFalloActivado;
+  double ttsRate;
+  double ttsVolume;
+  double ttsPitch;
+  
   Juego1Settings juego1Settings;
 
   Alumno({
     required this.id,
     required this.nombre,
-    // Versión FINAL: Quitamos 'this.' para que sea solo un parámetro y lo asignamos al inicializador
     required String? imagen,
     Color? colorFondo,
     Color? colorBarraNav,
@@ -61,6 +55,7 @@ class Alumno {
     this.permisoAjustesJuego1 = true,
     this.permisoEstadisticasJuego1 = true,
     this.mostrarPuntuacionJuego1 = true,
+    // Antiguos
     this.vozJuego1,
     this.ttsRateJuego1 = 0.5,
     this.ttsVolumeJuego1 = 1.0,
@@ -70,123 +65,80 @@ class Alumno {
     this.sonidoFalloJuego1 = 'Pton',
     this.sonidoFalloActivadoJuego1 = true,
     this.sonidoEleccionJuego1,
+    // Nuevos
+    this.sonidoEleccion,
+    this.sonidoAcierto = 'Pim',
+    this.sonidoAciertoActivado = true,
+    this.sonidoFallo = 'Pton',
+    this.sonidoFalloActivado = true,
+    this.ttsRate = 0.5,
+    this.ttsVolume = 1.0,
+    this.ttsPitch = 1.0,
+
     Juego1Settings? juego1Settings,
     volverDerecha,
     posicionBarra,
-    // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
   }) : _imagen = imagen,
        juego1Settings =
            juego1Settings ??
            Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
-    // El cuerpo del constructor permanece igual
-    if (volverDerecha != null) {
-      _volverDerecha = volverDerecha;
-    }
-    if (colorFondo != null) {
-      _colorFondo = colorFondo;
-    }
-    if (colorBarraNav != null) {
-      _colorBarraNav = colorBarraNav;
-    }
-    if (colorBotones != null) {
-      _colorBotones = colorBotones;
-    }
-    if (colorSeleccion != null) {
-      _colorSeleccion = colorSeleccion;
-    }
-    if (posicionBarra != null) {
-      this.posicionBarra = posicionBarra;
-    }
+    if (volverDerecha != null) _volverDerecha = volverDerecha;
+    if (colorFondo != null) _colorFondo = colorFondo;
+    if (colorBarraNav != null) _colorBarraNav = colorBarraNav;
+    if (colorBotones != null) _colorBotones = colorBotones;
+    if (colorSeleccion != null) _colorSeleccion = colorSeleccion;
+    if (posicionBarra != null) this.posicionBarra = posicionBarra;
   }
 
-  // Versión FINAL: Getter y Setter para imagen que limpia la caché (foto) al cambiar la URL
   String? get imagen => _imagen;
 
   set imagen(String? value) {
     if (_imagen != value) {
       _imagen = value;
-      // Al cambiar la URL, invalidamos la caché en memoria y disco
       foto = null;
-      // imagenLocal = ''; // Opcional: Si queremos forzar la descarga, lo dejamos comentado por ahora.
     }
   }
 
-  // Getters y Setters para colores y volverDerecha (Tomados de la versión de la izquierda, son idénticos a los de la final)
   Color? get colorFondo => _colorFondo;
-
-  set colorFondo(Color? color) {
-    _colorFondo = color;
-  }
+  set colorFondo(Color? color) => _colorFondo = color;
 
   bool get volverDerecha => _volverDerecha;
-
-  set volverDerecha(bool value) {
-    _volverDerecha = value;
-  }
+  set volverDerecha(bool value) => _volverDerecha = value;
 
   Color? get colorBarraNav => _colorBarraNav;
-
-  set colorBarraNav(Color? value) {
-    _colorBarraNav = value;
-  }
+  set colorBarraNav(Color? value) => _colorBarraNav = value;
 
   Color? get colorBotones => _colorBotones;
-
-  set colorBotones(Color? value) {
-    _colorBotones = value;
-  }
+  set colorBotones(Color? value) => _colorBotones = value;
 
   Color? get colorSeleccion => _colorSeleccion;
+  set colorSeleccion(Color? value) => _colorSeleccion = value;
 
-  set colorSeleccion(Color? value) {
-    _colorSeleccion = value;
-  }
-
-  // Getter para compatibilidad con `ajustes_sonidos_screen`
   Color? get colorTextos => _colorSeleccion;
-
-  set colorTextos(Color? value) {
-    _colorSeleccion = value;
-  }
+  set colorTextos(Color? value) => _colorSeleccion = value;
 
   @override
   String toString() {
-    // Usamos _imagen en lugar de imagen, ya que es el campo real
     return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen, volverDerecha: $volverDerecha}';
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
     Color? colorFondoLoc, colorBotonesLoc, colorNavLoc, colorSeleccionLoc;
     if (data['colorFondo'] != null) {
-      // Manejo de null con operador de nulidad seguro
       final colorStr = data['colorFondo'] as String?;
-      if (colorStr != null) {
-        int hex = int.parse(colorStr, radix: 16);
-        colorFondoLoc = Color(hex);
-      }
+      if (colorStr != null) colorFondoLoc = Color(int.parse(colorStr, radix: 16));
     }
     if (data['colorBarraNav'] != null) {
       final colorStr = data['colorBarraNav'] as String?;
-      if (colorStr != null) {
-        int hex = int.parse(colorStr, radix: 16);
-        colorNavLoc = Color(hex);
-      }
+      if (colorStr != null) colorNavLoc = Color(int.parse(colorStr, radix: 16));
     }
-
     if (data['colorBotones'] != null) {
       final colorStr = data['colorBotones'] as String?;
-      if (colorStr != null) {
-        int hex = int.parse(colorStr, radix: 16);
-        colorBotonesLoc = Color(hex);
-      }
+      if (colorStr != null) colorBotonesLoc = Color(int.parse(colorStr, radix: 16));
     }
-
     if (data['colorSeleccion'] != null) {
       final colorStr = data['colorSeleccion'] as String?;
-      if (colorStr != null) {
-        int hex = int.parse(colorStr, radix: 16);
-        colorSeleccionLoc = Color(hex);
-      }
+      if (colorStr != null) colorSeleccionLoc = Color(int.parse(colorStr, radix: 16));
     }
 
     Juego1Settings? juego1Settings;
@@ -212,6 +164,7 @@ class Alumno {
       permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
       permisoEstadisticasJuego1: data['permisoEstadisticasJuego1'] ?? true,
       mostrarPuntuacionJuego1: data['mostrarPuntuacionJuego1'] ?? true,
+      // Antiguos
       vozJuego1: data['vozJuego1'],
       ttsRateJuego1: (data['ttsRateJuego1'] as num? ?? 0.5).toDouble(),
       ttsVolumeJuego1: (data['ttsVolumeJuego1'] as num? ?? 1.0).toDouble(),
@@ -221,31 +174,36 @@ class Alumno {
       sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
       sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
       sonidoEleccionJuego1: data['sonidoEleccionJuego1'],
+      // Nuevos
+      sonidoEleccion: data['sonidoEleccion'],
+      sonidoAcierto: data['sonidoAcierto'] ?? 'Pim',
+      sonidoAciertoActivado: data['sonidoAciertoActivado'] ?? true,
+      sonidoFallo: data['sonidoFallo'] ?? 'Pton',
+      sonidoFalloActivado: data['sonidoFalloActivado'] ?? true,
+      ttsRate: (data['ttsRate'] as num? ?? 0.5).toDouble(),
+      ttsVolume: (data['ttsVolume'] as num? ?? 1.0).toDouble(),
+      ttsPitch: (data['ttsPitch'] as num? ?? 1.0).toDouble(),
       juego1Settings: juego1Settings,
     );
   }
 
-  // Cache para widgetProfesor/widgetAlumno
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
     if (imagenLocal.isEmpty) return null;
-    // La versión FINAL añade el null-aware operator para inicializar una sola vez
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
 
-  // Versión FINAL: Limpia la caché de ImageProvider y del archivo File? foto
   void invalidarCachedImage() {
     _cachedImage = null;
-    foto = null; // Limpiamos también la caché de archivo
+    foto = null;
   }
 
   Future<void> descargarImagen(
     Directory tempDir, {
     int maxBytes = 10 * 1024 * 1024,
   }) async {
-    // Usamos _imagen que es el campo privado y real
     if (_imagen == null || _imagen!.isEmpty) {
       imagenLocal = '';
       return;
@@ -260,7 +218,6 @@ class Alumno {
         return;
       }
 
-      // Versión FINAL: Usa el nombre del archivo de Firebase para evitar la caché antigua del sistema
       String nombreArchivo = ref.name;
       final file = File('${tempDir.path}/$nombreArchivo');
 
@@ -272,12 +229,9 @@ class Alumno {
     }
   }
 
-  // Lógica de obtención de imagen mejorada
   Future<File?> obtenerImagen(Directory tempDir) async {
-    // 1. Caché en RAM (File? foto)
     if (foto != null) return foto;
 
-    // 2. Caché en Disco (imagenLocal)
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
@@ -286,7 +240,6 @@ class Alumno {
       }
     }
 
-    // 3. Descarga
     await descargarImagen(tempDir);
 
     if (imagenLocal.isNotEmpty) {
@@ -300,50 +253,138 @@ class Alumno {
     return null;
   }
 
+  @deprecated
+  Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
+    var ori = MediaQuery.of(context).orientation;
+
+    return InkWell(
+      onTap: navegar,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          double size = ori == Orientation.portrait
+              ? constraints.maxWidth * 0.7
+              : constraints.maxHeight * 0.7;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: size,
+                height: size,
+                child: CircleAvatar(
+                  backgroundImage: cachedImage,
+                  child: cachedImage == null
+                      ? Text(
+                          nombre.isNotEmpty ? nombre[0] : '?',
+                          style: TextStyle(fontSize: size * 0.4),
+                        )
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                nombre,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  @deprecated
+  Widget widgetProfesor(BuildContext c, VoidCallback navegar, Icon icono) {
+    ImageProvider? imageProvider;
+    if (imagenLocal.isNotEmpty) {
+      imageProvider = FileImage(File(imagenLocal));
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          radius: 28,
+          backgroundImage: imageProvider,
+          child: imageProvider == null
+              ? Text(
+                  nombre.isNotEmpty ? nombre[0] : '?',
+                  style: const TextStyle(fontSize: 20),
+                )
+              : null,
+        ),
+        title: Text(
+          nombre,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: IconButton(icon: icono, onPressed: navegar),
+        onTap: null,
+      ),
+    );
+  }
+
+  @deprecated
+  Widget widgetAlumnoV2({required VoidCallback onTap}) {
+    return AlumnViewCard(key: ValueKey(id), alumno: this, onTap: onTap);
+  }
+
+  @deprecated
+  Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
+    return TeacherViewCard(
+      key: ValueKey("${id}_${_imagen ?? ''}"),
+      alumno: this,
+      onTap: onTap,
+      icono: icono,
+    );
+  }
 }
 
-/// **Nombre de la Clase: `AlumnViewCard`**
-///
-/// **Descripción:** clase que gestiona como se ve el widget del alumno en vista de alumno.
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
-///
-class AlumnViewCard extends StatelessWidget {
+class AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
-  const AlumnViewCard({super.key, required this.alumno, required this.onTap});
+  const AlumnViewCard({
+    super.key,
+    required this.alumno,
+    required this.onTap,
+  });
 
   @override
+  State<AlumnViewCard> createState() => _AlumnViewCardState();
+}
+
+class _AlumnViewCardState extends State<AlumnViewCard> {
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 8,
-            children: [
-              Expanded(
+    return InkWell(
+      onTap: widget.onTap,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: FotoPerfil(
-                  key: ValueKey(alumno.imagen),
-                  nombre: alumno.nombre,
-                  idUnico: alumno.imagen ?? alumno.id,
-                  onObtenerImagen: alumno.obtenerImagen,
+                  key: ValueKey(widget.alumno.imagen),
+                  nombre: widget.alumno.nombre,
+                  idUnico: widget.alumno.imagen ?? widget.alumno.id,
+                  onObtenerImagen: widget.alumno.obtenerImagen,
                   radio: 56,
                 ),
               ),
-              Text(
-                alumno.nombre,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                widget.alumno.nombre,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -352,25 +393,13 @@ class AlumnViewCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-/// **Nombre de la Clase: `TeacherViewCard`**
-///
-/// **Descripción:** clase que gestiona la vista de un alumno en la perspectiva del profesor.
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
-///
 
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
@@ -378,11 +407,11 @@ class TeacherViewCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const TeacherViewCard({
-    super.key, // Versión FINAL: Se añade Key
+    super.key,
     required this.alumno,
     required this.onTap,
     required this.icono,
-  }); // Versión FINAL: Se usa Key
+  });
 
   @override
   State<TeacherViewCard> createState() => _TeacherViewCardState();

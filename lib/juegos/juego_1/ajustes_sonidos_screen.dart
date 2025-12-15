@@ -18,12 +18,12 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
   late Alumno _alumno;
 
-  // State for sounds
+  // State for global sounds
   String? _sonidoEleccion;
   String? _sonidoVictoria;
   String? _sonidoFallo;
   
-  // State for TTS
+  // State for global TTS
   double _ttsRate = 0.5;
   double _ttsVolume = 1.0;
   double _ttsPitch = 1.0;
@@ -31,7 +31,6 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final FlutterTts _flutterTts = FlutterTts();
 
-  // --- Opciones para Sonidos de Efectos ---
   final List<Map<String, String>> availableSounds = [
     {'name': 'campana', 'asset': 'assets/images/campana.png'},
     {'name': 'electricidad', 'asset': 'assets/images/electricidad.png'},
@@ -41,7 +40,6 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     {'name': 'juego', 'asset': 'assets/images/juego.png'},
   ];
 
-  // --- Opciones para Ajustes de Voz (TTS) ---
   final List<Map<String, dynamic>> ttsRateOptions = [
     {'value': 0.5, 'asset': 'assets/images/tortuga.png'},
     {'value': 0.8, 'asset': 'assets/images/liebre.png'},
@@ -79,14 +77,13 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
 
   void _initializeSettings() {
     _alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
-    // Sonidos
-    _sonidoEleccion = _alumno.sonidoEleccionJuego1;
-    _sonidoVictoria = _alumno.sonidoAciertoActivadoJuego1 ? _alumno.sonidoAciertoJuego1 : null;
-    _sonidoFallo = _alumno.sonidoFalloActivadoJuego1 ? _alumno.sonidoFalloJuego1 : null;
-    // TTS
-    _ttsRate = _alumno.ttsRateJuego1;
-    _ttsVolume = _alumno.ttsVolumeJuego1;
-    _ttsPitch = _alumno.ttsPitchJuego1;
+    // Usar nuevos campos globales
+    _sonidoEleccion = _alumno.sonidoEleccion;
+    _sonidoVictoria = _alumno.sonidoAciertoActivado ? _alumno.sonidoAcierto : null;
+    _sonidoFallo = _alumno.sonidoFalloActivado ? _alumno.sonidoFallo : null;
+    _ttsRate = _alumno.ttsRate;
+    _ttsVolume = _alumno.ttsVolume;
+    _ttsPitch = _alumno.ttsPitch;
   }
 
   void _speakPreview() async {
@@ -98,30 +95,29 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
 
   void _guardarAjustes() async {
     final updates = {
-      // Sonidos
-      'sonidoEleccionJuego1': _sonidoEleccion,
-      'sonidoAciertoJuego1': _sonidoVictoria,
-      'sonidoAciertoActivadoJuego1': _sonidoVictoria != null,
-      'sonidoFalloJuego1': _sonidoFallo,
-      'sonidoFalloActivadoJuego1': _sonidoFallo != null,
-      // TTS
-      'ttsRateJuego1': _ttsRate,
-      'ttsVolumeJuego1': _ttsVolume,
-      'ttsPitchJuego1': _ttsPitch,
+      // Guardar en nuevos campos globales
+      'sonidoEleccion': _sonidoEleccion,
+      'sonidoAcierto': _sonidoVictoria,
+      'sonidoAciertoActivado': _sonidoVictoria != null,
+      'sonidoFallo': _sonidoFallo,
+      'sonidoFalloActivado': _sonidoFallo != null,
+      'ttsRate': _ttsRate,
+      'ttsVolume': _ttsVolume,
+      'ttsPitch': _ttsPitch,
     };
 
     try {
       await _dbRef.child('tato/alumnos/${_alumno.id}').update(updates);
       
       // Actualiza el objeto Alumno localmente
-      _alumno.sonidoEleccionJuego1 = _sonidoEleccion;
-      _alumno.sonidoAciertoJuego1 = _sonidoVictoria ?? '';
-      _alumno.sonidoAciertoActivadoJuego1 = _sonidoVictoria != null;
-      _alumno.sonidoFalloJuego1 = _sonidoFallo ?? '';
-      _alumno.sonidoFalloActivadoJuego1 = _sonidoFallo != null;
-      _alumno.ttsRateJuego1 = _ttsRate;
-      _alumno.ttsVolumeJuego1 = _ttsVolume;
-      _alumno.ttsPitchJuego1 = _ttsPitch;
+      _alumno.sonidoEleccion = _sonidoEleccion;
+      _alumno.sonidoAcierto = _sonidoVictoria ?? '';
+      _alumno.sonidoAciertoActivado = _sonidoVictoria != null;
+      _alumno.sonidoFallo = _sonidoFallo ?? '';
+      _alumno.sonidoFalloActivado = _sonidoFallo != null;
+      _alumno.ttsRate = _ttsRate;
+      _alumno.ttsVolume = _ttsVolume;
+      _alumno.ttsPitch = _ttsPitch;
       context.read<AlumnoHolder>().setAlumno(_alumno);
       
       Navigator.of(context).pop(true);
@@ -144,7 +140,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     return Scaffold(
       backgroundColor: alumno.colorFondo,
       appBar: AppBar(
-        title: Text('Ajustes', style: TextStyle(color: appBarTextColor)),
+        title: Text('Ajustes de Sonido', style: TextStyle(color: appBarTextColor)),
         backgroundColor: appBarColor,
         iconTheme: IconThemeData(color: appBarTextColor),
       ),
@@ -155,10 +151,8 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // --- Columna Izquierda: VOZ (TTS) ---
                 Expanded(child: _buildTtsColumn(context, textColor, selectionColor)),
                 const SizedBox(width: 20),
-                // --- Columna Derecha: SONIDOS ---
                 Expanded(child: _buildSoundsColumn(context, textColor, selectionColor)),
               ],
             ),
@@ -178,48 +172,16 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     );
   }
 
-  // --- WIDGETS DE COLUMNAS ---
-
   Widget _buildTtsColumn(BuildContext context, Color textColor, Color selectionColor) {
     return Column(
       children: [
         Text("Voz", style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: textColor, fontWeight: FontWeight.bold)),
         const SizedBox(height: 20),
-        _buildTtsImageSelector(
-          title: "Velocidad",
-          options: ttsRateOptions,
-          currentValue: _ttsRate,
-          onSelected: (value) {
-            setState(() { _ttsRate = value; });
-            _speakPreview();
-          },
-          textColor: textColor,
-          selectionColor: selectionColor,
-        ),
+        _buildTtsImageSelector(title: "Velocidad", options: ttsRateOptions, currentValue: _ttsRate, onSelected: (value) { setState(() { _ttsRate = value; }); _speakPreview(); }, textColor: textColor, selectionColor: selectionColor),
         const SizedBox(height: 30),
-        _buildTtsImageSelector(
-          title: "Volumen",
-          options: ttsVolumeOptions,
-          currentValue: _ttsVolume,
-          onSelected: (value) {
-            setState(() { _ttsVolume = value; });
-            _speakPreview();
-          },
-          textColor: textColor,
-          selectionColor: selectionColor,
-        ),
+        _buildTtsImageSelector(title: "Volumen", options: ttsVolumeOptions, currentValue: _ttsVolume, onSelected: (value) { setState(() { _ttsVolume = value; }); _speakPreview(); }, textColor: textColor, selectionColor: selectionColor),
         const SizedBox(height: 30),
-        _buildTtsImageSelector(
-          title: "Tono",
-          options: ttsPitchOptions,
-          currentValue: _ttsPitch,
-          onSelected: (value) {
-            setState(() { _ttsPitch = value; });
-            _speakPreview();
-          },
-          textColor: textColor,
-          selectionColor: selectionColor,
-        ),
+        _buildTtsImageSelector(title: "Tono", options: ttsPitchOptions, currentValue: _ttsPitch, onSelected: (value) { setState(() { _ttsPitch = value; }); _speakPreview(); }, textColor: textColor, selectionColor: selectionColor),
       ],
     );
   }
@@ -229,56 +191,20 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
       children: [
         Text("Sonidos", style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: textColor, fontWeight: FontWeight.bold)),
         const SizedBox(height: 20),
-        _buildSoundEffectSelector(
-          title: 'Elección',
-          icon: Icons.touch_app,
-          selectedSound: _sonidoEleccion,
-          onSoundSelected: (sound) => setState(() => _sonidoEleccion = sound),
-          textColor: textColor,
-          selectionColor: selectionColor,
-        ),
+        _buildSoundEffectSelector(title: 'Elección', icon: Icons.touch_app, selectedSound: _sonidoEleccion, onSoundSelected: (sound) => setState(() => _sonidoEleccion = sound), textColor: textColor, selectionColor: selectionColor),
         const SizedBox(height: 30),
-        _buildSoundEffectSelector(
-          title: 'Victoria',
-          icon: Icons.check,
-          selectedSound: _sonidoVictoria,
-          onSoundSelected: (sound) => setState(() => _sonidoVictoria = sound),
-          textColor: textColor,
-          selectionColor: selectionColor,
-        ),
+        _buildSoundEffectSelector(title: 'Victoria', icon: Icons.check, selectedSound: _sonidoVictoria, onSoundSelected: (sound) => setState(() => _sonidoVictoria = sound), textColor: textColor, selectionColor: selectionColor),
         const SizedBox(height: 30),
-        _buildSoundEffectSelector(
-          title: 'Fallo',
-          icon: Icons.close,
-          selectedSound: _sonidoFallo,
-          onSoundSelected: (sound) => setState(() => _sonidoFallo = sound),
-          textColor: textColor,
-          selectionColor: selectionColor,
-        ),
+        _buildSoundEffectSelector(title: 'Fallo', icon: Icons.close, selectedSound: _sonidoFallo, onSoundSelected: (sound) => setState(() => _sonidoFallo = sound), textColor: textColor, selectionColor: selectionColor),
       ],
     );
   }
 
-  // --- WIDGETS DE SELECCIÓN ---
-
-  Widget _buildSoundEffectSelector({
-    required String title,
-    required IconData icon,
-    required String? selectedSound,
-    required Function(String? sound) onSoundSelected,
-    required Color textColor,
-    required Color selectionColor,
-  }) {
+  Widget _buildSoundEffectSelector({ required String title, required IconData icon, required String? selectedSound, required Function(String? sound) onSoundSelected, required Color textColor, required Color selectionColor}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: textColor, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 8),
-            Icon(icon, color: textColor),
-          ],
-        ),
+        Row(children: [Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: textColor, fontWeight: FontWeight.bold)), const SizedBox(width: 8), Icon(icon, color: textColor)]),
         const SizedBox(height: 20),
         Wrap(
           spacing: 12,
@@ -298,11 +224,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
                   }
                 }
               },
-              child: _buildImageFrame(
-                asset: sound['asset']!,
-                isSelected: isSelected,
-                selectionColor: selectionColor,
-              ),
+              child: _buildImageFrame(asset: sound['asset']!, isSelected: isSelected, selectionColor: selectionColor),
             );
           }).toList(),
         ),
@@ -310,14 +232,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     );
   }
 
-  Widget _buildTtsImageSelector({
-    required String title,
-    required List<Map<String, dynamic>> options,
-    required double currentValue,
-    required Function(double) onSelected,
-    required Color textColor,
-    required Color selectionColor,
-  }) {
+  Widget _buildTtsImageSelector({ required String title, required List<Map<String, dynamic>> options, required double currentValue, required Function(double) onSelected, required Color textColor, required Color selectionColor}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -331,11 +246,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
             final isSelected = currentValue == option['value'];
             return GestureDetector(
               onTap: () => onSelected(option['value']),
-              child: _buildImageFrame(
-                asset: option['asset']!,
-                isSelected: isSelected,
-                selectionColor: selectionColor,
-              ),
+              child: _buildImageFrame(asset: option['asset']!, isSelected: isSelected, selectionColor: selectionColor),
             );
           }).toList(),
         ),
@@ -343,22 +254,11 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     );
   }
 
-  Widget _buildImageFrame({
-    required String asset,
-    required bool isSelected,
-    required Color selectionColor,
-  }) {
+  Widget _buildImageFrame({ required String asset, required bool isSelected, required Color selectionColor}) {
     return Container(
       width: 85,
       height: 85,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: isSelected ? selectionColor : Colors.grey,
-          width: isSelected ? 4.0 : 2.0,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: isSelected ? selectionColor : Colors.grey, width: isSelected ? 4.0 : 2.0), borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Image.asset(asset, fit: BoxFit.contain),

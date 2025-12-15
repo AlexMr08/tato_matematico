@@ -1,9 +1,11 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 
 class AjustesNumerosScreen extends StatefulWidget {
   final Juego1Settings initialSettings;
@@ -25,6 +27,7 @@ class _AjustesNumerosScreenState extends State<AjustesNumerosScreen> {
   late double _numeroOpciones;
   late bool _mostrarPuntuacion;
   final _formKey = GlobalKey<FormState>();
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
   @override
   void initState() {
@@ -44,7 +47,7 @@ class _AjustesNumerosScreenState extends State<AjustesNumerosScreen> {
     super.dispose();
   }
 
-  void _guardarAjustes() {
+  Future<void> _guardarAjustes() async {
     if (_formKey.currentState!.validate()) {
       final int numeroMayor = int.tryParse(_numeroMayorController.text) ?? 1000;
       final int numeroMenor = int.tryParse(_numeroMenorController.text) ?? 0;
@@ -57,17 +60,38 @@ class _AjustesNumerosScreenState extends State<AjustesNumerosScreen> {
         );
         return;
       }
-      
+
       final settings = Juego1Settings(
         numeroOpciones: _numeroOpciones.round(),
         numeroMayor: numeroMayor,
         numeroMenor: numeroMenor,
       );
-      
-      Navigator.of(context).pop({
-        'settings': settings,
-        'mostrarPuntuacion': _mostrarPuntuacion,
-      });
+
+      final alumnoHolder = Provider.of<AlumnoHolder>(context, listen: false);
+      final Alumno alumno = alumnoHolder.alumno!;
+
+      // Guardar en Firebase
+      try {
+        final Map<String, dynamic> updates = {};
+        updates['tato/alumnos/${alumno.id}/juego1Settings'] = settings.toMap();
+        updates['tato/alumnos/${alumno.id}/mostrarPuntuacionJuego1'] = _mostrarPuntuacion;
+
+        await _dbRef.update(updates);
+
+        // Actualizar estado local
+        alumno.juego1Settings = settings;
+        alumno.mostrarPuntuacionJuego1 = _mostrarPuntuacion;
+        alumnoHolder.setAlumno(alumno);
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar: $e')),
+        );
+      }
     }
   }
 
@@ -131,9 +155,9 @@ class _AjustesNumerosScreenState extends State<AjustesNumerosScreen> {
               _buildSliderTile(
                 label: 'Número de opciones:',
                 value: _numeroOpciones,
-                min: 1,
-                max: 10,
-                divisions: 9,
+                min: 2, // Mínimo lógico de opciones
+                max: 12,
+                divisions: 10,
                 textColor: textColor,
                 onChanged: (value) {
                   setState(() {
@@ -145,6 +169,7 @@ class _AjustesNumerosScreenState extends State<AjustesNumerosScreen> {
               SwitchListTile(
                 title: Text('Mostrar Puntuación', style: TextStyle(color: textColor, fontSize: 18)),
                 value: _mostrarPuntuacion,
+                activeColor: alumno.colorBotones,
                 onChanged: (value) {
                   setState(() {
                     _mostrarPuntuacion = value;
