@@ -71,7 +71,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
     var imagenes = widget.juego.usaImagenes;
     var tipoImagen = widget.juego.tipoImagenes;
 
-    final double tamanoBote = 300.0;
+    final double tamanoBote =  j3s.contenedores.length > 3 ? 250.0 : 300.0;
     final double paddingInterior = tamanoBote * 0.12;
 
     final int totalSlots = j3s.contenedores[0].length;

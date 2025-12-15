@@ -72,7 +72,7 @@ class Juego {
     required DatabaseReference dbRef,
   }) {
     dbRef.update({"max": rango});
-    dbRef.update({"min": 0});
+    dbRef.update({"min": id == "juego3" ? 1 : 0});
     dbRef.update({"cantidad": cantidad});
     dbRef.update({"tipoImagenes": tema});
     dbRef.update({"imagenes": tema != "numeros"});

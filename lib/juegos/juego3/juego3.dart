@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'dart:math';
+import 'package:firebase_database/firebase_database.dart';
 
 
 /// **Nombre de la Clase: `Juego3**
@@ -84,7 +85,29 @@ class Juego3 extends Juego {
     return solucionContenedores;
   }
 
-    factory Juego3.fromMap(Map<dynamic, dynamic> data) {
+  @override
+  Future<void> guardarAjustes({
+    required String idAlumno,
+    required int rango,
+    required int cantidad,
+    required String tema,
+    required DatabaseReference dbRef,
+    int? cantContenedores,
+  }) async {
+    var dbRef2 = dbRef.child("tato/juegos/$idAlumno/$id");
+    dbRef2.update({"cantContenedores": cantContenedores});
+    super.guardarAjustes(
+      idAlumno: idAlumno,
+      rango: rango,
+      cantidad: cantidad,
+      tema: tema,
+      dbRef: dbRef2,
+    );
+  }
+
+
+
+  factory Juego3.fromMap(Map<dynamic, dynamic> data) {
     return Juego3(
       min: data["min"] ?? 0,
       max: data["max"] ?? 10,

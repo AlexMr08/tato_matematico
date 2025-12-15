@@ -8,6 +8,7 @@ import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
+import 'package:tato_matematico/juegos/juego3/juego3Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import 'juegos/tarjetaJuego.dart';
@@ -239,8 +240,15 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
                   ),
                   Expanded(
                     child: BotonSinIconoAlumno(
-                      texto: "Botón desactivado",
-                      onPressed: null,
+                      texto: "Ajustes Juego 3",
+                      onPressed: (alumno.permisoAjustesJuego3
+                          ? () {
+                              navegar(
+                                Juego3Ajustes(juego: listaJuegos["juego3"]!),
+                                context,
+                              );
+                            }
+                          : null),
                       colorFondo:
                           alumno.colorBotones ??
                           Theme.of(context).colorScheme.primaryContainer,
