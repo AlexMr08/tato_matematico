@@ -83,9 +83,71 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
     }
   }
 
+  Widget _versionMovil() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        BotonConIcono(
+          icono: Icons.edit,
+          texto: "Cambiar contraseña",
+          onPressed: () {
+            navegar(
+              ProfesorEditarContrasena(profesor: widget.profesor),
+              context,
+            );
+          },
+        ),
+        const SizedBox(width: 16),
+        Row(
+          children: [
+            Text("¿Es administrador?"),
+            const SizedBox(width: 8),
+            Switch(
+              value: widget.profesor.director,
+              onChanged: (value) {
+                setState(() {
+                  widget.profesor.actualizarDirector(value);
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _versionEscritorio() {
+    return Row(
+      children: [
+        BotonConIcono(
+          icono: Icons.edit,
+          texto: "Cambiar contraseña",
+          onPressed: () {
+            navegar(
+              ProfesorEditarContrasena(profesor: widget.profesor),
+              context,
+            );
+          },
+        ),
+        const SizedBox(width: 16),
+        Text("¿Es administrador?"),
+        const SizedBox(width: 8),
+        Switch(
+          value: widget.profesor.director,
+          onChanged: (value) {
+            setState(() {
+              widget.profesor.actualizarDirector(value);
+            });
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var alumnos = context.read<AlumnosHolder>().alumnos;
+    var esMovil = MediaQuery.of(context).size.width < 600;
     foto = FotoPerfil(
       key: ValueKey(widget.profesor.imagen),
       nombre: widget.profesor.nombre,
@@ -102,25 +164,64 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 120,
-                height: 120,
-                child: Material(
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(120),
-                  clipBehavior: Clip.hardEdge,
-                  child: GestureDetector(
-                    onTap: () {
-                      _mostrarMenuOrigen(
-                        context,
-                        widget.profesor,
-                        propio: widget.propio,
-                      );
-                    },
-                    child: foto,
+              Stack(
+                children: [
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: Material(
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(120),
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                        onTap: () {
+                          _mostrarMenuOrigen(
+                            context,
+                            widget.profesor,
+                            propio: widget.propio,
+                          );
+                        },
+                        child: foto,
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: InkWell(
+                      onTap: () {
+                        _mostrarMenuOrigen(
+                          context,
+                          widget.profesor,
+                          propio: widget.propio,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                          // Borde blanco para separar visualmente de la foto
+                          border: Border.all(color: Colors.white, width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.cameraswitch_outlined, // O Icons.edit
+                          size: esMovil ? 16:20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+
               const SizedBox(width: 24),
               Expanded(
                 child: Column(
@@ -158,16 +259,22 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    BotonConIcono(
-                      icono: Icons.edit,
-                      texto: "Cambiar contraseña",
-                      onPressed: () {
-                        navegar(
-                          ProfesorEditarContrasena(profesor: widget.profesor),
-                          context,
-                        );
-                      },
-                    ),
+                    widget.propio
+                        ? BotonConIcono(
+                            icono: Icons.edit,
+                            texto: "Cambiar contraseña",
+                            onPressed: () {
+                              navegar(
+                                ProfesorEditarContrasena(
+                                  profesor: widget.profesor,
+                                ),
+                                context,
+                              );
+                            },
+                          )
+                        : esMovil
+                        ? _versionMovil()
+                        : _versionEscritorio(),
                   ],
                 ),
               ),

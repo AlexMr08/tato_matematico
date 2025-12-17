@@ -433,17 +433,16 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ?widget.verStats
-                ? IconButton(
-                    icon: const Icon(Icons.bar_chart),
-                    tooltip: 'Ver Estadísticas',
-                    onPressed: widget.verStats
-                        ? () {
-                            widget.onEstadisticasTap();
-                          }
-                        : null,
-                  )
-                : null,
+            if (widget.verStats)
+              IconButton(
+                icon: const Icon(Icons.bar_chart),
+                tooltip: 'Ver Estadísticas',
+                onPressed: widget.verStats
+                    ? () {
+                        widget.onEstadisticasTap();
+                      }
+                    : null,
+              ),
             IconButton(icon: widget.icono, onPressed: widget.onTap),
           ],
         ),
