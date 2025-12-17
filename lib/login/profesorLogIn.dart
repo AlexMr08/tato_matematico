@@ -4,7 +4,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import '../holders/profesorHolder.dart';
@@ -18,8 +18,8 @@ import '../mainMenuProfe.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** ?
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 02/12/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se ha mejorado la navegacion por el formulario
 ///
 
@@ -53,55 +53,53 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
     // Validar que los campos no estén vacíos
     if (username.isEmpty || password.isEmpty) {
       snackBarAviso(context, "Ingrese nombre de usuario y contraseña");
-      return;
-    }
-
-    // Buscar el profesor en la base de datos por nombre de usuario
-    var dbref = FirebaseDatabase.instance
-        .ref()
-        .child("tato")
-        .child("profesorado");
-    DatabaseEvent event = await dbref
-        .orderByChild("username")
-        .equalTo(username)
-        .once();
-
-    // Si el profesor no existe, mostrar mensaje de error
-    if (event.snapshot.value == null) {
-      if (mounted) {
-        snackBarAviso(context, "Usuario no registrado");
-      }
-      return;
-    }
-
-    Map data = event.snapshot.value as Map;
-    var profesorId = data.keys.first;
-    var profesorData = data[profesorId];
-
-    var hashHex = await _generarHash(profesorData["salt"], password);
-    // Verificar la contraseña
-    if (profesorData["pass"] == hashHex) {
-      if (mounted) {
-        snackBarExito(
-          context,
-          profesorData["director"]
-              ? "Ha iniciado sesion correctamente, rol: Director"
-              : "Ha iniciado sesion correctamente, rol: Profesor",
-        );
-        context.read<ProfesorHolder>().setProfesor(
-          Profesor.fromMap(
-            profesorId,
-            Map<dynamic, dynamic>.from(profesorData),
-          ),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainMenuProfe()),
-        );
-      }
     } else {
-      if (mounted) {
-        snackBarAviso(context, "Contraseña incorrecta");
+      // Buscar el profesor en la base de datos por nombre de usuario
+      var dbref = FirebaseDatabase.instance
+          .ref()
+          .child("tato")
+          .child("profesorado");
+      DatabaseEvent event = await dbref
+          .orderByChild("username")
+          .equalTo(username)
+          .once();
+
+      // Si el profesor no existe, mostrar mensaje de error
+      if (event.snapshot.value == null) {
+        if (mounted) {
+          snackBarAviso(context, "Usuario no registrado");
+        }
+      } else {
+        Map data = event.snapshot.value as Map;
+        var profesorId = data.keys.first;
+        var profesorData = data[profesorId];
+
+        var hashHex = await _generarHash(profesorData["salt"], password);
+        // Verificar la contraseña
+        if (profesorData["pass"] == hashHex) {
+          if (mounted) {
+            snackBarExito(
+              context,
+              profesorData["director"]
+                  ? "Ha iniciado sesion correctamente, rol: Director"
+                  : "Ha iniciado sesion correctamente, rol: Profesor",
+            );
+            context.read<ProfesorHolder>().setProfesor(
+              Profesor.fromMap(
+                profesorId,
+                Map<dynamic, dynamic>.from(profesorData),
+              ),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainMenuProfe()),
+            );
+          }
+        } else {
+          if (mounted) {
+            snackBarAviso(context, "Contraseña incorrecta");
+          }
+        }
       }
     }
   }

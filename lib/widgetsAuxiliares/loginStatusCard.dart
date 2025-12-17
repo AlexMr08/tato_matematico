@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 06/12/2025
+/// * **Último cambio:** Tarjeta con icono que cambia para dar feedback en el login
+///
+
 /// Enum compartido para el estado del login.
 enum EstadoLogin { normal, exito, error }
 

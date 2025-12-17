@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -122,7 +122,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                               Navigator.of(context).pop(true);
                             }
                           },
-                          icono: Icon(Icons.add),
+                          icono: Icon(Icons.add), onEstadisticasTap: () {  },
                         );
                       },
                     ),
@@ -447,7 +447,7 @@ class _AgregarClaseState extends State<AgregarClase> {
                           );
                         });
                       },
-                      icono: Icon(Icons.remove_circle),
+                      icono: Icon(Icons.remove_circle), onEstadisticasTap: () {  },
                     );
                   },
                 ),

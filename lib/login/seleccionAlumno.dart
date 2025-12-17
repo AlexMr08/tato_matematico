@@ -1,15 +1,15 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/datos/clase.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
-import 'package:tato_matematico/login/AlumnoLoginSecuencia.dart';
-import 'package:tato_matematico/login/alumnoLogin.dart';
-import 'package:tato_matematico/login/LoginConImagen.dart';
+import 'package:tato_matematico/login/alumnoLoginSecuencia.dart';
+import 'package:tato_matematico/login/alumnoLoginAlfanumerica.dart';
+import 'package:tato_matematico/login/alumnoLoginImagen.dart';
 
 /// **Nombre de la Clase: `SeleccionAlumno`**
 ///
@@ -18,9 +18,9 @@ import 'package:tato_matematico/login/LoginConImagen.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 07/12/2025
-/// * **Último cambio:** Se ha hecho cambios en el diseño para adaptarlo a moviles
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Cambios de Calidad
 ///
 
 class SeleccionAlumno extends StatefulWidget {
@@ -137,7 +137,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
                                   setState(() {
                                     if (tipo == "seleccionImagen") {
                                       navegar(
-                                        LoginConImagen(alumnoId: alumno.id),
+                                        alumnoLoginImagen(alumnoId: alumno.id),
                                         context,
                                       );
                                     } else if (tipo == "secuenciaImagenes") {
@@ -148,7 +148,7 @@ class _SeleccionAlumnoState extends State<SeleccionAlumno> {
                                         context,
                                       );
                                     } else if (tipo == "alfanumerica") {
-                                      navegar(AlumnoLogIn(), context);
+                                      navegar(AlumnoLoginAlfanumerica(), context);
                                     }
                                   });
                                 }
@@ -240,11 +240,11 @@ class GridAlumnos extends StatelessWidget {
             context.read<AlumnoHolder>().setAlumno(alumno);
             cargarTipoLogin(alumno.id).then((tipo) {
               if (tipo == "seleccionImagen") {
-                navegar(LoginConImagen(alumnoId: alumno.id), context);
+                navegar(alumnoLoginImagen(alumnoId: alumno.id), context);
               } else if (tipo == "secuenciaImagenes") {
                 navegar(AlumnoLoginSecuencia(alumnoId: alumno.id), context);
               } else if (tipo == "alfanumerica") {
-                navegar(AlumnoLogIn(), context);
+                navegar(AlumnoLoginAlfanumerica(), context);
               }
             });
           },

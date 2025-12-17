@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/clase.dart';
-import 'package:tato_matematico/edicion/editarClaseV2.dart';
+import 'package:tato_matematico/edicion/editarClase.dart';
 import 'package:tato_matematico/edicion/profesorEditarContrasena.dart';
 import 'package:tato_matematico/datos/profesor.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';
@@ -111,7 +111,11 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
                   clipBehavior: Clip.hardEdge,
                   child: GestureDetector(
                     onTap: () {
-                      _mostrarMenuOrigen(context, widget.profesor, propio: widget.propio);
+                      _mostrarMenuOrigen(
+                        context,
+                        widget.profesor,
+                        propio: widget.propio,
+                      );
                     },
                     child: foto,
                   ),

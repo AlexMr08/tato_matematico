@@ -1,47 +1,52 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 
-class AjustesJuegoLandscape extends StatefulWidget {
-  final Juego2 juego;
-  const AjustesJuegoLandscape({super.key, required this.juego});
+import '../../datos/juego.dart';
+
+/// **Nombre de la Clase: `Juego2Ajustes**
+///
+/// **Descripción:** Clase con el widget de ajustes del juego 2
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 12/12/2025
+/// * **Último cambio:** Se ha cambiado el layout y la llamada al metodo de guardado
+///
+
+class Juego2Ajustes extends StatefulWidget {
+  final Juego juego;
+  const Juego2Ajustes({super.key, required this.juego});
 
   @override
-  State<AjustesJuegoLandscape> createState() => _AjustesJuegoLandscapeState();
+  State<Juego2Ajustes> createState() => _Juego2AjustesState();
 }
 
-class _AjustesJuegoLandscapeState extends State<AjustesJuegoLandscape> {
+class _Juego2AjustesState extends State<Juego2Ajustes> {
   // Estados
   late int _rangoSeleccionado;
   late bool _ordenSeleccionado;
   late int _cantidadPreguntas;
   late String _temaSeleccionado;
   late Alumno alum;
+  late Juego2 juego2;
 
   @override
   void initState() {
     super.initState();
-    _rangoSeleccionado = widget.juego.max;
-    _ordenSeleccionado = widget.juego.ordenDescendente;
-    _cantidadPreguntas = widget.juego.cantidad;
-    _temaSeleccionado = widget.juego.tipoImagenes;
-  }
-
-  void guardarAjustes(){
-    var dbRef = FirebaseDatabase.instance.ref().child("tato/juegos/${alum.id}/juego2");
-    dbRef.update({"max": _rangoSeleccionado});
-    dbRef.update({"min": 0});
-    dbRef.update({"cantidad": _cantidadPreguntas});
-    dbRef.update({"ordenDescendente": _ordenSeleccionado});
-    dbRef.update({"tipoImagenes": _temaSeleccionado});
-    dbRef.update({"imagenes": _temaSeleccionado != "numeros"});
-    
+    juego2 = widget.juego as Juego2;
+    _rangoSeleccionado = juego2.max;
+    _ordenSeleccionado = juego2.ordenDescendente;
+    _cantidadPreguntas = juego2.cantidad;
+    _temaSeleccionado = juego2.tipoImagenes;
   }
 
   @override
@@ -56,9 +61,16 @@ class _AjustesJuegoLandscapeState extends State<AjustesJuegoLandscape> {
     return ScaffoldAlumno(
       posicion: pos,
       alumno: alum,
-      textoCabecera: '',
+      textoCabecera: 'Ajustes - juego 2',
       onVolver: () {
-        guardarAjustes();
+        juego2.guardarAjustes(
+          idAlumno: alum.id,
+          rango: _rangoSeleccionado,
+          cantidad: _cantidadPreguntas,
+          tema: _temaSeleccionado,
+          dbRef: FirebaseDatabase.instance.ref(),
+          orden: _ordenSeleccionado,
+        );
         Navigator.pop(context);
       },
       onAjustes: () {},
@@ -204,7 +216,7 @@ class _AjustesJuegoLandscapeState extends State<AjustesJuegoLandscape> {
                   children: [
                     _itemTema("car", "Coche", Icons.directions_car, true),
                     const SizedBox(width: 10),
-                    _itemTema("orange", "Naranja", Icons.circle, true),
+                    _itemTema("flower", "Flor", Icons.circle, true),
                     const SizedBox(width: 10),
                     _itemTema("turtle", "Tortuga", Icons.bug_report, true),
                   ],
@@ -222,40 +234,67 @@ class _AjustesJuegoLandscapeState extends State<AjustesJuegoLandscape> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ZONA SUPERIOR (Intervalos + Orden)
+        // ZONA SUPERIOR (Intervalos + Orden y Cantidad)
         Expanded(
-          flex: 1,
+          flex:
+              1, // Ajusta este flex si quieres que la parte de arriba sea más alta
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // IZQUIERDA: Intervalo de números (4 items)
               Expanded(
-                flex: 3,
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _titulo("Intervalo de números"),
                     const SizedBox(height: 10),
                     Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
                         children: [
-                          _itemIntervalo(10, "0-10", Icons.filter_1, false),
-                          _espacio(),
-                          _itemIntervalo(20, "0-20", Icons.filter_2, false),
-                          _espacio(),
-                          _itemIntervalo(
-                            100,
-                            "0-100",
-                            Icons.filter_9_plus,
-                            false,
+                          // FILA 1: Envuelta en Expanded para ocupar el 50% de la altura
+                          Expanded(
+                            child: Row(
+                              children: [
+                                _itemIntervalo(
+                                  10,
+                                  "0-10",
+                                  Icons.filter_1,
+                                  false,
+                                ),
+                                const SizedBox(width: 10), // Espacio horizontal
+                                _itemIntervalo(
+                                  20,
+                                  "0-20",
+                                  Icons.filter_2,
+                                  false,
+                                ),
+                              ],
+                            ),
                           ),
-                          _espacio(),
-                          _itemIntervalo(
-                            1000,
-                            "0-1000",
-                            Icons.all_inclusive,
-                            false,
+
+                          const SizedBox(
+                            height: 10,
+                          ), // Espacio vertical entre filas
+                          // FILA 2: Envuelta en Expanded para ocupar el otro 50%
+                          Expanded(
+                            child: Row(
+                              children: [
+                                _itemIntervalo(
+                                  100,
+                                  "0-100",
+                                  Icons.filter_9_plus,
+                                  false,
+                                ),
+                                const SizedBox(width: 10), // Espacio horizontal
+                                _itemIntervalo(
+                                  1000,
+                                  "0-1000",
+                                  Icons.all_inclusive,
+                                  false,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -265,91 +304,95 @@ class _AjustesJuegoLandscapeState extends State<AjustesJuegoLandscape> {
               ),
 
               const SizedBox(width: 40),
-              // DERECHA: Orden (2 items)
+
+              // DERECHA: Orden y Cantidad
               Expanded(
                 flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // SECCIÓN ORDEN
                     _titulo("Orden"),
                     const SizedBox(height: 10),
                     Expanded(
+                      flex: 1,
                       child: Row(
                         children: [
                           _itemOrden(
                             false,
-                            "menor a mayor",
+                            "Menor a mayor",
                             Icons.trending_down,
                             false,
                           ),
-                          _espacio(),
+                          const SizedBox(width: 10),
                           _itemOrden(
                             true,
-                            "mayor a menor",
+                            "Mayor a menor",
                             Icons.trending_up,
                             false,
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
 
-        const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-        // ZONA CENTRAL (Stepper)
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _titulo("Número de opciones"),
-              const SizedBox(height: 10),
-              Expanded(
-                child: Row(
-                  children: [
-                    _botonStepper(
-                      Icons.remove,
-                      "MENOS",
-                      () {
-                        if (_cantidadPreguntas > 2) {
-                          setState(() => _cantidadPreguntas--);
-                        }
-                      },
-                      false,
-                      isEnabled: _cantidadPreguntas > 2,
-                    ),
-                    const SizedBox(width: 20),
-                    TarjetaJuego(
-                      label: _cantidadPreguntas.toString(),
-                      isButton: false,
-                      isEnabled: true,
-                      onTap: () {},
-                      colorFondo: Colors.white,
-                      imagenes: _temaSeleccionado != "numeros",
-                      tipoImagen: _temaSeleccionado,
-                      numero: _cantidadPreguntas,
-                      tamano: 120,
-                      radio: 20,
-                    ),
-                    const SizedBox(width: 20),
-                    _botonStepper(
-                      Icons.add,
-                      "MAS",
-                      () {
-                        if (_cantidadPreguntas < _rangoSeleccionado &&
-                            _cantidadPreguntas < 12) {
-                          setState(() => _cantidadPreguntas++);
-                        }
-                      },
-                      false,
-                      isEnabled:
-                          _cantidadPreguntas < _rangoSeleccionado &&
-                          _cantidadPreguntas < 12,
+                    // SECCIÓN CANTIDAD
+                    Expanded(
+                      flex: 2, // Le damos más altura a la sección del stepper
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _titulo("Número de opciones"),
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                _botonStepper(
+                                  Icons.remove,
+                                  "MENOS",
+                                  () {
+                                    if (_cantidadPreguntas > 2) {
+                                      setState(() => _cantidadPreguntas--);
+                                    }
+                                  },
+                                  false,
+                                  isEnabled: _cantidadPreguntas > 2,
+                                ),
+                                const SizedBox(width: 20),
+                                TarjetaJuego(
+                                  label: _cantidadPreguntas.toString(),
+                                  isButton: false,
+                                  isEnabled: true,
+                                  onTap: () {},
+                                  colorFondo: Colors.white,
+                                  imagenes: _temaSeleccionado != "numeros",
+                                  tipoImagen: _temaSeleccionado,
+                                  numero: _cantidadPreguntas,
+                                  tamano: 120,
+                                  radio: 20,
+                                ),
+                                const SizedBox(width: 20),
+                                _botonStepper(
+                                  Icons.add,
+                                  "MAS",
+                                  () {
+                                    if (_cantidadPreguntas <
+                                            _rangoSeleccionado &&
+                                        _cantidadPreguntas < 12) {
+                                      setState(() => _cantidadPreguntas++);
+                                    }
+                                  },
+                                  false,
+                                  isEnabled:
+                                      _cantidadPreguntas < _rangoSeleccionado &&
+                                      _cantidadPreguntas < 12,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -372,17 +415,17 @@ class _AjustesJuegoLandscapeState extends State<AjustesJuegoLandscape> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _itemTema("numeros", "numeros", Icons.onetwothree, false),
-                    SizedBox(width: 8),
+                    _itemTema("numeros", "Números", Icons.onetwothree, false),
+                    const SizedBox(width: 8),
                     _itemTema("apple", "Manzana", Icons.apple, false),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     _itemTema("ball", "Balón", Icons.sports_soccer, false),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     _itemTema("turtle", "Tortuga", Icons.bug_report, false),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     _itemTema("car", "Coche", Icons.directions_car, false),
-                    SizedBox(width: 8),
-                    _itemTema("orange", "Naranja", Icons.circle, false),
+                    const SizedBox(width: 8),
+                    _itemTema("flower", "Flor", Icons.circle, false),
                   ],
                 ),
               ),

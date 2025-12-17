@@ -2,32 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/login/loginImagenService.dart';
-import 'package:tato_matematico/pictograma.dart';
+import 'package:tato_matematico/datos/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
 import 'package:tato_matematico/gamesMenu.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/loginStatusCard.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Cambios de Calidad
+///
 /// Pantalla de inicio de sesión mediante la selección de una imagen.
 ///
 /// En esta pantalla se muestra un grid de imágenes y el alumno debe pulsar
 /// la imagen correcta para acceder a los juegos.
 ///
 /// Se utiliza [LoginImagenService] para generar el grid de imágenes.
-class LoginConImagen extends StatefulWidget {
+class alumnoLoginImagen extends StatefulWidget {
   final String alumnoId;
 
-  const LoginConImagen({super.key, required this.alumnoId});
+  const alumnoLoginImagen({super.key, required this.alumnoId});
 
   @override
-  State<LoginConImagen> createState() => _LoginConImagenState();
+  State<alumnoLoginImagen> createState() => _alumnoLoginImagenState();
 }
 
-class _LoginConImagenState extends State<LoginConImagen> {
+class _alumnoLoginImagenState extends State<alumnoLoginImagen> {
   final _service = LoginImagenService();
   final db = FirebaseDatabase.instance.ref();
 
@@ -116,27 +121,27 @@ class _LoginConImagenState extends State<LoginConImagen> {
   /// Si se selecciona correcta, se navega al menú de juegos y se muestra feedback.
   /// Si se selecciona incorrecta, se deselecciona la imagen y se muestra feedback.
   void _intentarLogin() {
-    if (_idSeleccionada == null) return;
+    if (_idSeleccionada != null) {
+      if (_idSeleccionada == _idCorrecta) {
+        // ÉXITO
+        setState(() => _estado = EstadoLogin.exito);
 
-    if (_idSeleccionada == _idCorrecta) {
-      // ÉXITO
-      setState(() => _estado = EstadoLogin.exito);
-
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const GamesMenu()),
-          );
-        }
-      });
-    }
-    else {
-      // ERROR
-      setState(() {
-        _estado = EstadoLogin.error;
-        _idSeleccionada = null;
-      });
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const GamesMenu()),
+            );
+          }
+        });
+      }
+      else {
+        // ERROR
+        setState(() {
+          _estado = EstadoLogin.error;
+          _idSeleccionada = null;
+        });
+      }
     }
   }
 

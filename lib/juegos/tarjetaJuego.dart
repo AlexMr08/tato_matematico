@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
+import '../auxFunc.dart';
+
 /// **Nombre de la Clase: `TarjetaJuego`**
 ///
 /// **Descripción:** Clase que muestra los botones de los juegos.
@@ -80,6 +82,7 @@ class TarjetaJuego extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 48,
                                 fontWeight: FontWeight.bold,
+                                color: getTextColorForBackground(colorFondo)
                               ),
                               maxLines: 1,
                               minFontSize: 8,

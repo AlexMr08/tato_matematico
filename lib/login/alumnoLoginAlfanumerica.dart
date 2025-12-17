@@ -1,23 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/gamesMenu.dart';
 import 'dart:io';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
-class AlumnoLogIn extends StatefulWidget {
-  const AlumnoLogIn({super.key});
+/// **Metadatos de Control:**
+/// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
+/// * **Última modificación por:** Joaquin Salas Castillo
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Cambiada interfaz y añadida documentacion
+///
+/// Pantalla de inicio de sesión para alumnos mediante contraseña alfanumérica.
+///
+/// Verifica la autenticidad comparando el hash de la entrada con el guardado en Firebase.
+class AlumnoLoginAlfanumerica extends StatefulWidget {
+  const AlumnoLoginAlfanumerica({super.key});
   @override
-  State<AlumnoLogIn> createState() => _AlumnoLogInState();
+  State<AlumnoLoginAlfanumerica> createState() => _AlumnoLoginAlfanumericaState();
 }
 
-class _AlumnoLogInState extends State<AlumnoLogIn> {
+class _AlumnoLoginAlfanumericaState extends State<AlumnoLoginAlfanumerica> {
   late Alumno alumno;
   final TextEditingController passwordController = TextEditingController();
 
@@ -29,7 +37,13 @@ class _AlumnoLogInState extends State<AlumnoLogIn> {
   - Si se introduce la contrasena correcta, se iniciara la sesion del alumno.
    */
 
-  // Función para autenticar al profesor en la base de datos
+  /// Verifica la autenticación del alumno con Firebase.
+  ///
+  /// Recupera el hash almacenado en el nodo `tato/login/$id/alfanumerica` y lo
+  /// compara con el hash de la entrada [password].
+  ///
+  /// * [id]: Identificador único del alumno.
+  /// * [password]: Contraseña en texto plano introducida por el usuario.
   void autenticacionAlumno(String id, String password) async {
     // Validar que los campos no estén vacíos
     if (password.isEmpty) {

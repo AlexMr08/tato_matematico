@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/datos/clase.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -147,6 +147,7 @@ class _EditarClaseState extends State<EditarClase> {
                                   });
                             }
                           },
+                          onEstadisticasTap: () {},
                           icono: Icon(Icons.add),
                         );
                       },
@@ -366,7 +367,7 @@ class _EditarClaseState extends State<EditarClase> {
                                     );
                                   });
                             },
-                            icono: Icon(Icons.remove_circle),
+                            icono: Icon(Icons.remove_circle), onEstadisticasTap: () {},
                           );
                         },
                       ),
@@ -569,7 +570,7 @@ class _EditarClaseState extends State<EditarClase> {
                                 icono: const Icon(
                                   Icons.delete,
                                   color: Colors.red,
-                                ),
+                                ), onEstadisticasTap: () {},
                               );
                             },
                           ),

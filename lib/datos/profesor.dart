@@ -12,7 +12,7 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
 /// * **Fecha de modificación:** 02/12/2025
 /// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
 ///
@@ -64,7 +64,7 @@ class Profesor {
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) return null;
+    if (imagenLocal.isEmpty) _cachedImage = null;
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
@@ -115,29 +115,24 @@ class Profesor {
   }
 
   Future<File?> obtenerImagen(Directory tempDir) async {
-    // A. Si ya está en RAM, devolverla
-    if (foto != null) return foto;
-
     // B. Si hay ruta local, verificar si existe el archivo
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
         foto = archivoDisco;
-        return foto;
+      }
+    } else {
+      await descargarImagen(tempDir);
+
+      // Verificar si se descargó bien
+      if (imagenLocal.isNotEmpty) {
+        final archivoRecienDescargado = File(imagenLocal);
+        if (await archivoRecienDescargado.exists()) {
+          foto = archivoRecienDescargado;
+        }
       }
     }
-
-    await descargarImagen(tempDir);
-
-    // Verificar si se descargó bien
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
-    return null;
+    return foto;
   }
 
   @deprecated

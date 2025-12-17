@@ -1,6 +1,18 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
+
+/// **Nombre de la Clase: `auxFunc`**
+///
+/// **Descripción:** Archivo con funciones que tienen distintas funcionalidades.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se han hecho cambios de calidad
+///
 
 // --- Función de utilidad para el color del texto ---
 Color getTextColorForBackground(Color backgroundColor) {
@@ -11,11 +23,9 @@ String obtenerSemana() {
   DateTime now = DateTime.now();
 
   DateTime lunes = now.subtract(Duration(days: now.weekday - 1));
-  DateTime domingo = lunes.add(const Duration(days: 6));
 
   String f(int n) => n.toString().padLeft(2, '0');
-  String inicio = "${f(lunes.day)}-${f(lunes.month)}-${lunes.year}";
-  String fin = "${f(domingo.day)}/${f(domingo.month)}/${domingo.year}";
+  String inicio = "${(lunes.year)}-${f(lunes.month)}-${f(lunes.day)}";
 
   return inicio;
 }
@@ -37,7 +47,8 @@ PosicionBarra getPosicionBarra(int? numBarra) {
 /// @param context El contexto de la aplicación.
 /// @param titulo El título del diálogo.
 /// @param contenido El contenido del diálogo.
-/// @description Muestra un diálogo de confirmación con dos opciones: "Sí" y "No". Nos hemos apoyado en gemini para hacerla responsiva
+/// @description Muestra un diálogo de confirmación con dos opciones: "Sí" y "No".
+/// Nos hemos apoyado en gemini para hacerla responsiva
 ///
 
 Future<bool?> mostrarDialogoSiNoAlumnoV2(
@@ -259,9 +270,15 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize:
-                            MainAxisSize.min, // Importante para el scroll
+                        mainAxisSize: MainAxisSize.min,
                         children: [
+                          Text(
+                            "🥳🥳Lo has conseguido🥳🥳",
+                            style: TextStyle(
+                              fontSize: sizeEmoji,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           Text(
                             titulo,
                             style: TextStyle(
@@ -280,9 +297,9 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: esMovil ? 30 : 60),
+                          SizedBox(height: esMovil ? 16 : 24),
                           Row(
-                            spacing: 8,
+                            spacing: 16,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Expanded(
@@ -371,7 +388,7 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
                             MainAxisSize.min, // Importante para el scroll
                         children: [
                           Text(
-                            "🥳🥳🥳🥳",
+                            "🥳🥳Ya estás mas cerca🥳🥳",
                             style: TextStyle(
                               fontSize: sizeEmoji,
                               fontWeight: FontWeight.bold,
@@ -395,9 +412,9 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: esMovil ? 30 : 60),
+                          SizedBox(height: esMovil ? 16 : 24),
                           Row(
-                            spacing: 8,
+                            spacing: 16,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Expanded(
@@ -493,13 +510,18 @@ String obtenerAnoAcademico() {
   final now = DateTime.now();
   final int currentYear = now.year;
   final int currentMonth = now.month;
+  String anoAcademico;
 
   // Consideramos que el curso empieza en Septiembre
   if (currentMonth >= 9) {
-    return "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
+    anoAcademico =
+        "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
   } else {
-    return "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
+    anoAcademico =
+        "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
   }
+
+  return anoAcademico;
 }
 
 void snackBarError(BuildContext context, String mensaje) {

@@ -2,13 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/ajustes/ajustes_generales_screen.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
-import 'package:tato_matematico/juegos/juego2/juego2.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
+import 'package:tato_matematico/estadisticasAlumno.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Screen.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/juegos/juego3/juego3Screen.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
+
+
+/// **Nombre de la Clase: `GamesMenu**
+///
+/// **Descripción:** clase que muestra el menu principal del alumno
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha añadido un mapa de juegos
+///
 
 class GamesMenu extends StatefulWidget {
   const GamesMenu({super.key});
@@ -18,74 +32,21 @@ class GamesMenu extends StatefulWidget {
 
 class _GamesMenuState extends State<GamesMenu> {
   late Alumno alumno;
-  late final List<Juego> listaJuegos = [
-    Juego(
-      id: 'juego1',
-      nombre: 'Juego 1',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego2(
-      min: 1,
-      max: 20,
-      cantidad: 12,
-      ordenDescendente: true,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego(
-      id: 'juego3',
-      nombre: 'Juego 3',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego(
-      id: 'juego4',
-      nombre: 'Juego 4',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-  ];
+  late Map<String, Juego> listaJuegos;
 
   @override
   Widget build(BuildContext context) {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
 
-    if (alumnoHolder.alumno == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (navigator.canPop()) navigator.pop();
-      });
-      return const SizedBox.shrink();
+    if (alumnoHolder.alumno == null || !alumnoHolder.areGamesLoaded) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
     alumno = alumnoHolder.alumno!;
+    listaJuegos = alumnoHolder.listaJuegos;
 
     PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
-
-    if (alumnoHolder.isLoaded == false || alumnoHolder.juego2 == null) {
-      return ScaffoldAlumno(
-        alumno: alumno,
-        posicion: posicionBarra,
-        textoCabecera: "Menu principal",
-        hasEstadisticas: true,
-        hasAjustes: true,
-        onVolver: () {},
-        onAjustes: () {},
-        onEstadisticas: () {},
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    listaJuegos[1] = alumnoHolder.juego2!;
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -111,71 +72,81 @@ class _GamesMenuState extends State<GamesMenu> {
       onAjustes: () {
         navegar(const AjustesGeneralesScreen(), context);
       },
-      onEstadisticas: () {},
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
+      onEstadisticas: () {
+        navegar(EstadisticasAlumno(), context);
+      },
+      child:
+          alumnoHolder.areGamesLoaded &&
+              alumnoHolder.listaJuegos["juego2"] != null
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
                   Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[0],
-                      onTap: () {
-                        navegar(Juego1Screen(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: JuegoCard(
-                      juego: alumnoHolder.juego2!,
-                      onTap: () {
-                        navegar(
-                          Juego2Screen(
-                            juego: alumnoHolder.juego2!,
-                            alumno: alumno,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego1"]!,
+                            onTap: () {
+                              navegar(Juego1Screen(), context);
+                            },
+                            color: alumno.colorBotones,
                           ),
-                          context,
-                        );
-                      },
-                      color: alumno.colorBotones,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego2"]!,
+                            onTap: () {
+                              navegar(
+                                Juego2Screen(
+                                  juego: listaJuegos["juego2"]!,
+                                  alumno: alumno,
+                                ),
+                                context,
+                              );
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego3"]!,
+                            onTap: () {
+                              navegar(
+                                Juego3Screen(
+                                  juego: listaJuegos["juego3"]!,
+                                  alumno: alumno,
+                                ),
+                                context,
+                              );
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego4"]!,
+                            onTap: null,
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[2],
-                      onTap: () {
-                        navegar(Placeholder(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[3],
-                      onTap: () {
-                        navegar(Placeholder(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

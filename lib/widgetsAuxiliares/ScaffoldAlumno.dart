@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // <--- Importante para SystemUiOverlayStyle
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 
 enum PosicionBarra { arriba, abajo, izquierda, derecha }
 
-class ScaffoldAlumno extends StatelessWidget {
+/// **Nombre de la Clase: `AlumnoScaffold`**
+///
+/// **Descripción:** Clase que genera el Scaffold común para las pantallas del alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Convertido a StatefulWidget y arreglado color nav bar sistema
+///
+
+class ScaffoldAlumno extends StatefulWidget {
   final Widget child;
   final PosicionBarra posicion;
   final Alumno alumno;
@@ -31,46 +44,78 @@ class ScaffoldAlumno extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final barra = _construirBarra(context);
+  State<ScaffoldAlumno> createState() => _ScaffoldAlumnoState();
+}
 
-    Widget body;
-    switch (posicion) {
-      case PosicionBarra.arriba:
-        body = Column(children: [barra, Expanded(child: child)]);
-        break;
-      case PosicionBarra.abajo:
-        body = Column(children: [Expanded(child: child), barra]);
-        break;
-      case PosicionBarra.izquierda:
-        body = Row(children: [barra, Expanded(child: child)]);
-        break;
-      case PosicionBarra.derecha:
-        body = Row(children: [Expanded(child: child), barra]);
-        break;
+class _ScaffoldAlumnoState extends State<ScaffoldAlumno> {
+  @override
+  Widget build(BuildContext context) {
+
+    var posicionFinal = widget.posicion;
+    if (MediaQuery.of(context).size.width < 600) {
+      posicionFinal = PosicionBarra.arriba;
     }
 
-    final Color appBarColor =
-        alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+    final barra = _construirBarra(context, posicionFinal);
+
+    Widget body;
+    switch (posicionFinal) {
+      case PosicionBarra.arriba:
+        body = Column(
+          children: [
+            barra,
+            Expanded(child: widget.child),
+          ],
+        );
+        break;
+      case PosicionBarra.abajo:
+        body = Column(
+          children: [
+            Expanded(child: widget.child),
+            barra,
+          ],
+        );
+        break;
+      case PosicionBarra.izquierda:
+        body = Row(
+          children: [
+            barra,
+            Expanded(child: widget.child),
+          ],
+        );
+        break;
+      case PosicionBarra.derecha:
+        body = Row(
+          children: [
+            Expanded(child: widget.child),
+            barra,
+          ],
+        );
+        break;
+    }
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: appBarColor,
-        foregroundColor: getTextColorForBackground(appBarColor),
+        backgroundColor:
+            widget.alumno.colorBarraNav ??
+            Theme.of(context).colorScheme.primary,
+        foregroundColor: getTextColorForBackground(
+          widget.alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary,
+        ),
         title: Text(
-          textoCabecera,
+          widget.textoCabecera,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       backgroundColor:
-          alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
+          widget.alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
       body: PopScope(
         canPop: false,
         onPopInvokedWithResult: (bool didPop, Object? result) async {
           if (didPop) return;
-          onVolver();
+          widget.onVolver();
         },
         child: SafeArea(child: body),
       ),
@@ -78,37 +123,42 @@ class ScaffoldAlumno extends StatelessWidget {
     );
   }
 
-  Widget _construirBarra(BuildContext context) {
+  Widget _construirBarra(BuildContext context, PosicionBarra posicionActual) {
     final bool esHorizontal =
-        posicion == PosicionBarra.arriba || posicion == PosicionBarra.abajo;
+        posicionActual == PosicionBarra.arriba ||
+        posicionActual == PosicionBarra.abajo;
 
     final Color navColor =
-        alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
+        widget.alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
 
     final List<Widget> botones = [
       _BotonNav(
         icon: Icons.arrow_back,
         label: "Volver",
-        onTap: onVolver,
+        onTap: widget.onVolver,
         color: navColor,
       ),
-      if (hasAjustes)
-        _BotonNav(
-          icon: Icons.settings,
-          label: "Ajustes",
-          onTap: onAjustes,
-          color: navColor,
-        ),
-      if (hasEstadisticas)
-        _BotonNav(
-          icon: Icons.bar_chart,
-          label: "Estadísticas",
-          onTap: onEstadisticas,
-          color: navColor,
-        ),
+      widget.hasAjustes
+          ? _BotonNav(
+              icon: Icons.settings,
+              label: "Ajustes",
+              onTap: widget.onAjustes,
+              color: navColor,
+            )
+          : const SizedBox(),
+      widget.hasEstadisticas
+          ? _BotonNav(
+              icon: Icons.bar_chart,
+              label: "Estadísticas",
+              onTap: widget.onEstadisticas,
+              color: navColor,
+            )
+          : const SizedBox(),
     ];
 
     return Container(
+      // Si es horizontal, ancho infinito. Si es vertical, ancho fijo (100).
+      // Si es horizontal, alto fijo (90). Si es vertical, alto infinito.
       width: esHorizontal ? double.infinity : 100,
       height: esHorizontal ? 90 : double.infinity,
       color: navColor,

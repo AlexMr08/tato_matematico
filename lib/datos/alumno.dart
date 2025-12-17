@@ -5,6 +5,18 @@ import 'dart:typed_data';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
+/// **Nombre de la Clase: `Alumno`**
+///
+/// **Descripción:** clase que representa a un alumno en el sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se han añadido los campos para los ajustes de color y sonido
+///
+
 class Alumno {
   String id;
   String nombre;
@@ -14,14 +26,22 @@ class Alumno {
   Color? _colorBarraNav;
   Color? _colorBotones;
   Color? _colorSeleccion;
+  Color? _colorContenedor;
   bool _volverDerecha = false;
   int? posicionBarra;
   File? foto;
-  bool permisoAjustesJuego1;
+
   bool permisoEstadisticasJuego1;
   bool mostrarPuntuacionJuego1;
 
-  // Ajustes de sonido Juego 1 (antiguos)
+  bool permisoAjustesJuego1;
+  bool permisoAjustesJuego2;
+  bool permisoAjustesJuego3;
+  bool permisoAjustesJuego4;
+  bool permisoColor;
+  bool permisoSonido;
+
+  // Ajustes de sonido Juego 1
   String? vozJuego1;
   double ttsRateJuego1;
   double ttsVolumeJuego1;
@@ -41,7 +61,7 @@ class Alumno {
   double ttsRate;
   double ttsVolume;
   double ttsPitch;
-  
+
   Juego1Settings juego1Settings;
 
   Alumno({
@@ -52,6 +72,7 @@ class Alumno {
     Color? colorBarraNav,
     Color? colorBotones,
     Color? colorSeleccion,
+    Color? colorContenedor,
     this.permisoAjustesJuego1 = true,
     this.permisoEstadisticasJuego1 = true,
     this.mostrarPuntuacionJuego1 = true,
@@ -78,16 +99,38 @@ class Alumno {
     Juego1Settings? juego1Settings,
     volverDerecha,
     posicionBarra,
+    this.permisoAjustesJuego2 = true,
+    this.permisoAjustesJuego3 = true,
+    this.permisoAjustesJuego4 = true,
+    this.permisoColor = true,
+    this.permisoSonido = true,
+    // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
   }) : _imagen = imagen,
        juego1Settings =
            juego1Settings ??
            Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
-    if (volverDerecha != null) _volverDerecha = volverDerecha;
-    if (colorFondo != null) _colorFondo = colorFondo;
-    if (colorBarraNav != null) _colorBarraNav = colorBarraNav;
-    if (colorBotones != null) _colorBotones = colorBotones;
-    if (colorSeleccion != null) _colorSeleccion = colorSeleccion;
-    if (posicionBarra != null) this.posicionBarra = posicionBarra;
+    // El cuerpo del constructor permanece igual
+    if (volverDerecha != null) {
+      _volverDerecha = volverDerecha;
+    }
+    if (colorFondo != null) {
+      _colorFondo = colorFondo;
+    }
+    if (colorBarraNav != null) {
+      _colorBarraNav = colorBarraNav;
+    }
+    if (colorBotones != null) {
+      _colorBotones = colorBotones;
+    }
+    if (colorSeleccion != null) {
+      _colorSeleccion = colorSeleccion;
+    }
+    if (colorContenedor != null) {
+      _colorContenedor = colorContenedor;
+    }
+    if (posicionBarra != null) {
+      this.posicionBarra = posicionBarra;
+    }
   }
 
   String? get imagen => _imagen;
@@ -101,6 +144,12 @@ class Alumno {
 
   Color? get colorFondo => _colorFondo;
   set colorFondo(Color? color) => _colorFondo = color;
+
+  Color? get colorContenedor => _colorContenedor;
+
+  set colorContenedor(Color? color) {
+    _colorContenedor = color;
+  }
 
   bool get volverDerecha => _volverDerecha;
   set volverDerecha(bool value) => _volverDerecha = value;
@@ -123,7 +172,11 @@ class Alumno {
   }
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
-    Color? colorFondoLoc, colorBotonesLoc, colorNavLoc, colorSeleccionLoc;
+    Color? colorFondoLoc,
+        colorBotonesLoc,
+        colorNavLoc,
+        colorSeleccionLoc,
+        colorContenedorLoc;
     if (data['colorFondo'] != null) {
       final colorStr = data['colorFondo'] as String?;
       if (colorStr != null) colorFondoLoc = Color(int.parse(colorStr, radix: 16));
@@ -139,6 +192,14 @@ class Alumno {
     if (data['colorSeleccion'] != null) {
       final colorStr = data['colorSeleccion'] as String?;
       if (colorStr != null) colorSeleccionLoc = Color(int.parse(colorStr, radix: 16));
+    }
+
+    if (data['colorContenedor'] != null) {
+      final colorStr = data['colorContenedor'] as String?;
+      if (colorStr != null) {
+        int hex = int.parse(colorStr, radix: 16);
+        colorContenedorLoc = Color(hex);
+      }
     }
 
     Juego1Settings? juego1Settings;
@@ -160,6 +221,7 @@ class Alumno {
       colorBarraNav: colorNavLoc,
       colorBotones: colorBotonesLoc,
       colorSeleccion: colorSeleccionLoc,
+      colorContenedor: colorContenedorLoc,
       posicionBarra: data['posicionBarra'],
       permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
       permisoEstadisticasJuego1: data['permisoEstadisticasJuego1'] ?? true,
@@ -184,13 +246,19 @@ class Alumno {
       ttsVolume: (data['ttsVolume'] as num? ?? 1.0).toDouble(),
       ttsPitch: (data['ttsPitch'] as num? ?? 1.0).toDouble(),
       juego1Settings: juego1Settings,
+      permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
+      permisoAjustesJuego3: data['permisoAjustesJuego3'] ?? true,
+      permisoAjustesJuego4: data['permisoAjustesJuego4'] ?? true,
+      permisoColor: data['permisoColor'] ?? true,
+      permisoSonido: data['permisoSonido'] ?? true,
     );
   }
 
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) return null;
+    if (imagenLocal.isEmpty) _cachedImage = null;
+    // La versión FINAL añade el null-aware operator para inicializar una sola vez
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
@@ -230,25 +298,32 @@ class Alumno {
   }
 
   Future<File?> obtenerImagen(Directory tempDir) async {
-    if (foto != null) return foto;
+    // 1. Caché en RAM (File? foto)
+    File? res;
+    if (foto != null) {
+      res = foto;
+    }
 
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
         foto = archivoDisco;
-        return foto;
+      }
+    } else {
+      // 2. Descarga
+      await descargarImagen(tempDir);
+
+      if (imagenLocal.isNotEmpty) {
+        final archivoRecienDescargado = File(imagenLocal);
+        if (await archivoRecienDescargado.exists()) {
+          foto = archivoRecienDescargado;
+        }
       }
     }
 
-    await descargarImagen(tempDir);
-
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
+    return foto;
+  }
+}
 
     return null;
   }
@@ -401,16 +476,32 @@ class _AlumnViewCardState extends State<AlumnViewCard> {
   }
 }
 
+/// **Nombre de la Clase: `TeacherViewCard`**
+///
+/// **Descripción:** clase que gestiona la vista de un alumno en la perspectiva del profesor.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se ha añadido un boton para acceder a las estadisticas
+///
+
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
+  final VoidCallback onEstadisticasTap;
+  final bool verStats;
 
   const TeacherViewCard({
     super.key,
     required this.alumno,
     required this.onTap,
     required this.icono,
+    required this.onEstadisticasTap,
+    this.verStats = false,
   });
 
   @override
@@ -437,7 +528,24 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: IconButton(icon: widget.icono, onPressed: widget.onTap),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ?widget.verStats
+                ? IconButton(
+                    icon: const Icon(Icons.bar_chart),
+                    tooltip: 'Ver Estadísticas',
+                    onPressed: widget.verStats
+                        ? () {
+                            widget.onEstadisticasTap();
+                          }
+                        : null,
+                  )
+                : null,
+            IconButton(icon: widget.icono, onPressed: widget.onTap),
+          ],
+        ),
+
         onTap: null,
       ),
     );

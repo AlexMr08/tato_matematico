@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
 import 'package:tato_matematico/juegos/juego2/juego2State.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
@@ -19,18 +18,22 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 08/12/2025
-/// * **Último cambio:** Se ha mejorado la consistencia visual entre dispositivos
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha creado la vista del profesor para el juego 2
 ///
-class Juego2Screen extends StatefulWidget {
+class Juego2ScreenProfe extends StatefulWidget {
   final Juego juego;
   final Alumno alumno;
-  const Juego2Screen({super.key, required this.juego, required this.alumno});
+  const Juego2ScreenProfe({
+    super.key,
+    required this.juego,
+    required this.alumno,
+  });
   @override
-  State<Juego2Screen> createState() => _Juego2ScreenState();
+  State<Juego2ScreenProfe> createState() => _Juego2ScreenProfeState();
 }
 
-class _Juego2ScreenState extends State<Juego2Screen> {
+class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
   late Juego2State j2s;
   late Alumno alumno;
   late double size;
@@ -69,8 +72,6 @@ class _Juego2ScreenState extends State<Juego2Screen> {
     }
     alumno = alumnoHolder.alumno!;
 
-    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
-
     var colorTexto = alumno.colorFondo != null
         ? getTextColorForBackground(alumno.colorFondo!)
         : Theme.of(context).colorScheme.onSurface;
@@ -97,31 +98,9 @@ class _Juego2ScreenState extends State<Juego2Screen> {
     double radioBordeArriba = tamanoFichaArriba * 0.15;
     double radioBordeAbajo = tamanoFichaAbajo * 0.15;
 
-    return ScaffoldAlumno(
-      alumno: alumno,
-      textoCabecera: j2s.juego.ordenDescendente
-          ? "Coloca de mayor a menor"
-          : "Coloca de menor a mayor",
-      posicion: posicionBarra,
-      hasEstadisticas: false,
-      hasAjustes: true,
-      onVolver: () {
-        mostrarDialogoSiNoAlumnoV2(
-          context,
-          "Salir",
-          "¿Seguro que quieres salir?",
-        ).then((confirmed) {
-          if (confirmed == true) {
-            j2s.salir();
-            navigator.pop();
-          }
-        });
-      },
-      onAjustes: () {
-        navegar(AjustesJuegoLandscape(juego: widget.juego as Juego2), context);
-      },
-      onEstadisticas: () {},
-      child: Padding(
+    return ScaffoldComunV2(
+      titulo: "Juego 2 - Ordenar Números",
+      cuerpo: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
           spacing: 4,
@@ -139,7 +118,6 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                     style: TextStyle(
                       fontSize: fontSize,
                       fontWeight: FontWeight.bold,
-                      color: colorTexto,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -147,12 +125,17 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                     bool completado = index < j2s.repeticionesCompletadas;
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Icon(
-                        completado
-                            ? Icons.emoji_emotions_rounded
-                            : Icons.circle,
-                        color: colorTexto,
-                        size: fontSize,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black,
+                        ),
+                        child: Icon(
+                          completado
+                              ? Icons.emoji_emotions_rounded
+                              : Icons.circle,
+                          color: Colors.amberAccent,
+                        ),
                       ),
                     );
                   }),
@@ -202,11 +185,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
 
             Text(
               "Ordenados",
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.bold,
-                color: colorTexto,
-              ),
+              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
             ),
 
             // --- ZONA DE RESULTADO ---
@@ -214,7 +193,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
               decoration: BoxDecoration(
                 color: alumno.colorBotones,
                 border: Border.all(color: colorTexto, width: 2),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
               ),
               padding: const EdgeInsets.all(8.0),
               child: Wrap(
@@ -223,6 +202,10 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                 spacing: espaciado / 2,
                 runSpacing: 0,
                 children: j2s.numerosAbajo.map((numero) {
+                  bool? estaBien;
+                  if (numero != null) {
+                    estaBien = j2s.estaNumeroBienPosicionado(numero);
+                  }
                   return Column(
                     children: [
                       TarjetaJuego(
@@ -237,12 +220,8 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                             return "$numero, incorrecto";
                           }
                         }(),
-                        isButton:
-                            numero != null &&
-                            !j2s.estaNumeroBienPosicionado(numero),
-                        isEnabled:
-                            numero != null &&
-                            !j2s.estaNumeroBienPosicionado(numero),
+                        isButton: numero != null && !estaBien!,
+                        isEnabled: numero != null && !estaBien!,
                         onTap: () => numero != null
                             ? j2s.devolverNumero(
                                 j2s.numerosAbajo.indexOf(numero),
@@ -258,8 +237,8 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                       Icon(
                         numero != null
                             ? j2s.estaNumeroBienPosicionado(numero)
-                                  ? Icons.emoji_emotions_rounded
-                                  : Icons.report_gmailerrorred
+                                  ? Icons.check_circle
+                                  : Icons.cancel
                             : null,
                         color:
                             alumno.colorSeleccion ??
@@ -280,7 +259,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                 colorFondo: alumno.colorBotones,
                 onPressed: j2s.finalizado
                     ? () {
-                        bool fin = j2s.finalizarJuego();
+                        bool fin = j2s.finalizarJuego(profe: true);
                         if (fin) {
                           mostrarDialogoSalirReiniciarAlumnoV2(
                             context,
@@ -295,7 +274,6 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                               if (onValue) {
                                 j2s.reiniciarJuego();
                               } else {
-                                j2s.salir();
                                 navigator.pop();
                               }
                             }
@@ -314,7 +292,6 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                               if (onValue) {
                                 j2s.iniciarJuego();
                               } else {
-                                j2s.salir();
                                 navigator.pop();
                               }
                             }
