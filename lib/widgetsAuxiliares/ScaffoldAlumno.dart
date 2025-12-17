@@ -119,7 +119,7 @@ class _ScaffoldAlumnoState extends State<ScaffoldAlumno> {
         },
         child: SafeArea(child: body),
       ),
-      floatingActionButton: floatingActionButton, // Usar el nuevo parámetro aquí
+      floatingActionButton: widget.floatingActionButton, // Usar el nuevo parámetro aquí
     );
   }
 

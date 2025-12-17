@@ -1,12 +1,13 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
-import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/auxFunc.dart'; // Import raíz
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart'; // Para Juego1Settings
+import 'package:tato_matematico/juegos/juego_1/juego1State.dart'; 
+import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Import widgets
 
 class Juego1AjustesScreen extends StatefulWidget {
   const Juego1AjustesScreen({Key? key}) : super(key: key);
@@ -20,8 +21,8 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
 
   // Estado local de ajustes
   late int _numOpciones;
-  late int _rangoMax; // Simplificado a presets para UX: 10, 20, 50, 100
-  late int _rangoMin; // Normalmente 0 o 1
+  late int _rangoMax; // Presets para UX: 10, 20, 50, 100
+  late int _rangoMin;
 
   bool _isLoading = false;
 
@@ -48,9 +49,9 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
     try {
       await dbRef.child('tato/alumnos/${alumno.id}/juego1Settings').update(newSettings.toMap());
 
-      // Actualizar local
+      // Actualizar localmente al alumno en el Holder
       alumno.juego1Settings = newSettings;
-      // Forzar notifiación si fuera necesario con setAlumno, aunque aquí modificamos la referencia
+      // context.read<AlumnoHolder>().setAlumno(alumno); // Si tu holder tiene este método
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -74,7 +75,7 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
       posicion: posicionBarra,
       hasAjustes: false,
       hasEstadisticas: false,
-      onVolver: _guardar, // Guardar al salir
+      onVolver: _guardar, // Guardar automáticamente al salir
       onAjustes: () {},
       onEstadisticas: () {},
       child: _isLoading
@@ -86,7 +87,7 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
           children: [
 
             // --- SECCIÓN 1: RANGO DE NÚMEROS ---
-            _titulo("Rango de números (0 a X)"),
+            _titulo("Rango de números"),
             const SizedBox(height: 10),
             Expanded(
               flex: 2,
@@ -106,14 +107,14 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
             const SizedBox(height: 20),
 
             // --- SECCIÓN 2: CANTIDAD DE OPCIONES ---
-            _titulo("Cantidad de opciones en pantalla"),
+            _titulo("Cantidad de opciones"),
             const SizedBox(height: 10),
             Expanded(
               flex: 3,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Botón Menos
+                  // Botón Menos (Estilo Stepper)
                   _botonStepper(
                       Icons.remove,
                       "MENOS",
@@ -126,7 +127,7 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
 
                   const SizedBox(width: 20),
 
-                  // Visualizador
+                  // Visualizador (Usa TarjetaJuego visualmente)
                   TarjetaJuego(
                     label: _numOpciones.toString(),
                     isButton: false,

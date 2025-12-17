@@ -3,11 +3,9 @@ import 'dart:typed_data';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
 // Asegúrate de que esta ruta sea correcta en tu proyecto
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
-
-enum PosicionBarra { arriba, abajo, izquierda, derecha }
 
 /// **Nombre de la Clase: `Alumno`**
 ///

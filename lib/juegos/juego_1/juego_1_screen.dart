@@ -1,33 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/auxFunc.dart'; // Import correcto raíz
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Asegúrate que es el nuevo
-import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-
-// Definición de Settings (Mantenemos la clase aquí o en un archivo común)
-class Juego1Settings {
-  int numeroOpciones;
-  int numeroMayor;
-  int numeroMenor;
-
-  Juego1Settings({
-    required this.numeroOpciones,
-    required this.numeroMayor,
-    required this.numeroMenor,
-  });
-
-  Map<String, int> toMap() {
-    return {
-      'numeroOpciones': numeroOpciones,
-      'numeroMayor': numeroMayor,
-      'numeroMenor': numeroMenor,
-    };
-  }
-}
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Import correcto widgets
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart'; // Import correcto widgets
 
 class Juego1Screen extends StatefulWidget {
   const Juego1Screen({Key? key}) : super(key: key);
@@ -48,7 +27,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     if (_state == null) {
       final alumno = context.read<AlumnoHolder>().alumno;
       if (alumno != null) {
-        _state = Juego1State(alumno, onGameEnd: () {});
+        _state = Juego1State(alumno);
         _state!.init();
         _state!.addListener(() {
           if (mounted) setState(() {});
@@ -65,7 +44,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
   @override
   Widget build(BuildContext context) {
-    // Inicialización de dimensiones
+    // Inicialización de dimensiones (Idéntico a Juego 2)
     if (notInit) {
       size = MediaQuery.sizeOf(context).width;
       em = size < 600;
@@ -78,9 +57,9 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     final Color colorTexto = getTextColorForBackground(
         alumno.colorFondo ?? Theme.of(context).colorScheme.surface);
 
-    // Tamaños responsivos
+    // Tamaños responsivos consistentes con Juego 2
     double espaciado = em ? 12.0 : 24.0;
-    // Cálculo para que quepan las opciones configuradas
+    // Cálculo para que quepan las opciones (3 en móvil, más en tablet)
     double tamanoFicha = em ? (size - 60) / 3 : (size - 100) / 5;
     if (tamanoFicha > 140) tamanoFicha = 140; // Límite máximo
 
@@ -90,7 +69,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
       alumno: alumno,
       textoCabecera: "Encuentra el número",
       posicion: posicionBarra,
-      hasAjustes: false, // O true si quieres navegar a los ajustes desde aquí
+      hasAjustes: false, // Habilitamos botón ajustes
       hasEstadisticas: false,
       onVolver: () {
         mostrarDialogoSiNoAlumnoV2(
@@ -99,11 +78,15 @@ class _Juego1ScreenState extends State<Juego1Screen> {
           "¿Seguro que quieres salir?",
         ).then((confirmed) {
           if (confirmed == true) {
+            _state!.salir();
             Navigator.pop(context);
           }
         });
       },
-      onAjustes: () {},
+      onAjustes: () {
+        // Navegación a ajustes (implementada más abajo)
+        Navigator.pushNamed(context, '/juego1_ajustes');
+      },
       onEstadisticas: () {},
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -111,43 +94,67 @@ class _Juego1ScreenState extends State<Juego1Screen> {
           children: [
             // --- BARRA DE PROGRESO Y REPRODUCCIÓN ---
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Repeticiones (Estilo Juego 2)
-                ...List.generate(_state!.repeticionesTotales, (index) {
-                  bool completado = index < _state!.repeticionesCompletadas;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Container(
-                      width: em ? 20 : 30,
-                      height: em ? 20 : 30,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black12,
-                        border: Border.all(color: Colors.black, width: 2),
-                      ),
-                      child: completado
-                          ? Icon(Icons.star,
-                          size: em ? 16 : 24, color: Colors.amber)
-                          : null,
+                // Botón Escuchar a la izquierda
+                Semantics(
+                  label: "Escuchar número objetivo",
+                  child: ElevatedButton(
+                    onPressed: _state!.speakObjetivo,
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(20), // Más grande
+                      backgroundColor: alumno.colorBotones,
+                      foregroundColor: getTextColorForBackground(
+                          alumno.colorBotones ?? Theme.of(context).colorScheme.primary),
                     ),
-                  );
-                }),
+                    child: const Icon(Icons.volume_up, size: 40), // Más grande
+                  ),
+                ),
+
                 const Spacer(),
-                // Botón Escuchar Número
-                ElevatedButton.icon(
-                  onPressed: _state!.speakObjetivo,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: alumno.colorBotones,
-                    foregroundColor: getTextColorForBackground(alumno.colorBotones),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+
+                // Contador de repeticiones en el centro
+                Semantics(
+                  label: _state!.getRepeticionesString(), // Accesibilidad
+                  excludeSemantics: true,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "REPETICIONES: ",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorTexto,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ...List.generate(_state!.repeticionesTotales, (index) {
+                        bool completado = index < _state!.repeticionesCompletadas;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black,
+                            ),
+                            child: Icon(
+                              completado ? Icons.star : Icons.circle,
+                              color: Colors.amberAccent,
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
                   ),
-                  icon: const Icon(Icons.volume_up),
-                  label: Text(
-                      _state!.numeroAAdivinar.toString(),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
-                  ),
-                )
+                ),
+
+                const Spacer(),
+
+                // Placeholder para centrar el contador.
+                const SizedBox(width: 80),
               ],
             ),
 
@@ -178,13 +185,13 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                         tamano: tamanoFicha,
                         radio: 20,
                         numero: numero,
-                        label: numero.toString(),
+                        label: alumno.juego1Settings.usarImagenes ? '' : numero.toString(), // Ocultar si hay imágenes
                         isButton: true,
                         // Deshabilitar interacción si ya terminó la ronda
                         isEnabled: !_state!.finalizado,
                         colorFondo: fondo,
-                        imagenes: false, // Juego 1 es solo números por defecto
-                        tipoImagen: "",
+                        imagenes: alumno.juego1Settings.usarImagenes,
+                        tipoImagen: alumno.juego1Settings.tipoImagen,
                         onTap: () => _state!.seleccionarNumero(numero),
                       );
                     }).toList(),
@@ -201,14 +208,14 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 colorFondo: alumno.colorBotones,
-                // Habilitado solo si hay selección
+                // Habilitado solo si hay selección y no ha terminado animación de éxito
                 onPressed: (_state!.numeroSeleccionado != null && !_state!.finalizado)
                     ? () async {
                   bool acertado = await _state!.validarRespuesta();
 
                   if (acertado) {
-                    // Esperar un momento para ver el feedback visual (verde)
-                    await Future.delayed(const Duration(seconds: 1));
+                    // Pequeña pausa para ver el color verde antes del diálogo
+                    await Future.delayed(const Duration(milliseconds: 800));
 
                     if (!mounted) return;
 
@@ -244,8 +251,8 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                       });
                     }
                   } else {
-                    // Feedback de error ya manejado por el estado (sonido)
-                    // Aquí podrías mostrar un SnackBar si quisieras
+                    // El feedback de error (sonido) ya se maneja en el State.
+                    // Aquí podrías añadir vibración o shake animation si quisieras.
                   }
                 }
                     : null,
