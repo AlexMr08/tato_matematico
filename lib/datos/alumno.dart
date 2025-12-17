@@ -1,3 +1,4 @@
+'''
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -5,136 +6,92 @@ import 'dart:typed_data';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
-/// **Nombre de la Clase: `Alumno`**
-///
-/// **Descripción:** clase que representa a un alumno en el sistema.
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 14/12/2025
-/// * **Último cambio:** Se han añadido los campos para los ajustes de color y sonido
-///
+// Definición movida de ScaffoldAlumno.dart para evitar importaciones circulares
+enum PosicionBarra { arriba, abajo, izquierda, derecha }
 
 class Alumno {
   String id;
   String nombre;
   String? _imagen;
   String imagenLocal = '';
-  Color? _colorFondo;
-  Color? _colorBarraNav;
-  Color? _colorBotones;
-  Color? _colorSeleccion;
-  Color? _colorContenedor;
-  bool _volverDerecha = false;
-  int? posicionBarra;
   File? foto;
 
-  bool permisoEstadisticasJuego1;
-  bool mostrarPuntuacionJuego1;
+  // Colores
+  Color? colorFondo;
+  Color? colorBarraNav;
+  Color? colorBotones;
+  Color? colorSeleccion;
+  Color? colorContenedor;
 
-  bool permisoAjustesJuego1;
-  bool permisoAjustesJuego2;
-  bool permisoAjustesJuego3;
-  bool permisoAjustesJuego4;
-  bool permisoColor;
-  bool permisoSonido;
+  // Ajustes de Interfaz
+  bool volverDerecha = false;
+  int? posicionBarra;
 
-  // Ajustes de sonido Juego 1
-  String? vozJuego1;
-  double ttsRateJuego1;
-  double ttsVolumeJuego1;
-  double ttsPitchJuego1;
-  String sonidoAciertoJuego1;
-  bool sonidoAciertoActivadoJuego1;
-  String sonidoFalloJuego1;
-  bool sonidoFalloActivadoJuego1;
-  String? sonidoEleccionJuego1;
-
-  // Ajustes de sonido Globales (nuevos)
+  // --- AJUSTES GLOBALES DE SONIDO Y VOZ ---
   String? sonidoEleccion;
   String sonidoAcierto;
   bool sonidoAciertoActivado;
   String sonidoFallo;
   bool sonidoFalloActivado;
+  String? voz;
   double ttsRate;
   double ttsVolume;
   double ttsPitch;
 
+  // --- PERMISOS GLOBALES ---
+  bool permisoColor;
+  bool permisoSonido;
+
+  // --- AJUSTES Y PERMISOS POR JUEGO ---
+  bool permisoAjustesJuego1;
+  bool permisoEstadisticasJuego1;
+  bool mostrarPuntuacionJuego1;
   Juego1Settings juego1Settings;
+
+  bool permisoAjustesJuego2;
+  bool permisoAjustesJuego3;
+  bool permisoAjustesJuego4;
 
   Alumno({
     required this.id,
     required this.nombre,
     required String? imagen,
-    Color? colorFondo,
-    Color? colorBarraNav,
-    Color? colorBotones,
-    Color? colorSeleccion,
-    Color? colorContenedor,
-    this.permisoAjustesJuego1 = true,
-    this.permisoEstadisticasJuego1 = true,
-    this.mostrarPuntuacionJuego1 = true,
-    // Antiguos
-    this.vozJuego1,
-    this.ttsRateJuego1 = 0.5,
-    this.ttsVolumeJuego1 = 1.0,
-    this.ttsPitchJuego1 = 1.0,
-    this.sonidoAciertoJuego1 = 'Pim',
-    this.sonidoAciertoActivadoJuego1 = true,
-    this.sonidoFalloJuego1 = 'Pton',
-    this.sonidoFalloActivadoJuego1 = true,
-    this.sonidoEleccionJuego1,
-    // Nuevos
+    this.colorFondo,
+    this.colorBarraNav,
+    this.colorBotones,
+    this.colorSeleccion,
+    this.colorContenedor,
+    this.volverDerecha = false,
+    this.posicionBarra,
+    
+    // Globales
+    this.permisoColor = true,
+    this.permisoSonido = true,
     this.sonidoEleccion,
     this.sonidoAcierto = 'Pim',
     this.sonidoAciertoActivado = true,
     this.sonidoFallo = 'Pton',
     this.sonidoFalloActivado = true,
+    this.voz,
     this.ttsRate = 0.5,
     this.ttsVolume = 1.0,
     this.ttsPitch = 1.0,
-
+    
+    // Juego 1
+    this.permisoAjustesJuego1 = true,
+    this.permisoEstadisticasJuego1 = true,
+    this.mostrarPuntuacionJuego1 = true,
     Juego1Settings? juego1Settings,
-    volverDerecha,
-    posicionBarra,
+    
+    // Otros juegos
     this.permisoAjustesJuego2 = true,
     this.permisoAjustesJuego3 = true,
     this.permisoAjustesJuego4 = true,
-    this.permisoColor = true,
-    this.permisoSonido = true,
-    // Combinación: Inicializa _imagen, y usa la lógica de la izquierda para juego1Settings (con default)
+
   }) : _imagen = imagen,
-       juego1Settings =
-           juego1Settings ??
-           Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0) {
-    // El cuerpo del constructor permanece igual
-    if (volverDerecha != null) {
-      _volverDerecha = volverDerecha;
-    }
-    if (colorFondo != null) {
-      _colorFondo = colorFondo;
-    }
-    if (colorBarraNav != null) {
-      _colorBarraNav = colorBarraNav;
-    }
-    if (colorBotones != null) {
-      _colorBotones = colorBotones;
-    }
-    if (colorSeleccion != null) {
-      _colorSeleccion = colorSeleccion;
-    }
-    if (colorContenedor != null) {
-      _colorContenedor = colorContenedor;
-    }
-    if (posicionBarra != null) {
-      this.posicionBarra = posicionBarra;
-    }
-  }
+       juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0);
 
   String? get imagen => _imagen;
-
   set imagen(String? value) {
     if (_imagen != value) {
       _imagen = value;
@@ -142,66 +99,44 @@ class Alumno {
     }
   }
 
-  Color? get colorFondo => _colorFondo;
-  set colorFondo(Color? color) => _colorFondo = color;
+  Color? get colorTextos => colorSeleccion;
+  set colorTextos(Color? value) => colorSeleccion = value;
 
-  Color? get colorContenedor => _colorContenedor;
+  // --- COMPATIBILIDAD HACIA ATRÁS (los campos antiguos ahora apuntan a los nuevos) ---
+  double get ttsRateJuego1 => ttsRate;
+  set ttsRateJuego1(double value) => ttsRate = value;
+  
+  double get ttsVolumeJuego1 => ttsVolume;
+  set ttsVolumeJuego1(double value) => ttsVolume = value;
 
-  set colorContenedor(Color? color) {
-    _colorContenedor = color;
-  }
+  double get ttsPitchJuego1 => ttsPitch;
+  set ttsPitchJuego1(double value) => ttsPitch = value;
 
-  bool get volverDerecha => _volverDerecha;
-  set volverDerecha(bool value) => _volverDerecha = value;
+  String? get vozJuego1 => voz;
+  set vozJuego1(String? value) => voz = value;
 
-  Color? get colorBarraNav => _colorBarraNav;
-  set colorBarraNav(Color? value) => _colorBarraNav = value;
+  String get sonidoAciertoJuego1 => sonidoAcierto;
+  set sonidoAciertoJuego1(String value) => sonidoAcierto = value;
 
-  Color? get colorBotones => _colorBotones;
-  set colorBotones(Color? value) => _colorBotones = value;
+  bool get sonidoAciertoActivadoJuego1 => sonidoAciertoActivado;
+  set sonidoAciertoActivadoJuego1(bool value) => sonidoAciertoActivado = value;
 
-  Color? get colorSeleccion => _colorSeleccion;
-  set colorSeleccion(Color? value) => _colorSeleccion = value;
+  String get sonidoFalloJuego1 => sonidoFallo;
+  set sonidoFalloJuego1(String value) => sonidoFallo = value;
 
-  Color? get colorTextos => _colorSeleccion;
-  set colorTextos(Color? value) => _colorSeleccion = value;
+  bool get sonidoFalloActivadoJuego1 => sonidoFalloActivado;
+  set sonidoFalloActivadoJuego1(bool value) => sonidoFalloActivado = value;
+  
+  String? get sonidoEleccionJuego1 => sonidoEleccion;
+  set sonidoEleccionJuego1(String? value) => sonidoEleccion = value;
 
-  @override
-  String toString() {
-    return 'Alumno{id: $id,nombre: $nombre, colorFondo : $colorFondo, colorBarraNav: $colorBarraNav, colorBotones: $colorBotones, imagen: $_imagen, volverDerecha: $volverDerecha}';
-  }
+  // --- CONVERSIÓN DE DATOS ---
 
   factory Alumno.fromMap(String id, Map<dynamic, dynamic> data) {
-    Color? colorFondoLoc,
-        colorBotonesLoc,
-        colorNavLoc,
-        colorSeleccionLoc,
-        colorContenedorLoc;
-    if (data['colorFondo'] != null) {
-      final colorStr = data['colorFondo'] as String?;
-      if (colorStr != null) colorFondoLoc = Color(int.parse(colorStr, radix: 16));
+    Color? parseColor(String? hex) {
+      return hex != null ? Color(int.parse(hex, radix: 16)) : null;
     }
-    if (data['colorBarraNav'] != null) {
-      final colorStr = data['colorBarraNav'] as String?;
-      if (colorStr != null) colorNavLoc = Color(int.parse(colorStr, radix: 16));
-    }
-    if (data['colorBotones'] != null) {
-      final colorStr = data['colorBotones'] as String?;
-      if (colorStr != null) colorBotonesLoc = Color(int.parse(colorStr, radix: 16));
-    }
-    if (data['colorSeleccion'] != null) {
-      final colorStr = data['colorSeleccion'] as String?;
-      if (colorStr != null) colorSeleccionLoc = Color(int.parse(colorStr, radix: 16));
-    }
-
-    if (data['colorContenedor'] != null) {
-      final colorStr = data['colorContenedor'] as String?;
-      if (colorStr != null) {
-        int hex = int.parse(colorStr, radix: 16);
-        colorContenedorLoc = Color(hex);
-      }
-    }
-
+    
     Juego1Settings? juego1Settings;
     if (data['juego1Settings'] != null) {
       final settingsMap = data['juego1Settings'] as Map<dynamic, dynamic>;
@@ -215,50 +150,85 @@ class Alumno {
     return Alumno(
       id: id,
       nombre: data['nombre'] ?? 'Sin nombre',
-      imagen: data['imagen'] ?? '',
+      imagen: data['imagen'],
       volverDerecha: data['volverDerecha'] ?? false,
-      colorFondo: colorFondoLoc,
-      colorBarraNav: colorNavLoc,
-      colorBotones: colorBotonesLoc,
-      colorSeleccion: colorSeleccionLoc,
-      colorContenedor: colorContenedorLoc,
+      colorFondo: parseColor(data['colorFondo']),
+      colorBarraNav: parseColor(data['colorBarraNav']),
+      colorBotones: parseColor(data['colorBotones']),
+      colorSeleccion: parseColor(data['colorSeleccion']),
+      colorContenedor: parseColor(data['colorContenedor']),
       posicionBarra: data['posicionBarra'],
+      
+      permisoColor: data['permisoColor'] ?? true,
+      permisoSonido: data['permisoSonido'] ?? true,
+      
       permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
       permisoEstadisticasJuego1: data['permisoEstadisticasJuego1'] ?? true,
       mostrarPuntuacionJuego1: data['mostrarPuntuacionJuego1'] ?? true,
-      // Antiguos
-      vozJuego1: data['vozJuego1'],
-      ttsRateJuego1: (data['ttsRateJuego1'] as num? ?? 0.5).toDouble(),
-      ttsVolumeJuego1: (data['ttsVolumeJuego1'] as num? ?? 1.0).toDouble(),
-      ttsPitchJuego1: (data['ttsPitchJuego1'] as num? ?? 1.0).toDouble(),
-      sonidoAciertoJuego1: data['sonidoAciertoJuego1'] ?? 'Pim',
-      sonidoAciertoActivadoJuego1: data['sonidoAciertoActivadoJuego1'] ?? true,
-      sonidoFalloJuego1: data['sonidoFalloJuego1'] ?? 'Pton',
-      sonidoFalloActivadoJuego1: data['sonidoFalloActivadoJuego1'] ?? true,
-      sonidoEleccionJuego1: data['sonidoEleccionJuego1'],
-      // Nuevos
-      sonidoEleccion: data['sonidoEleccion'],
-      sonidoAcierto: data['sonidoAcierto'] ?? 'Pim',
-      sonidoAciertoActivado: data['sonidoAciertoActivado'] ?? true,
-      sonidoFallo: data['sonidoFallo'] ?? 'Pton',
-      sonidoFalloActivado: data['sonidoFalloActivado'] ?? true,
-      ttsRate: (data['ttsRate'] as num? ?? 0.5).toDouble(),
-      ttsVolume: (data['ttsVolume'] as num? ?? 1.0).toDouble(),
-      ttsPitch: (data['ttsPitch'] as num? ?? 1.0).toDouble(),
-      juego1Settings: juego1Settings,
+
       permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
       permisoAjustesJuego3: data['permisoAjustesJuego3'] ?? true,
       permisoAjustesJuego4: data['permisoAjustesJuego4'] ?? true,
-      permisoColor: data['permisoColor'] ?? true,
-      permisoSonido: data['permisoSonido'] ?? true,
+      
+      sonidoEleccion: data['sonidoEleccion'] ?? data['sonidoEleccionJuego1'],
+      sonidoAcierto: data['sonidoAcierto'] ?? data['sonidoAciertoJuego1'] ?? 'Pim',
+      sonidoAciertoActivado: data['sonidoAciertoActivado'] ?? data['sonidoAciertoActivadoJuego1'] ?? true,
+      sonidoFallo: data['sonidoFallo'] ?? data['sonidoFalloJuego1'] ?? 'Pton',
+      sonidoFalloActivado: data['sonidoFalloActivado'] ?? data['sonidoFalloActivadoJuego1'] ?? true,
+      
+      voz: data['voz'] ?? data['vozJuego1'],
+      ttsRate: (data['ttsRate'] as num? ?? data['ttsRateJuego1'] as num? ?? 0.5).toDouble(),
+      ttsVolume: (data['ttsVolume'] as num? ?? data['ttsVolumeJuego1'] as num? ?? 1.0).toDouble(),
+      ttsPitch: (data['ttsPitch'] as num? ?? data['ttsPitchJuego1'] as num? ?? 1.0).toDouble(),
+      
+      juego1Settings: juego1Settings,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nombre': nombre,
+      'imagen': _imagen,
+      'colorFondo': colorFondo?.value.toRadixString(16),
+      'colorBarraNav': colorBarraNav?.value.toRadixString(16),
+      'colorBotones': colorBotones?.value.toRadixString(16),
+      'colorSeleccion': colorSeleccion?.value.toRadixString(16),
+      'colorContenedor': colorContenedor?.value.toRadixString(16),
+      'volverDerecha': volverDerecha,
+      'posicionBarra': posicionBarra,
+      
+      'permisoColor': permisoColor,
+      'permisoSonido': permisoSonido,
+
+      'permisoAjustesJuego1': permisoAjustesJuego1,
+      'permisoEstadisticasJuego1': permisoEstadisticasJuego1,
+      'mostrarPuntuacionJuego1': mostrarPuntuacionJuego1,
+
+      'permisoAjustesJuego2': permisoAjustesJuego2,
+      'permisoAjustesJuego3': permisoAjustesJuego3,
+      'permisoAjustesJuego4': permisoAjustesJuego4,
+
+      'sonidoEleccion': sonidoEleccion,
+      'sonidoAcierto': sonidoAcierto,
+      'sonidoAciertoActivado': sonidoAciertoActivado,
+      'sonidoFallo': sonidoFallo,
+      'sonidoFalloActivado': sonidoFalloActivado,
+      'voz': voz,
+      'ttsRate': ttsRate,
+      'ttsVolume': ttsVolume,
+      'ttsPitch': ttsPitch,
+      
+      'juego1Settings': juego1Settings.toMap(),
+    };
+  }
+
+  // --- WIDGETS Y OTROS MÉTODOS ---
 
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) _cachedImage = null;
-    // La versión FINAL añade el null-aware operator para inicializar una sola vez
+    if (imagenLocal.isEmpty) return null;
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
@@ -276,7 +246,6 @@ class Alumno {
       imagenLocal = '';
       return;
     }
-
     try {
       final storage = FirebaseStorage.instance;
       Reference ref = storage.refFromURL(_imagen!);
@@ -285,10 +254,8 @@ class Alumno {
         imagenLocal = '';
         return;
       }
-
       String nombreArchivo = ref.name;
       final file = File('${tempDir.path}/$nombreArchivo');
-
       await file.writeAsBytes(bytes, flush: true);
       imagenLocal = file.path;
     } catch (e) {
@@ -298,136 +265,37 @@ class Alumno {
   }
 
   Future<File?> obtenerImagen(Directory tempDir) async {
-    // 1. Caché en RAM (File? foto)
-    File? res;
-    if (foto != null) {
-      res = foto;
-    }
-
+    if (foto != null) return foto;
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
         foto = archivoDisco;
-      }
-    } else {
-      // 2. Descarga
-      await descargarImagen(tempDir);
-
-      if (imagenLocal.isNotEmpty) {
-        final archivoRecienDescargado = File(imagenLocal);
-        if (await archivoRecienDescargado.exists()) {
-          foto = archivoRecienDescargado;
-        }
+        return foto;
       }
     }
-
-    return foto;
-  }
-}
-
+    await descargarImagen(tempDir);
+    if (imagenLocal.isNotEmpty) {
+      final archivoRecienDescargado = File(imagenLocal);
+      if (await archivoRecienDescargado.exists()) {
+        foto = archivoRecienDescargado;
+        return foto;
+      }
+    }
     return null;
   }
-
-  @deprecated
-  Widget widgetAlumno(BuildContext context, VoidCallback navegar) {
-    var ori = MediaQuery.of(context).orientation;
-
-    return InkWell(
-      onTap: navegar,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          double size = ori == Orientation.portrait
-              ? constraints.maxWidth * 0.7
-              : constraints.maxHeight * 0.7;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: size,
-                height: size,
-                child: CircleAvatar(
-                  backgroundImage: cachedImage,
-                  child: cachedImage == null
-                      ? Text(
-                          nombre.isNotEmpty ? nombre[0] : '?',
-                          style: TextStyle(fontSize: size * 0.4),
-                        )
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                nombre,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  @deprecated
-  Widget widgetProfesor(BuildContext c, VoidCallback navegar, Icon icono) {
-    ImageProvider? imageProvider;
-    if (imagenLocal.isNotEmpty) {
-      imageProvider = FileImage(File(imagenLocal));
-    }
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: imageProvider,
-          child: imageProvider == null
-              ? Text(
-                  nombre.isNotEmpty ? nombre[0] : '?',
-                  style: const TextStyle(fontSize: 20),
-                )
-              : null,
-        ),
-        title: Text(
-          nombre,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: IconButton(icon: icono, onPressed: navegar),
-        onTap: null,
-      ),
-    );
-  }
-
-  @deprecated
-  Widget widgetAlumnoV2({required VoidCallback onTap}) {
-    return AlumnViewCard(key: ValueKey(id), alumno: this, onTap: onTap);
-  }
-
-  @deprecated
-  Widget widgetProfesorV2({required VoidCallback onTap, required Icon icono}) {
-    return TeacherViewCard(
-      key: ValueKey("${id}_${_imagen ?? ''}"),
-      alumno: this,
-      onTap: onTap,
-      icono: icono,
-    );
-  }
 }
+
+// Clases de Widgets movidas aquí para simplicidad en este paso
 
 class AlumnViewCard extends StatefulWidget {
   final Alumno alumno;
   final VoidCallback onTap;
 
   const AlumnViewCard({
-    super.key,
+    Key? key,
     required this.alumno,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   State<AlumnViewCard> createState() => _AlumnViewCardState();
@@ -476,33 +344,19 @@ class _AlumnViewCardState extends State<AlumnViewCard> {
   }
 }
 
-/// **Nombre de la Clase: `TeacherViewCard`**
-///
-/// **Descripción:** clase que gestiona la vista de un alumno en la perspectiva del profesor.
-///
-/// ---
-/// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 13/12/2025
-/// * **Último cambio:** Se ha añadido un boton para acceder a las estadisticas
-///
-
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
   final VoidCallback onTap;
   final VoidCallback onEstadisticasTap;
-  final bool verStats;
 
   const TeacherViewCard({
-    super.key,
+    Key? key,
     required this.alumno,
     required this.onTap,
     required this.icono,
     required this.onEstadisticasTap,
-    this.verStats = false,
-  });
+  }) : super(key: key);
 
   @override
   State<TeacherViewCard> createState() => _TeacherViewCardState();
@@ -531,23 +385,13 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ?widget.verStats
-                ? IconButton(
-                    icon: const Icon(Icons.bar_chart),
-                    tooltip: 'Ver Estadísticas',
-                    onPressed: widget.verStats
-                        ? () {
-                            widget.onEstadisticasTap();
-                          }
-                        : null,
-                  )
-                : null,
             IconButton(icon: widget.icono, onPressed: widget.onTap),
+            IconButton(icon: const Icon(Icons.bar_chart), onPressed: widget.onEstadisticasTap),
           ],
         ),
-
         onTap: null,
       ),
     );
   }
 }
+'''
