@@ -1,20 +1,14 @@
-'''
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
-import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
-// Definición movida de ScaffoldAlumno.dart para evitar importaciones circulares
 enum PosicionBarra { arriba, abajo, izquierda, derecha }
 
 class Alumno {
   String id;
   String nombre;
-  String? _imagen;
+  String? imagen;
   String imagenLocal = '';
-  File? foto;
+  //File? foto; // Comentado temporalmente para evitar dependencia de dart:io
 
   // Colores
   Color? colorFondo;
@@ -55,7 +49,7 @@ class Alumno {
   Alumno({
     required this.id,
     required this.nombre,
-    required String? imagen,
+    this.imagen,
     this.colorFondo,
     this.colorBarraNav,
     this.colorBotones,
@@ -88,16 +82,8 @@ class Alumno {
     this.permisoAjustesJuego3 = true,
     this.permisoAjustesJuego4 = true,
 
-  }) : _imagen = imagen,
-       juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0);
+  }) : juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0);
 
-  String? get imagen => _imagen;
-  set imagen(String? value) {
-    if (_imagen != value) {
-      _imagen = value;
-      foto = null;
-    }
-  }
 
   Color? get colorTextos => colorSeleccion;
   set colorTextos(Color? value) => colorSeleccion = value;
@@ -189,7 +175,7 @@ class Alumno {
     return {
       'id': id,
       'nombre': nombre,
-      'imagen': _imagen,
+      'imagen': imagen,
       'colorFondo': colorFondo?.value.toRadixString(16),
       'colorBarraNav': colorBarraNav?.value.toRadixString(16),
       'colorBotones': colorBotones?.value.toRadixString(16),
@@ -222,176 +208,4 @@ class Alumno {
       'juego1Settings': juego1Settings.toMap(),
     };
   }
-
-  // --- WIDGETS Y OTROS MÉTODOS ---
-
-  ImageProvider? _cachedImage;
-
-  ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) return null;
-    _cachedImage ??= FileImage(File(imagenLocal));
-    return _cachedImage;
-  }
-
-  void invalidarCachedImage() {
-    _cachedImage = null;
-    foto = null;
-  }
-
-  Future<void> descargarImagen(
-    Directory tempDir, {
-    int maxBytes = 10 * 1024 * 1024,
-  }) async {
-    if (_imagen == null || _imagen!.isEmpty) {
-      imagenLocal = '';
-      return;
-    }
-    try {
-      final storage = FirebaseStorage.instance;
-      Reference ref = storage.refFromURL(_imagen!);
-      final Uint8List? bytes = await ref.getData(maxBytes);
-      if (bytes == null) {
-        imagenLocal = '';
-        return;
-      }
-      String nombreArchivo = ref.name;
-      final file = File('${tempDir.path}/$nombreArchivo');
-      await file.writeAsBytes(bytes, flush: true);
-      imagenLocal = file.path;
-    } catch (e) {
-      imagenLocal = '';
-      return;
-    }
-  }
-
-  Future<File?> obtenerImagen(Directory tempDir) async {
-    if (foto != null) return foto;
-    if (imagenLocal.isNotEmpty) {
-      final archivoDisco = File(imagenLocal);
-      if (await archivoDisco.exists()) {
-        foto = archivoDisco;
-        return foto;
-      }
-    }
-    await descargarImagen(tempDir);
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
-    return null;
-  }
 }
-
-// Clases de Widgets movidas aquí para simplicidad en este paso
-
-class AlumnViewCard extends StatefulWidget {
-  final Alumno alumno;
-  final VoidCallback onTap;
-
-  const AlumnViewCard({
-    Key? key,
-    required this.alumno,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  State<AlumnViewCard> createState() => _AlumnViewCardState();
-}
-
-class _AlumnViewCardState extends State<AlumnViewCard> {
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onTap,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: FotoPerfil(
-                  key: ValueKey(widget.alumno.imagen),
-                  nombre: widget.alumno.nombre,
-                  idUnico: widget.alumno.imagen ?? widget.alumno.id,
-                  onObtenerImagen: widget.alumno.obtenerImagen,
-                  radio: 56,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text(
-                widget.alumno.nombre,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class TeacherViewCard extends StatefulWidget {
-  final Alumno alumno;
-  final Icon icono;
-  final VoidCallback onTap;
-  final VoidCallback onEstadisticasTap;
-
-  const TeacherViewCard({
-    Key? key,
-    required this.alumno,
-    required this.onTap,
-    required this.icono,
-    required this.onEstadisticasTap,
-  }) : super(key: key);
-
-  @override
-  State<TeacherViewCard> createState() => _TeacherViewCardState();
-}
-
-class _TeacherViewCardState extends State<TeacherViewCard> {
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: FotoPerfil(
-          key: ValueKey(widget.alumno.imagen ?? widget.alumno.id),
-          nombre: widget.alumno.nombre,
-          idUnico: widget.alumno.imagen ?? widget.alumno.id,
-          onObtenerImagen: widget.alumno.obtenerImagen,
-          radio: 28,
-        ),
-        title: Text(
-          widget.alumno.nombre,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(icon: widget.icono, onPressed: widget.onTap),
-            IconButton(icon: const Icon(Icons.bar_chart), onPressed: widget.onEstadisticasTap),
-          ],
-        ),
-        onTap: null,
-      ),
-    );
-  }
-}
-'''
