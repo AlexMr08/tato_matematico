@@ -9,6 +9,7 @@ import 'package:tato_matematico/juegos/juego_1/ajustes_sonidos_screen.dart';
 import 'package:tato_matematico/ajustes/configColorAlumno.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
 import 'package:tato_matematico/juegos/juego3/juego3Ajustes.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 
 class AjustesGeneralesScreen extends StatelessWidget {
   const AjustesGeneralesScreen({Key? key}) : super(key: key);
@@ -19,23 +20,38 @@ class AjustesGeneralesScreen extends StatelessWidget {
     final alumnoHolder = Provider.of<AlumnoHolder>(context);
     final alumno = alumnoHolder.alumno;
 
-    if (alumno == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (alumno == null) {
+      return ScaffoldAlumno(
+        alumno: Alumno(id: '', nombre: ''),
+        posicion: PosicionBarra.abajo,
+        hasEstadisticas: false,
+        hasAjustes: false,
+        onAjustes: () {},
+        onEstadisticas: () {},
+        textoCabecera: "Ajustes",
+        onVolver: () => Navigator.pop(context),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
-    final Color appBarColor = alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
-    final Color appBarTextColor = getTextColorForBackground(appBarColor);
-
-    return Scaffold(
-      backgroundColor: alumno.colorFondo,
-      appBar: AppBar(
-        title: Text('Ajustes del Perfil', style: TextStyle(color: appBarTextColor)),
-        backgroundColor: appBarColor,
-        iconTheme: IconThemeData(color: appBarTextColor),
-        centerTitle: true,
-      ),
-      body: Center(
+    return ScaffoldAlumno(
+      alumno: alumno,
+      posicion: getPosicionBarra(alumno.posicionBarra),
+      hasEstadisticas: false,
+      hasAjustes: false,
+      onAjustes: () {},
+      onEstadisticas: () {},
+      textoCabecera: "Ajustes de ${alumno.nombre}",
+      onVolver: () => Navigator.pop(context),
+      child: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 40.0,
+              horizontal: 20.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -50,8 +66,11 @@ class AjustesGeneralesScreen extends StatelessWidget {
                       alumno,
                       () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ConfigColorAlumno()),
+                        MaterialPageRoute(
+                          builder: (context) => const ConfigColorAlumno(),
+                        ),
                       ),
+                      isDisabled: !alumno.permisoColor,
                     ),
                     const SizedBox(width: 25.0),
                     _buildSettingsCard(
@@ -61,8 +80,11 @@ class AjustesGeneralesScreen extends StatelessWidget {
                       alumno,
                       () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const AjustesSonidosScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const AjustesSonidosScreen(),
+                        ),
                       ),
+                      isDisabled: !alumno.permisoSonido,
                     ),
                   ],
                 ),
@@ -81,8 +103,11 @@ class AjustesGeneralesScreen extends StatelessWidget {
                       alumno,
                       () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const Juego1AjustesScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const Juego1AjustesScreen(),
+                        ),
                       ),
+                      isDisabled: !alumno.permisoAjustesJuego1,
                     ),
                     _buildSettingsCard(
                       context,
@@ -100,10 +125,13 @@ class AjustesGeneralesScreen extends StatelessWidget {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Juego 2 no disponible")),
+                            const SnackBar(
+                              content: Text("Juego 2 no disponible"),
+                            ),
                           );
                         }
                       },
+                      isDisabled: !alumno.permisoAjustesJuego2,
                     ),
                     _buildSettingsCard(
                       context,
@@ -121,12 +149,22 @@ class AjustesGeneralesScreen extends StatelessWidget {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Juego 3 no disponible")),
+                            const SnackBar(
+                              content: Text("Juego 3 no disponible"),
+                            ),
                           );
                         }
                       },
+                      isDisabled: !alumno.permisoAjustesJuego3,
                     ),
-                    _buildSettingsCard(context, 'Juego 4', Icons.filter_4, alumno, null, isDisabled: true),
+                    _buildSettingsCard(
+                      context,
+                      'Juego 4',
+                      Icons.filter_4,
+                      alumno,
+                      null,
+                      isDisabled: true,
+                    ),
                   ],
                 ),
               ],
@@ -138,17 +176,20 @@ class AjustesGeneralesScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsCard(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Alumno alumno,
-      VoidCallback? onTap,
-      {bool isDisabled = false}
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    Alumno alumno,
+    VoidCallback? onTap, {
+    bool isDisabled = false,
+  }) {
     // Usamos el color de botones del alumno o el secundario del tema
-    final Color baseColor = alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
+    final Color baseColor =
+        alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
     final Color cardColor = isDisabled ? Colors.grey.shade300 : baseColor;
-    final Color contentColor = isDisabled ? Colors.grey.shade600 : getTextColorForBackground(cardColor);
+    final Color contentColor = isDisabled
+        ? Colors.grey.shade600
+        : getTextColorForBackground(cardColor);
 
     return SizedBox(
       width: 160,

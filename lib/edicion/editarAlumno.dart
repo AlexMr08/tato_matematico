@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/edicion/ajustesSonidoProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/configColorProfesor.dart';
+import 'package:tato_matematico/ajustes/configColorProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
@@ -438,32 +438,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     );
   }
 
-  // --- NUEVA FUNCIÓN PARA GUARDAR PERMISOS DEL JUEGO ---
-  void _guardarPermisoJuego1(Alumno alumno, String permiso, bool valor) async {
-    try {
-      await _dbRef.child('tato/alumnos/${alumno.id}').update({permiso: valor});
-
-      if (mounted) {
-        // Actualizamos el estado local
-        if (permiso == 'permisoAjustesJuego1') {
-          alumno.permisoAjustesJuego1 = valor;
-        } else if (permiso == 'permisoEstadisticasJuego1') {
-          alumno.permisoEstadisticasJuego1 = valor;
-        }
-        context.read<AlumnoHolder>().setAlumno(alumno);
-        snackBarExito(context, "Permiso actualizado.");
-      }
-    } catch (e) {
-      if (mounted) {
-        snackBarError(context, 'Error al guardar el permiso: $e');
-      }
-    }
-  }
-
   void _guardarPermiso(Alumno alumno, String permiso, bool valor) async {
-    print(
-      "Guardando permiso $permiso con valor $valor del alumno ${alumno.id}",
-    );
     try {
       await _dbRef.child('tato/alumnos/${alumno.id}').update({permiso: valor});
     } catch (e) {

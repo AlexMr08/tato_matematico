@@ -7,10 +7,10 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-import 'datos/juego.dart';
-import 'juegos/juego2/juego2Ajustes.dart';
-import 'juegos/tarjetaJuego.dart';
-import 'widgetsAuxiliares/ScaffoldComunV2.dart';
+import '../datos/juego.dart';
+import '../juegos/juego2/juego2Ajustes.dart';
+import '../juegos/tarjetaJuego.dart';
+import '../widgetsAuxiliares/ScaffoldComunV2.dart';
 
 /// **Nombre de la Clase: `ConfigColorProfesor`**
 ///

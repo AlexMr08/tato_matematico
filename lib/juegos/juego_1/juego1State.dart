@@ -3,10 +3,12 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1.dart';
 import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
 
 class Juego1State with ChangeNotifier {
   final Alumno alumno;
+  final Juego1 juego;
 
   // Audio
   final FlutterTts _flutterTts = FlutterTts();
@@ -26,7 +28,7 @@ class Juego1State with ChangeNotifier {
   bool falloActual = false; // Si ha fallado en la ronda actual
   bool finalizado = false; // Ronda terminada (listo para aceptar/siguiente)
 
-  Juego1State(this.alumno);
+  Juego1State(this.alumno, this.juego);
 
   Future<void> init() async {
     await _setupTts();
@@ -41,7 +43,14 @@ class Juego1State with ChangeNotifier {
   }
 
   void iniciarRonda() {
-    final settings = alumno.juego1Settings;
+    Juego1Settings juego1Settings = Juego1Settings(
+      numeroOpciones: juego.cantidad,
+      numeroMayor: juego.max,
+      numeroMenor: juego.min,
+    );
+
+    final settings = juego1Settings;
+
     final random = Random();
 
     // Calcular rango seguro

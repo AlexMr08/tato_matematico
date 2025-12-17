@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart'; // Import correcto raíz
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1.dart';
 import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Import correcto widgets
@@ -26,8 +27,14 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     super.didChangeDependencies();
     if (_state == null) {
       final alumno = context.read<AlumnoHolder>().alumno;
+      final juego = context.read<AlumnoHolder>().listaJuegos["juego1"];
+      if(juego is Juego1){
+        print("PUTISIMA VIDA");
+      }else{
+        print("HAHAHAHA");
+      }
       if (alumno != null) {
-        _state = Juego1State(alumno);
+        _state = Juego1State(alumno, juego as Juego1);
         _state!.init();
         _state!.addListener(() {
           if (mounted) setState(() {});

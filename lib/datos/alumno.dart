@@ -48,7 +48,6 @@ class Alumno {
 
   // --- AJUSTES Y PERMISOS POR JUEGO ---
   bool permisoAjustesJuego1;
-  bool permisoEstadisticasJuego1;
   bool mostrarPuntuacionJuego1;
   Juego1Settings juego1Settings;
 
@@ -83,7 +82,6 @@ class Alumno {
 
     // Juego 1
     this.permisoAjustesJuego1 = true,
-    this.permisoEstadisticasJuego1 = true,
     this.mostrarPuntuacionJuego1 = true,
     Juego1Settings? juego1Settings,
 
@@ -252,7 +250,6 @@ class Alumno {
       permisoSonido: data['permisoSonido'] ?? true,
 
       permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
-      permisoEstadisticasJuego1: data['permisoEstadisticasJuego1'] ?? true,
       mostrarPuntuacionJuego1: data['mostrarPuntuacionJuego1'] ?? true,
 
       permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
@@ -292,7 +289,6 @@ class Alumno {
       'permisoSonido': permisoSonido,
 
       'permisoAjustesJuego1': permisoAjustesJuego1,
-      'permisoEstadisticasJuego1': permisoEstadisticasJuego1,
       'mostrarPuntuacionJuego1': mostrarPuntuacionJuego1,
 
       'permisoAjustesJuego2': permisoAjustesJuego2,
