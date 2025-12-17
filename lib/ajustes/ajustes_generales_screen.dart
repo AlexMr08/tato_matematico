@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/ajustes_numeros_screen.dart';
+import 'package:tato_matematico/juegos/juego_1/juego_1_ajustes_screen.dart';
 import 'package:tato_matematico/juegos/juego_1/ajustes_sonidos_screen.dart';
 import 'package:tato_matematico/ajustes/configColorAlumno.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart'; // Importante para ajustes juego 2

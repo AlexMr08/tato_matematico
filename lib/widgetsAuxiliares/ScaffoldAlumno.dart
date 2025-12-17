@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // <--- Importante para SystemUiOverlayStyle
+import 'package:flutter_svg/svg.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 
@@ -14,7 +15,7 @@ enum PosicionBarra { arriba, abajo, izquierda, derecha }
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
 /// * **Fecha de modificación:** 14/12/2025
-/// * **Último cambio:** Convertido a StatefulWidget y arreglado color nav bar sistema
+/// * **Último cambio:** Cambio en el boton para permitir svg y icon
 ///
 
 class ScaffoldAlumno extends StatefulWidget {
@@ -50,7 +51,6 @@ class ScaffoldAlumno extends StatefulWidget {
 class _ScaffoldAlumnoState extends State<ScaffoldAlumno> {
   @override
   Widget build(BuildContext context) {
-
     var posicionFinal = widget.posicion;
     if (MediaQuery.of(context).size.width < 600) {
       posicionFinal = PosicionBarra.arriba;
@@ -133,7 +133,7 @@ class _ScaffoldAlumnoState extends State<ScaffoldAlumno> {
 
     final List<Widget> botones = [
       _BotonNav(
-        icon: Icons.arrow_back,
+        svgPath: "assets/icons/undo.svg",
         label: "Volver",
         onTap: widget.onVolver,
         color: navColor,
@@ -170,17 +170,23 @@ class _ScaffoldAlumnoState extends State<ScaffoldAlumno> {
 }
 
 class _BotonNav extends StatelessWidget {
-  final IconData icon;
-  final String label;
+  final IconData? icon;
+  final String? svgPath;
+  final String label; // <--- Este campo es obligatorio
   final VoidCallback onTap;
   final Color? color;
 
   const _BotonNav({
-    required this.icon,
-    required this.label,
+    super.key,
+    this.icon,
+    this.svgPath,
+    required this.label, // Requerimos el label aquí
     required this.onTap,
     this.color,
-  });
+  }) : assert(
+         icon != null || svgPath != null,
+         'Debes proporcionar un icon o un svgPath',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -198,8 +204,19 @@ class _BotonNav extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: contentColor, size: 36),
+              if (svgPath != null)
+                SvgPicture.asset(
+                  svgPath!,
+                  width: 36,
+                  height: 36,
+                  colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
+                  semanticsLabel: label, // Usa el label para accesibilidad
+                )
+              else
+                Icon(icon, color: contentColor, size: 36),
+
               const SizedBox(height: 4),
+
               Text(
                 label,
                 style: TextStyle(

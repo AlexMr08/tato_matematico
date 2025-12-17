@@ -1,17 +1,14 @@
-import 'dart:math';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart'; // Importante para sonidos
-import 'package:tato_matematico/ScaffoldAlumno.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
+import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Asegúrate que es el nuevo
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-// Definición de Settings si no está en otro archivo importado
+// Definición de Settings (Mantenemos la clase aquí o en un archivo común)
 class Juego1Settings {
   int numeroOpciones;
   int numeroMayor;
@@ -40,295 +37,222 @@ class Juego1Screen extends StatefulWidget {
 }
 
 class _Juego1ScreenState extends State<Juego1Screen> {
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-  final FlutterTts _flutterTts = FlutterTts();
-  final AudioPlayer _audioPlayer = AudioPlayer(); // Player para efectos
-
-  late Alumno _alumno;
-  int _puntuacion = 0;
-
-  late Juego1Settings _settings;
-  late int _numeroAAdivinar;
-  late List<int> _opciones = [];
-  int? _numeroSeleccionado;
-  bool _isLoading = true;
-  bool _mostrarPuntuacion = true;
+  Juego1State? _state;
+  late double size;
+  late bool em; // Es móvil
+  bool notInit = true;
 
   @override
-  void initState() {
-    super.initState();
-    _loadInitialData();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_state == null) {
+      final alumno = context.read<AlumnoHolder>().alumno;
+      if (alumno != null) {
+        _state = Juego1State(alumno, onGameEnd: () {});
+        _state!.init();
+        _state!.addListener(() {
+          if (mounted) setState(() {});
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
-    _flutterTts.stop();
+    _state?.dispose();
     super.dispose();
-  }
-
-  Future<void> _setupTts() async {
-    // Usamos las configuraciones globales de TTS del alumno
-    await _flutterTts.setLanguage("es-ES");
-    await _flutterTts.setSpeechRate(_alumno.ttsRate);
-    await _flutterTts.setVolume(_alumno.ttsVolume);
-    await _flutterTts.setPitch(_alumno.ttsPitch);
-    // Si quisieras usar la voz específica antigua:
-    // if (_alumno.vozJuego1 != null) { ... }
-  }
-
-  Future<void> _speak(String text) async {
-    await _flutterTts.speak(text);
-  }
-
-  // Función auxiliar para reproducir los sonidos configurados
-  Future<void> _playSound(String? soundName) async {
-    if (soundName == null || soundName.isEmpty) return;
-    try {
-      // Asume que los archivos están en assets/sounds/{nombre}.mp3
-      // Coincidiendo con la lógica de ajustes_sonidos_screen.dart
-      await _audioPlayer.play(AssetSource('sounds/$soundName.mp3'));
-    } catch (e) {
-      print("Error reproduciendo sonido: $e");
-    }
-  }
-
-  Future<void> _loadInitialData() async {
-    final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno;
-    if (alumno == null) {
-      if (mounted) Navigator.of(context).pop();
-      return;
-    }
-    _alumno = alumno;
-    _settings = _alumno.juego1Settings;
-    _mostrarPuntuacion = _alumno.mostrarPuntuacionJuego1;
-
-    await _setupTts();
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      _generarNuevoJuego();
-    }
-  }
-
-  void _generarNuevoJuego() {
-    if (_isLoading) return;
-
-    final random = Random();
-    // Asegurar rango válido
-    int rango = _settings.numeroMayor - _settings.numeroMenor;
-    if (rango <= 0) rango = 1;
-
-    _numeroAAdivinar = _settings.numeroMenor + random.nextInt(rango + 1);
-
-    final Set<int> opcionesTemporales = {_numeroAAdivinar};
-
-    // Evitar bucle infinito si hay menos opciones posibles que las solicitadas
-    int maxPosibles = _settings.numeroMayor - _settings.numeroMenor + 1;
-    int cantidadAObtener = min(_settings.numeroOpciones, maxPosibles);
-
-    while (opcionesTemporales.length < cantidadAObtener) {
-      final nuevaOpcion = _settings.numeroMenor + random.nextInt(rango + 1);
-      opcionesTemporales.add(nuevaOpcion);
-    }
-
-    setState(() {
-      _opciones = opcionesTemporales.toList()..shuffle();
-      _numeroSeleccionado = null;
-    });
-
-    _speak(_numeroAAdivinar.toString());
-  }
-
-  void _aceptarRespuesta() {
-    if (_numeroSeleccionado == null) {
-      // Opcional: Sonido de error leve o feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, selecciona un número.'),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    bool esCorrecto = _numeroSeleccionado == _numeroAAdivinar;
-
-    if (esCorrecto) {
-      if (_alumno.sonidoAciertoActivado) {
-        _playSound(_alumno.sonidoAcierto);
-      }
-      snackBarExito(context, "¡Correcto!");
-      setState(() {
-        _puntuacion++;
-      });
-    } else {
-      if (_alumno.sonidoFalloActivado) {
-        _playSound(_alumno.sonidoFallo);
-      }
-      snackBarError(context, "Incorrecto. Prueba de nuevo.");
-    }
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted && esCorrecto) {
-        _generarNuevoJuego();
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color buttonColor =
-        _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
-    final Color fondoColor =
-        _alumno.colorFondo ?? Theme.of(context).colorScheme.surface;
-    final Color backgroundTextColor = getTextColorForBackground(fondoColor);
-    final Color buttonTextColor = getTextColorForBackground(buttonColor);
-    final Color selectedButtonBorderColor =
-        _alumno.colorSeleccion ?? Theme.of(context).colorScheme.secondary;
+    // Inicialización de dimensiones
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
+    }
 
-    // Estilo para el botón de escuchar
-    final buttonStyle = ElevatedButton.styleFrom(
-      backgroundColor: buttonColor,
-      foregroundColor: buttonTextColor,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    );
+    final alumno = context.watch<AlumnoHolder>().alumno;
+    if (alumno == null || _state == null) return const SizedBox.shrink();
 
-    PosicionBarra posicionBarra = switch (_alumno.posicionBarra) {
-      0 => PosicionBarra.arriba,
-      1 => PosicionBarra.abajo,
-      2 => PosicionBarra.izquierda,
-      3 => PosicionBarra.derecha,
-      _ => PosicionBarra.abajo,
-    };
+    final Color colorTexto = getTextColorForBackground(
+        alumno.colorFondo ?? Theme.of(context).colorScheme.surface);
+
+    // Tamaños responsivos
+    double espaciado = em ? 12.0 : 24.0;
+    // Cálculo para que quepan las opciones configuradas
+    double tamanoFicha = em ? (size - 60) / 3 : (size - 100) / 5;
+    if (tamanoFicha > 140) tamanoFicha = 140; // Límite máximo
+
+    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
 
     return ScaffoldAlumno(
+      alumno: alumno,
+      textoCabecera: "Encuentra el número",
       posicion: posicionBarra,
-      textoCabecera: "Encuentra el número", // Texto más corto
-      alumno: _alumno,
-      onVolver: Navigator.of(context).pop,
-      onAjustes: () {}, // Opcional: navegar a ajustes
-      onEstadisticas: () {},
-      hasAjustes: false,
+      hasAjustes: false, // O true si quieres navegar a los ajustes desde aquí
       hasEstadisticas: false,
-      // Botón flotante para Aceptar, posición estándar
-      floatingActionButton: FloatingActionButton(
-        onPressed: _aceptarRespuesta,
-        backgroundColor: buttonColor,
-        child: Icon(Icons.check, size: 35, color: buttonTextColor),
-      ),
-      child: _isLoading
-          ? Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(buttonColor),
-        ),
-      )
-          : Column(
-        children: [
-          // Cabecera con puntuación y repetición de audio
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      onVolver: () {
+        mostrarDialogoSiNoAlumnoV2(
+          context,
+          "Salir",
+          "¿Seguro que quieres salir?",
+        ).then((confirmed) {
+          if (confirmed == true) {
+            Navigator.pop(context);
+          }
+        });
+      },
+      onAjustes: () {},
+      onEstadisticas: () {},
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            // --- BARRA DE PROGRESO Y REPRODUCCIÓN ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (_mostrarPuntuacion)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12)
-                    ),
-                    child: Text(
-                      'Puntos: $_puntuacion',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                // Repeticiones (Estilo Juego 2)
+                ...List.generate(_state!.repeticionesTotales, (index) {
+                  bool completado = index < _state!.repeticionesCompletadas;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Container(
+                      width: em ? 20 : 30,
+                      height: em ? 20 : 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black12,
+                        border: Border.all(color: Colors.black, width: 2),
                       ),
-                    ),
-                  )
-                else
-                  Spacer(),
-
-                ElevatedButton.icon(
-                  style: buttonStyle,
-                  onPressed: () => _speak(_numeroAAdivinar.toString()),
-                  icon: const Icon(Icons.volume_up),
-                  label: const Text('Escuchar'),
-                ),
-              ],
-            ),
-          ),
-
-          // Área de juego
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: GridView.builder(
-                physics: const BouncingScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 180,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.1,
-                ),
-                itemCount: _opciones.length,
-                itemBuilder: (context, index) {
-                  final numero = _opciones[index];
-                  final bool isSelected = numero == _numeroSeleccionado;
-
-                  // Color visual
-                  final Color cardColor = isSelected
-                      ? Color.alphaBlend(Colors.white.withOpacity(0.3), buttonColor)
-                      : buttonColor;
-
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _numeroSeleccionado = numero);
-                      // Reproducir sonido de elección (click) si está configurado
-                      if (_alumno.sonidoEleccion != null) {
-                        _playSound(_alumno.sonidoEleccion);
-                      }
-                    },
-                    child: Card(
-                      color: cardColor,
-                      elevation: isSelected ? 10 : 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: isSelected
-                              ? selectedButtonBorderColor
-                              : Colors.transparent,
-                          width: 4,
-                        ),
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: AutoSizeText(
-                            numero.toString(),
-                            style: TextStyle(
-                              fontSize: 50,
-                              fontWeight: FontWeight.bold,
-                              color: getTextColorForBackground(cardColor),
-                            ),
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
+                      child: completado
+                          ? Icon(Icons.star,
+                          size: em ? 16 : 24, color: Colors.amber)
+                          : null,
                     ),
                   );
-                },
+                }),
+                const Spacer(),
+                // Botón Escuchar Número
+                ElevatedButton.icon(
+                  onPressed: _state!.speakObjetivo,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: alumno.colorBotones,
+                    foregroundColor: getTextColorForBackground(alumno.colorBotones),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                  icon: const Icon(Icons.volume_up),
+                  label: Text(
+                      _state!.numeroAAdivinar.toString(),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+                  ),
+                )
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // --- GRID DE OPCIONES ---
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: espaciado,
+                    runSpacing: espaciado,
+                    children: _state!.opciones.map((numero) {
+                      bool isSelected = _state!.numeroSeleccionado == numero;
+
+                      // Si ya acertó y este es el correcto, mostrarlo verde/éxito
+                      bool isCorrectAndFinished = _state!.finalizado && numero == _state!.numeroAAdivinar;
+
+                      Color fondo = isSelected
+                          ? (alumno.colorSeleccion ?? Colors.blueAccent)
+                          : (alumno.colorBotones ?? Colors.blue);
+
+                      if (isCorrectAndFinished) fondo = Colors.green;
+
+                      return TarjetaJuego(
+                        key: ValueKey(numero),
+                        tamano: tamanoFicha,
+                        radio: 20,
+                        numero: numero,
+                        label: numero.toString(),
+                        isButton: true,
+                        // Deshabilitar interacción si ya terminó la ronda
+                        isEnabled: !_state!.finalizado,
+                        colorFondo: fondo,
+                        imagenes: false, // Juego 1 es solo números por defecto
+                        tipoImagen: "",
+                        onTap: () => _state!.seleccionarNumero(numero),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
-          ),
-          // Espacio extra para el FAB
-          const SizedBox(height: 70),
-        ],
+
+            // --- BOTÓN ACEPTAR ---
+            Align(
+              alignment: Alignment.bottomRight,
+              child: BotonSinIconoAlumno(
+                texto: "Aceptar",
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                colorFondo: alumno.colorBotones,
+                // Habilitado solo si hay selección
+                onPressed: (_state!.numeroSeleccionado != null && !_state!.finalizado)
+                    ? () async {
+                  bool acertado = await _state!.validarRespuesta();
+
+                  if (acertado) {
+                    // Esperar un momento para ver el feedback visual (verde)
+                    await Future.delayed(const Duration(seconds: 1));
+
+                    if (!mounted) return;
+
+                    if (_state!.esFinDeJuego()) {
+                      // --- FIN DEL JUEGO COMPLETO ---
+                      mostrarDialogoSalirReiniciarAlumnoV2(
+                        context,
+                        "¡Juego Completado!",
+                        "Has encontrado todos los números. ¿Quieres jugar otra vez?",
+                        alumno.colorFondo ?? Colors.white,
+                        alumno.colorBotones ?? Colors.blue,
+                      ).then((reiniciar) {
+                        if (reiniciar == true) {
+                          _state!.reiniciarJuego();
+                        } else if (reiniciar == false) {
+                          Navigator.pop(context);
+                        }
+                      });
+                    } else {
+                      // --- SIGUIENTE RONDA ---
+                      mostrarDialogoSiguienteAlumnoV2(
+                        context,
+                        "¡Muy bien!",
+                        "¡Correcto! Vamos a por el siguiente.",
+                        alumno.colorFondo ?? Colors.white,
+                        alumno.colorBotones ?? Colors.blue,
+                      ).then((siguiente) {
+                        if (siguiente == true) {
+                          _state!.iniciarRonda();
+                        } else {
+                          Navigator.pop(context);
+                        }
+                      });
+                    }
+                  } else {
+                    // Feedback de error ya manejado por el estado (sonido)
+                    // Aquí podrías mostrar un SnackBar si quisieras
+                  }
+                }
+                    : null,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

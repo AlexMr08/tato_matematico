@@ -278,7 +278,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
             // --- BOTÓN ACEPTAR ---
             Align(
               alignment: Alignment.bottomRight,
-              child: BotonSinIcono(
+              child: BotonSinIconoAlumno(
                 texto: "Aceptar",
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,

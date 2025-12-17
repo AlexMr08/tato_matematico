@@ -1,116 +1,227 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ajustes/ajustes_generales_screen.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/ajustes_numeros_screen.dart';
-import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart'; // Para Juego1Settings
+import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 
-class Juego1AjustesScreen extends StatelessWidget {
-  final Juego1Settings initialSettings;
-  final bool initialMostrarPuntuacion;
+class Juego1AjustesScreen extends StatefulWidget {
+  const Juego1AjustesScreen({Key? key}) : super(key: key);
 
-  const Juego1AjustesScreen({
-    Key? key,
-    required this.initialSettings,
-    required this.initialMostrarPuntuacion,
-  }) : super(key: key);
+  @override
+  State<Juego1AjustesScreen> createState() => _Juego1AjustesScreenState();
+}
+
+class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
+  late Alumno alumno;
+
+  // Estado local de ajustes
+  late int _numOpciones;
+  late int _rangoMax; // Simplificado a presets para UX: 10, 20, 50, 100
+  late int _rangoMin; // Normalmente 0 o 1
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final tempAlumno = context.read<AlumnoHolder>().alumno!;
+    _numOpciones = tempAlumno.juego1Settings.numeroOpciones;
+    _rangoMax = tempAlumno.juego1Settings.numeroMayor;
+    _rangoMin = tempAlumno.juego1Settings.numeroMenor;
+  }
+
+  Future<void> _guardar() async {
+    setState(() => _isLoading = true);
+
+    final newSettings = Juego1Settings(
+        numeroOpciones: _numOpciones,
+        numeroMayor: _rangoMax,
+        numeroMenor: _rangoMin
+    );
+
+    // Actualizar Firebase
+    final dbRef = FirebaseDatabase.instance.ref();
+    try {
+      await dbRef.child('tato/alumnos/${alumno.id}/juego1Settings').update(newSettings.toMap());
+
+      // Actualizar local
+      alumno.juego1Settings = newSettings;
+      // Forzar notifiación si fuera necesario con setAlumno, aunque aquí modificamos la referencia
+
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      debugPrint("Error guardando: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
-    final Color appBarColor = alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
-    final Color appBarTextColor = getTextColorForBackground(appBarColor);
+    alumno = context.watch<AlumnoHolder>().alumno!;
+    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
 
-    return Scaffold(
-      backgroundColor: alumno.colorFondo,
-      appBar: AppBar(
-        title: Text('Ajustes Juego 1', style: TextStyle(color: appBarTextColor)),
-        backgroundColor: appBarColor,
-        iconTheme: IconThemeData(color: appBarTextColor),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 24,
-          mainAxisSpacing: 24,
-          childAspectRatio: 1.0,
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 600;
+
+    return ScaffoldAlumno(
+      alumno: alumno,
+      textoCabecera: "Ajustes - Encuentra el número",
+      posicion: posicionBarra,
+      hasAjustes: false,
+      hasEstadisticas: false,
+      onVolver: _guardar, // Guardar al salir
+      onAjustes: () {},
+      onEstadisticas: () {},
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildSettingsCard(
-              context,
-              'Ajustes números',
-              Icons.format_list_numbered,
-              () async {
-                final result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => AjustesNumerosScreen(
-                      initialSettings: initialSettings,
-                      initialMostrarPuntuacion: initialMostrarPuntuacion,
-                    ),
-                  ),
-                );
 
-                if (result is Map && context.mounted) {
-                  Navigator.of(context).pop(result);
-                }
-              },
+            // --- SECCIÓN 1: RANGO DE NÚMEROS ---
+            _titulo("Rango de números (0 a X)"),
+            const SizedBox(height: 10),
+            Expanded(
+              flex: 2,
+              child: Row(
+                children: [
+                  _itemRango(10, "0 - 10", Icons.filter_1, isMobile),
+                  const SizedBox(width: 10),
+                  _itemRango(20, "0 - 20", Icons.filter_2, isMobile),
+                  const SizedBox(width: 10),
+                  _itemRango(50, "0 - 50", Icons.filter_5, isMobile),
+                  const SizedBox(width: 10),
+                  _itemRango(100, "0 - 100", Icons.filter_9_plus, isMobile),
+                ],
+              ),
             ),
-            _buildSettingsCard(
-              context,
-              'Ajustes Generales',
-              Icons.settings,
-              () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AjustesGeneralesScreen(),
+
+            const SizedBox(height: 20),
+
+            // --- SECCIÓN 2: CANTIDAD DE OPCIONES ---
+            _titulo("Cantidad de opciones en pantalla"),
+            const SizedBox(height: 10),
+            Expanded(
+              flex: 3,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Botón Menos
+                  _botonStepper(
+                      Icons.remove,
+                      "MENOS",
+                          () {
+                        if (_numOpciones > 2) setState(() => _numOpciones--);
+                      },
+                      isMobile,
+                      isEnabled: _numOpciones > 2
                   ),
-                );
-              },
+
+                  const SizedBox(width: 20),
+
+                  // Visualizador
+                  TarjetaJuego(
+                    label: _numOpciones.toString(),
+                    isButton: false,
+                    isEnabled: true,
+                    onTap: () {},
+                    colorFondo: Colors.white,
+                    imagenes: false,
+                    tipoImagen: "",
+                    numero: _numOpciones,
+                    tamano: isMobile ? 80 : 120,
+                    radio: 20,
+                  ),
+
+                  const SizedBox(width: 20),
+
+                  // Botón Más
+                  _botonStepper(
+                      Icons.add,
+                      "MÁS",
+                          () {
+                        if (_numOpciones < 12) setState(() => _numOpciones++);
+                      },
+                      isMobile,
+                      isEnabled: _numOpciones < 12
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSettingsCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
-    final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
-    final Color cardColor = alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
-    final Color contentColor = getTextColorForBackground(cardColor);
+  Widget _titulo(String texto) {
+    return Text(
+      texto,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+    );
+  }
 
-    return InkWell(
-      onTap: onTap,
-      child: Card(
-        color: cardColor,
-        elevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 90,
-              color: contentColor,
+  Widget _itemRango(int maxVal, String label, IconData icon, bool isMobile) {
+    bool selected = _rangoMax == maxVal;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _rangoMax = maxVal),
+        child: Container(
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFFD1FAE5) : const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? Colors.green : Colors.transparent,
+              width: 3,
             ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: contentColor,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: isMobile ? 24 : 40, color: Colors.black54),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 12 : 16,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _botonStepper(IconData icon, String label, VoidCallback onTap, bool isMobile, {bool isEnabled = true}) {
+    return InkWell(
+      onTap: isEnabled ? onTap : null,
+      child: Opacity(
+        opacity: isEnabled ? 1.0 : 0.3,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32, vertical: 16),
+          decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.black12)
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: isMobile ? 30 : 50),
+              Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 12 : 18)),
+            ],
+          ),
         ),
       ),
     );
