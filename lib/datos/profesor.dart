@@ -108,9 +108,17 @@ class Profesor {
 
   void actualizarNombre(String nuevoNombre) {
     nombre = nuevoNombre;
-    DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-    _dbRef.child("tato").child("profesorado").child(id).update({
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref();
+    dbRef.child("tato").child("profesorado").child(id).update({
       "nombre": nuevoNombre,
+    });
+  }
+
+  void actualizarDirector(bool nuevoAdmin) {
+    director = nuevoAdmin;
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref();
+    dbRef.child("tato").child("profesorado").child(id).update({
+      "director": nuevoAdmin,
     });
   }
 
@@ -137,11 +145,7 @@ class Profesor {
 
   @deprecated
   Widget widgetProfesorV2(BuildContext context, VoidCallback navegar) {
-    return ProfesorCard(
-      key: ValueKey(imagen),
-      profesor: this,
-      onTap: navegar,
-    );
+    return ProfesorCard(key: ValueKey(imagen), profesor: this, onTap: navegar);
   }
 }
 
@@ -161,11 +165,7 @@ class ProfesorCard extends StatefulWidget {
   final Profesor profesor;
   final VoidCallback onTap;
 
-  const ProfesorCard({
-    super.key,
-    required this.profesor,
-    required this.onTap,
-  });
+  const ProfesorCard({super.key, required this.profesor, required this.onTap});
 
   @override
   State<ProfesorCard> createState() => _ProfesorCardState();
@@ -179,7 +179,6 @@ class _ProfesorCardState extends State<ProfesorCard> {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        onTap: widget.onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: FotoPerfil(
           key: ValueKey(widget.profesor.imagen),
@@ -192,8 +191,12 @@ class _ProfesorCardState extends State<ProfesorCard> {
           widget.profesor.nombre,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(widget.profesor.director ? "Director" : "Profesor"),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        subtitle: Text(widget.profesor.director ? "Administrador" : "Profesor"),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          tooltip: 'Editar profesor',
+          onPressed: widget.onTap,
+        ),
       ),
     );
   }

@@ -1,22 +1,28 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
-// Asegúrate de que esta ruta sea correcta en tu proyecto
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
+
+import '../juegos/juego_1/juego1_settings.dart';
 
 /// **Nombre de la Clase: `Alumno`**
 ///
-/// **Descripción:** Clase que representa a un alumno en el sistema.
-/// **Fusión:** Combina la gestión global de sonidos con la gestión avanzada de imágenes y caché.
+/// **Descripción:** clase que representa a un alumno en el sistema.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha eliminado el volverDerecha
+///
+
 class Alumno {
   String id;
   String nombre;
-
-  // --- GESTIÓN DE IMÁGENES (Lógica Source B) ---
-  String? _imagen; // Campo privado para manejar lógica en el setter
+  String? _imagen;
   String imagenLocal = '';
   File? foto;
 
@@ -316,7 +322,16 @@ class Alumno {
 }
 
 /// **Nombre de la Clase: `AlumnViewCard`**
-/// **Descripción:** Widget que gestiona como se ve el alumno en vista de alumno.
+///
+/// **Descripción:** clase que gestiona como se ve el widget del alumno en vista de alumno.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 30/11/2025
+/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+///
 class AlumnViewCard extends StatelessWidget {
   final Alumno alumno;
   final VoidCallback onTap;
@@ -365,7 +380,17 @@ class AlumnViewCard extends StatelessWidget {
 }
 
 /// **Nombre de la Clase: `TeacherViewCard`**
-/// **Descripción:** Widget que gestiona la vista de un alumno en la perspectiva del profesor.
+///
+/// **Descripción:** clase que gestiona la vista de un alumno en la perspectiva del profesor.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se ha añadido un boton para acceder a las estadisticas
+///
+
 class TeacherViewCard extends StatefulWidget {
   final Alumno alumno;
   final Icon icono;
