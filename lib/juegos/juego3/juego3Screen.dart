@@ -34,6 +34,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
   late Alumno alumno;
   List<int>? numeroSeleccionado;
   bool mostrarIncorrectos = false;
+  late int numeroARepartir;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
     j3s.addListener(() {
       if (mounted) setState(() {});
     });
+    numeroARepartir = j3s.soluciones[0].reduce((a, b) => a + b);
   }
 
   @override
@@ -88,7 +90,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
 
     return ScaffoldAlumno(
       alumno: alumno,
-      textoCabecera: "Reparte el mismo número en cada recipiente",
+      textoCabecera: "Reparte el número $numeroARepartir en cada recipiente",
       posicion: posicionBarra,
       hasEstadisticas: false,
       hasAjustes: false,
@@ -390,6 +392,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                         if (!esCorrecto) {
                           mostrarIncorrectos = true;
                         } else if (juegoTerminado) {
+                          // -- DIÁLOGOS FINALIZACIÓN --
                           mostrarDialogoSalirReiniciarAlumnoV2(
                             context,
                             "Lo has hecho increíble!!!",
