@@ -1,8 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/pictograma.dart';
+import 'package:tato_matematico/datos/pictograma.dart';
 import 'package:tato_matematico/edicion/imagenStorage.dart';
 
 /// **Nombre de la Clase: `ConfigSecuenciaScreen`**
@@ -12,9 +12,10 @@ import 'package:tato_matematico/edicion/imagenStorage.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Coherencia visual con colores e iconos y
+/// arregaldos bugs de previsualizacion.
 ///
 
 class ConfigSecuenciaScreen extends StatefulWidget {
@@ -56,6 +57,10 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
     _cargarBiblioteca();
   }
 
+  /// Descarga la biblioteca completa de imagenes desde Firebase.
+  ///
+  /// Se utiliza para mostrar el grid de seleccion donde el profesor elige las
+  /// imáganes correctas e incorrectas.
   Future<void> _cargarBiblioteca() async {
     try {
       final snapshot = await _dbRef.child('tato').child('bibliotecaImagenes').get();
@@ -78,6 +83,12 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
     }
   }
 
+  /// Guarda la configuración final de login en Firebase.
+  ///
+  /// Se establece el `tipoLogin` a `secuenciaImagenes`
+  /// y se guarda la secuencia correcta y las distractoras (si hay).
+  ///
+  /// También limpia las configuraciones de otros métodos de login (alfanumérico, imagen única).
   Future<void> _guardarConfiguracion() async {
     setState(() => _isSaving = true);
     try {
@@ -120,29 +131,24 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
     }
   }
 
-  // --- LÓGICA DE CLICK INTELIGENTE ---
+  /// Gestiona la lógica al hacer clic en una imagen de la biblioteca.
+  ///
+  /// Prioridad de acción:
+  /// 1. Si ya es parte de la secuencia o distractor -> La quita (Deseleccionar).
+  /// 2. Si la secuencia **NO** está llena -> La añade al final de la secuencia.
+  /// 3. Si la secuencia **ESTÁ** llena:
+  ///    * **Modo Aleatorio:** Reemplaza el último paso de la secuencia.
+  ///    * **Modo Manual:** Intenta añadirla como distractor (si hay hueco en el grid).
   void _manejarClickImagen(Pictograma img) {
     setState(() {
-      // 1. Si ya es parte de la secuencia -> Quitarla
+
       if (_orderedSequenceIds.contains(img.id)) {
         _orderedSequenceIds.remove(img.id);
-        return;
-      }
-
-      // 2. Si es distractora -> Quitarla
-      if (_selectedDistractoras.containsKey(img.id)) {
+      } else if (_selectedDistractoras.containsKey(img.id)) {
         _selectedDistractoras.remove(img.id);
-        return;
-      }
-
-      // 3. Si la secuencia NO está llena -> Añadir al final
-      if (_orderedSequenceIds.length < _sequenceLength) {
+      } else if (_orderedSequenceIds.length < _sequenceLength) {
         _orderedSequenceIds.add(img.id);
-        return;
-      }
-
-      // 4. Si secuencia llena...
-      if (_isRandom) {
+      } else if (_isRandom) {
         // Modo Aleatorio: Reemplazar el último paso (comportamiento opcional)
         _orderedSequenceIds.removeLast();
         _orderedSequenceIds.add(img.id);
@@ -209,9 +215,9 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           items: const [
-                            DropdownMenuItem(value: 6, child: Text("6 Imágenes")),
-                            DropdownMenuItem(value: 9, child: Text("9 Imágenes")),
-                            DropdownMenuItem(value: 12, child: Text("12 Imágenes")),
+                            DropdownMenuItem(value: 4, child: Text("4 Imágenes (2x2)")),
+                            DropdownMenuItem(value: 6, child: Text("6 Imágenes (2x3)")),
+                            DropdownMenuItem(value: 8, child: Text("8 Imágenes (2x4)")),
                           ],
                           onChanged: (v) => setState(() {
                             _gridSize = v!;
@@ -349,6 +355,7 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                           child: Column(
                             children: [
                               Container(
+                                key: ValueKey("${index}_${idPaso ?? 'vacio'}"),
                                 width: 70, height: 70,
                                 decoration: BoxDecoration(
                                     color: colorScheme.surface,
@@ -358,22 +365,23 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                                         width: idPaso != null ? 3 : 2
                                     ),
                                     borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [if(idPaso != null) BoxShadow(color: colorScheme.primary.withOpacity(0.2), blurRadius: 5)]
+                                    boxShadow: [if(idPaso != null) BoxShadow(color: colorScheme.primary.withValues(alpha: 0.2), blurRadius: 5)]
                                 ),
                                 child: idPaso != null
                                     ? _previewImagen(idPaso)
                                     : Center(child: Text("${index + 1}", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.outlineVariant))),
                               ),
-                              const SizedBox(height: 4),
-                              Text("Paso ${index+1}", style: const TextStyle(fontSize: 10)),
                             ],
                           ),
                         ),
                         // Flechita excepto en el último
                         if (index < _sequenceLength - 1)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 20), // Ajustado para centrar con la caja
-                            child: Icon(Icons.arrow_right_alt, color: colorScheme.outline),
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 20),
+                            child: Icon(
+                                Icons.arrow_forward_rounded,
+                                color: colorScheme.outline
+                            ),
                           ),
                       ],
                     );
@@ -387,19 +395,20 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                   Text("DISTRACTORES ($distractoresActuales / $distractoresNecesarios)",
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 5),
-                  SizedBox(
-                    height: 50,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: distractoresNecesarios,
-                      itemBuilder: (context, index) {
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(distractoresNecesarios, (index) {
                         String? id;
                         if (index < _selectedDistractoras.keys.length) {
                           id = _selectedDistractoras.keys.elementAt(index);
                         }
+
                         return InkWell(
                           onTap: id != null ? () => setState(() => _selectedDistractoras.remove(id)) : null,
                           child: Container(
+                              key: ValueKey("dist_${index}_${id ?? 'vacio'}"),
                               width: 50, height: 50,
                               margin: const EdgeInsets.symmetric(horizontal: 4),
                               decoration: BoxDecoration(
@@ -414,13 +423,19 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                                   : Icon(Icons.add, color: colorScheme.outlineVariant)
                           ),
                         );
-                      },
+                      }),
                     ),
-                  )
+                  ),
                 ] else
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("El resto se rellena automáticamente.", style: TextStyle(fontStyle: FontStyle.italic, color: colorScheme.secondary)),
+                    child: Text(
+                        "El resto de imágenes serán aleatorias.",
+                        style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: colorScheme.secondary
+                        )
+                    ),
                   ),
               ],
             ),
@@ -471,16 +486,19 @@ class _ConfigSecuenciaScreenState extends State<ConfigSecuenciaScreen> {
                         Align(
                           alignment: Alignment.topRight,
                           child: Container(
-                            width: 24, height: 24,
+                            width: 32, height: 32,
                             decoration: BoxDecoration(
                                 color: esParteSecuencia ? colorScheme.primary : colorScheme.error,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5)
+                                border: Border.all(
+                                    color: Colors.white,
+                                    width: 2
+                                )
                             ),
                             child: Center(
                               child: esParteSecuencia
-                                  ? Text("${indexSecuencia + 1}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))
-                                  : const Icon(Icons.close, color: Colors.white, size: 14),
+                                  ? Text("${indexSecuencia + 1}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))
+                                  : const Icon(Icons.close, color: Colors.white, size: 20),
                             ),
                           ),
                         )

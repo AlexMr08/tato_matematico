@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/clase.dart';
+import 'package:tato_matematico/datos/clase.dart';
 
 /// **Nombre de la Clase: `AlumnosHolder`**
 ///
@@ -74,14 +74,15 @@ class AlumnosHolder extends ChangeNotifier {
   }
 
   void _onChildAdded(DatabaseEvent event) {
-    if (event.snapshot.value == null) return;
-    final key = event.snapshot.key!;
+    if (event.snapshot.value != null) {
+      final key = event.snapshot.key!;
 
-    if (_alumnos.any((a) => a.id == key)) return;
-
-    final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-    _alumnos.add(Alumno.fromMap(key, data));
-    notifyListeners();
+      if (!_alumnos.any((a) => a.id == key)) {
+        final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+        _alumnos.add(Alumno.fromMap(key, data));
+        notifyListeners();
+      }
+    }
   }
 
   void _onChildChanged(DatabaseEvent event) {
@@ -121,11 +122,13 @@ class AlumnosHolder extends ChangeNotifier {
 
   // Obtener un alumno específico (útil si lo necesitas buscar por ID)
   Alumno? obtenerAlumnoPorId(String id) {
+    Alumno? obtenido;
     try {
-      return _alumnos.firstWhere((a) => a.id == id);
+      obtenido = _alumnos.firstWhere((a) => a.id == id);
     } catch (e) {
-      return null;
+      obtenido = null;
     }
+    return obtenido;
   }
 
   @override

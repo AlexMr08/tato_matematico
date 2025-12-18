@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -9,25 +9,14 @@ import 'package:tato_matematico/holders/profesoresHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 /// **Nombre de la Clase: `AgregarClase`**
-///
 /// **Descripción:** clase que permite agregar una nueva clase al sistema.
 ///
 /// ---
 /// **Metadatos de Control:**
-/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Autor Original:** Andrés Ignacio Mardones Domcke
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
-///
-
-/*
-  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
-  - No se puede crear una clase sin nombre
-  - Se puede crear una clase introduciendo como minimo el nombre.
-  - Se puede crear una clase con nombre y con tutor, pero sin alumnos
-  - Se puede crear una clase con nombre, tutor y alumnos.
-   */
-
+/// * **Fecha de modificación:** 08/12/2025
+/// * **Último cambio:** Se ha mejorado la responsividad
 class AgregarClase extends StatefulWidget {
   final List<Alumno> allAlumnos;
 
@@ -46,6 +35,10 @@ class _AgregarClaseState extends State<AgregarClase> {
 
   late String anoSeleccionado;
   late List<String> listaAnos;
+
+  bool notInit = true;
+  late double size;
+  late bool em;
 
   @override
   void initState() {
@@ -77,6 +70,10 @@ class _AgregarClaseState extends State<AgregarClase> {
     List<Alumno> alumnos,
     List<String> alumnosClaseIds,
   ) {
+    // Calculamos tamaño dinámico para el diálogo
+    final size = MediaQuery.of(context).size;
+    final bool esMovil = size.width < 600;
+
     return showDialog(
       context: context,
       builder: (context) {
@@ -85,8 +82,9 @@ class _AgregarClaseState extends State<AgregarClase> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Container(
-            width: 500, // ancho fijo
-            height: 600, // alto fijo
+            // En móvil ocupa casi todo, en tablet tamaño fijo
+            width: esMovil ? size.width * 0.9 : 500,
+            height: esMovil ? size.height * 0.8 : 600,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -104,9 +102,8 @@ class _AgregarClaseState extends State<AgregarClase> {
                       itemBuilder: (context, index) {
                         final alumno = alumnos[index];
                         final yaEnClase = alumnosClaseIds.contains(alumno.id);
-                        final isDisabled = yaEnClase;
-                        if (isDisabled) {
-                          return SizedBox.shrink(); // No mostrar el alumno si ya está en la clase
+                        if (yaEnClase) {
+                          return SizedBox.shrink();
                         }
 
                         return TeacherViewCard(
@@ -118,21 +115,20 @@ class _AgregarClaseState extends State<AgregarClase> {
                             if (!alumnosActualizados.contains(alumno.id)) {
                               alumnosActualizados.add(alumno.id);
                               seleccionados.add(alumno.id);
-                              alumnos = alumnosDeClase(
+                              this.alumnos = alumnosDeClase(
                                 seleccionados,
                                 widget.allAlumnos,
                               );
                               Navigator.of(context).pop(true);
                             }
                           },
-                          icono: Icon(Icons.add),
+                          icono: Icon(Icons.add), onEstadisticasTap: () {  },
                         );
                       },
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 Center(
                   child: BotonSinIcono(
                     texto: "Cancelar",
@@ -151,135 +147,286 @@ class _AgregarClaseState extends State<AgregarClase> {
   Widget build(BuildContext context) {
     _profesores = context.read<ProfesoresHolder>().profesores;
 
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
+    }
+
     return ScaffoldComunV2(
       titulo: "Crear Clase",
       cuerpo: Column(
         children: [
           const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 800,
-              child: TextField(
-                controller: _nombreController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Nombre de la clase',
+
+          // --- SECCIÓN SUPERIOR (FORMULARIO) ---
+          if (em) ...[
+            // >>> DISEÑO MÓVIL (Vertical y ancho completo) <<<
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Nombre
+                  TextField(
+                    controller: _nombreController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Nombre de la clase',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Año
+                  Row(
+                    children: [
+                      const Text(
+                        'Año: ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: anoSeleccionado,
+                          underline: Container(
+                            height: 2,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          items: listaAnos.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            if (newValue != null) {
+                              setState(() => anoSeleccionado = newValue);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Tutor
+                  Row(
+                    children: [
+                      const Text(
+                        'Tutor: ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _profesores.isEmpty
+                            ? const Center(
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : DropdownButton<String>(
+                                isExpanded: true,
+                                value: profesorTutor,
+                                underline: Container(
+                                  height: 2,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                hint: const Text("Selecciona tutor"),
+                                items: _profesores.map((prof) {
+                                  return DropdownMenuItem(
+                                    value: prof.id,
+                                    child: Text(
+                                      prof.nombre,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (nuevoId) async {
+                                  setState(() => profesorTutor = nuevoId);
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  const Divider(),
+
+                  // Cabecera Alumnos y Botón Añadir
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Alumnos: ${alumnos.length}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      BotonConIcono(
+                        icono: Icons.add,
+                        radio: 12,
+                        texto: "Añadir",
+                        onPressed: () async {
+                          bool? resultado = await mostrarModalAlumnos(
+                            context,
+                            widget.allAlumnos,
+                            seleccionados,
+                          );
+                          if (resultado == true) {
+                            setState(() {
+                              alumnos = alumnosDeClase(
+                                seleccionados,
+                                widget.allAlumnos,
+                              );
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // >>> DISEÑO TABLET (El original tuyo) <<<
+            Center(
+              child: SizedBox(
+                width: 800,
+                child: TextField(
+                  controller: _nombreController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Nombre de la clase',
+                  ),
                 ),
               ),
             ),
-          ),
-
-          const SizedBox(height: 16),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Selector de Año
-                Row(
-                  children: [
-                    Text(
-                      'Año: ',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+            const SizedBox(height: 16),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Selector de Año
+                  Row(
+                    children: [
+                      Text(
+                        'Año: ',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    DropdownButton<String>(
-                      value: anoSeleccionado,
-                      underline: Container(
-                        height: 2,
-                        color: Theme.of(context).colorScheme.primary,
+                      const SizedBox(width: 10),
+                      DropdownButton<String>(
+                        value: anoSeleccionado,
+                        underline: Container(
+                          height: 2,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        items: listaAnos.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              anoSeleccionado = newValue;
+                            });
+                          }
+                        },
                       ),
-                      borderRadius: BorderRadius.circular(10),
-                      items: listaAnos.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            anoSeleccionado = newValue;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                // Selector de Tutor
-                Row(
-                  children: [
-                    Text(
-                      'Tutor: ',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  // Selector de Tutor
+                  Row(
+                    children: [
+                      Text(
+                        'Tutor: ',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    _profesores.isEmpty
-                        ? const CircularProgressIndicator()
-                        : DropdownButton<String>(
-                            value: profesorTutor,
-                            underline: Container(
-                              height: 2,
-                              color: Theme.of(context).colorScheme.primary,
+                      const SizedBox(width: 20),
+                      _profesores.isEmpty
+                          ? const CircularProgressIndicator()
+                          : DropdownButton<String>(
+                              value: profesorTutor,
+                              underline: Container(
+                                height: 2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              hint: const Text("Selecciona tutor"),
+                              items: _profesores.map((prof) {
+                                return DropdownMenuItem(
+                                  value: prof.id,
+                                  child: Text(prof.nombre),
+                                );
+                              }).toList(),
+                              onChanged: (nuevoId) async {
+                                setState(() => profesorTutor = nuevoId);
+                              },
                             ),
-                            borderRadius: BorderRadius.circular(10),
-                            hint: const Text("Selecciona tutor"),
-                            items: _profesores.map((prof) {
-                              return DropdownMenuItem(
-                                value: prof.id,
-                                child: Text(prof.nombre),
-                              );
-                            }).toList(),
-                            onChanged: (nuevoId) async {
-                              setState(() => profesorTutor = nuevoId);
-                            },
-                          ),
-                  ],
-                ),
-                // Botón Añadir Alumnos
-                Row(
-                  children: [
-                    Text(
-                      'Alumnos: ${alumnos.length}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  // Botón Añadir Alumnos
+                  Row(
+                    children: [
+                      Text(
+                        'Alumnos: ${alumnos.length}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    BotonConIcono(
-                      icono: Icons.add,
-                      radio: 16,
-                      texto: "Añadir",
-                      onPressed: () async {
-                        bool? resultado = await mostrarModalAlumnos(
-                          context,
-                          widget.allAlumnos,
-                          seleccionados,
-                        );
-                        if (resultado == true) {
-                          setState(() {
-                            alumnos = alumnosDeClase(
-                              seleccionados,
-                              widget.allAlumnos,
-                            );
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 20),
+                      BotonConIcono(
+                        icono: Icons.add,
+                        radio: 16,
+                        texto: "Añadir",
+                        onPressed: () async {
+                          bool? resultado = await mostrarModalAlumnos(
+                            context,
+                            widget.allAlumnos,
+                            seleccionados,
+                          );
+                          if (resultado == true) {
+                            setState(() {
+                              alumnos = alumnosDeClase(
+                                seleccionados,
+                                widget.allAlumnos,
+                              );
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
 
           const SizedBox(height: 30),
 
+          // --- LISTA DE ALUMNOS (Común para ambos) ---
           Expanded(
             child: Scrollbar(
               thumbVisibility: true,
@@ -300,14 +447,17 @@ class _AgregarClaseState extends State<AgregarClase> {
                           );
                         });
                       },
-                      icono: Icon(Icons.remove_circle),
+                      icono: Icon(Icons.remove_circle), onEstadisticasTap: () {  },
                     );
                   },
                 ),
               ),
             ),
           ),
-          SizedBox(height: 8),
+
+          const SizedBox(height: 8),
+
+          // --- BOTÓN FINAL ---
           BotonSinIcono(
             texto: "Añadir clase",
             onPressed: agregarClase,
@@ -317,7 +467,7 @@ class _AgregarClaseState extends State<AgregarClase> {
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
         ],
       ),
     );

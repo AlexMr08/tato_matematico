@@ -1,6 +1,18 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
+
+/// **Nombre de la Clase: `auxFunc`**
+///
+/// **Descripción:** Archivo con funciones que tienen distintas funcionalidades.
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se han hecho cambios de calidad
+///
 
 // --- Función de utilidad para el color del texto ---
 Color getTextColorForBackground(Color backgroundColor) {
@@ -11,11 +23,9 @@ String obtenerSemana() {
   DateTime now = DateTime.now();
 
   DateTime lunes = now.subtract(Duration(days: now.weekday - 1));
-  DateTime domingo = lunes.add(const Duration(days: 6));
 
   String f(int n) => n.toString().padLeft(2, '0');
-  String inicio = "${f(lunes.day)}-${f(lunes.month)}-${lunes.year}";
-  String fin = "${f(domingo.day)}/${f(domingo.month)}/${domingo.year}";
+  String inicio = "${(lunes.year)}-${f(lunes.month)}-${f(lunes.day)}";
 
   return inicio;
 }
@@ -31,126 +41,194 @@ PosicionBarra getPosicionBarra(int? numBarra) {
   return posicionBarra;
 }
 
+///
+/// @name mostrarDialogosSiNoAlumnoV2
+///
+/// @param context El contexto de la aplicación.
+/// @param titulo El título del diálogo.
+/// @param contenido El contenido del diálogo.
+/// @description Muestra un diálogo de confirmación con dos opciones: "Sí" y "No".
+/// Nos hemos apoyado en gemini para hacerla responsiva
+///
+
 Future<bool?> mostrarDialogoSiNoAlumnoV2(
   BuildContext context,
   String titulo,
   String contenido,
 ) async {
+  Widget botonDialogo({
+    required VoidCallback onTap,
+    required Color colorBoton,
+    required String iconPath,
+    required String label,
+    required double iconSize,
+    required double textSize,
+    required double padding,
+  }) {
+    return Material(
+      elevation: 8,
+      borderRadius: BorderRadius.circular(20),
+      color: colorBoton,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                iconPath,
+                width: iconSize,
+                height: iconSize,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: textSize,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   return showGeneralDialog<bool>(
     context: context,
     barrierDismissible: false,
     barrierLabel: "Cerrar",
-    barrierColor: Colors
-        .black54, // Fondo oscurecido detrás (aunque no se verá si es fullscreen)
+    barrierColor: Colors.black54,
     pageBuilder: (context, animation, secondaryAnimation) {
       return Scaffold(
-        // Color de fondo del diálogo a pantalla completa
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Título grande
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  // Contenido
-                  Text(
-                    contenido,
-                    style: const TextStyle(fontSize: 24),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 60), // Espacio antes de los botones
-                  // Botones Si/No
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // ----------------- BOTÓN NO -----------------
-                      Material(
-                        elevation:
-                            8, // Un poco más de elevación al ser fullscreen
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.red.shade50,
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).pop(false),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              24.0,
-                            ), // Más padding para hacerlo masivo
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Image.asset(
-                                  'assets/images/no.png',
-                                  width: 120, // Imagen más grande
-                                  height: 120,
-                                  fit: BoxFit.contain,
-                                ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "No",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28, // Texto más grande
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Detectamos si es móvil
+              bool esMovil = constraints.maxWidth < 600;
 
-                      // ----------------- BOTÓN SI -----------------
-                      Material(
-                        elevation: 8,
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.green.shade50,
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).pop(true),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Image.asset(
-                                  'assets/images/si.png',
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.contain,
-                                ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "Si",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+              // Ajustamos tamaños proporcionalmente
+              double sizeIcono = esMovil ? 80 : 120.0;
+              double sizeTitulo = 32.0;
+              double sizeTexto = 24.0;
+              double sizeBotonTexto = 28.0;
+
+              // CAMBIO 1: Reducimos ligeramente el padding interno en móvil (de 16 a 12)
+              double paddingBoton = esMovil ? 12.0 : 24.0;
+
+              return Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Título
+                      Text(
+                        titulo,
+                        style: TextStyle(
+                          fontSize: sizeTitulo,
+                          fontWeight: FontWeight.bold,
                         ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Contenido
+                      Text(
+                        contenido,
+                        style: TextStyle(fontSize: sizeTexto),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: esMovil ? 30 : 60),
+
+                      // Fila de botones adaptables
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // ----------------- BOTÓN NO -----------------
+                          botonDialogo(
+                            onTap: () => Navigator.of(context).pop(false),
+                            colorBoton: Colors.red.shade50,
+                            iconPath: 'assets/images/no.png',
+                            label: "No",
+                            iconSize: sizeIcono,
+                            textSize: sizeBotonTexto,
+                            padding: paddingBoton,
+                          ),
+
+                          // ----------------- BOTÓN SI -----------------
+                          botonDialogo(
+                            onTap: () => Navigator.of(context).pop(true),
+                            colorBoton: Colors.green.shade50,
+                            iconPath: 'assets/images/si.png',
+                            label: "Si",
+                            iconSize: sizeIcono,
+                            textSize: sizeBotonTexto,
+                            padding: paddingBoton,
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       );
     },
+  );
+}
+
+Widget _botonDialogo({
+  required BuildContext context,
+  required VoidCallback onTap,
+  required Color colorBoton,
+  required Color textColor,
+  required String iconPath,
+  required String label,
+  required double iconSize,
+  required double textSize,
+  required double padding,
+}) {
+  return Material(
+    elevation: 8,
+    borderRadius: BorderRadius.circular(20),
+    color: colorBoton,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: EdgeInsets.all(padding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              iconPath,
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.contain,
+              color: textColor,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: textSize,
+                color: textColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ),
   );
 }
 
@@ -175,105 +253,91 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
         child: Scaffold(
           backgroundColor: fondo,
           body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      titulo,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: textFondo,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      contenido,
-                      style: TextStyle(fontSize: 24, color: textFondo),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 60),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // ----------------- BOTÓN SALIR -----------------
-                        Material(
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(20),
-                          color: boton,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(false),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/boton_volver.png',
-                                    width: 120,
-                                    height: 120,
-                                    fit: BoxFit.contain,
-                                    color: textBoton,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    "Volver al menú",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28,
-                                      color: textBoton,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                bool esMovil = constraints.maxWidth < 600;
+                double sizeIcono = esMovil ? 60.0 : 120.0;
+                double sizeTitulo = esMovil ? 24.0 : 32.0;
+                double sizeTexto = esMovil ? 18.0 : 24.0;
+                double sizeBotonTexto = esMovil ? 18.0 : 28.0;
+                double paddingBoton = esMovil ? 16.0 : 24.0;
+                double sizeEmoji = esMovil ? 40.0 : 64.0;
 
-                        // ----------------- BOTÓN REINICIAR -----------------
-                        Material(
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(20),
-                          color: boton,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(true),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/de_nuevo2.png',
-                                    width: 120,
-                                    height: 120,
-                                    fit: BoxFit.contain,
-                                    color: textBoton,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    "Empezar de nuevo",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28,
-                                      color: textBoton,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                return Center(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "🥳🥳Lo has conseguido🥳🥳",
+                            style: TextStyle(
+                              fontSize: sizeEmoji,
+                              fontWeight: FontWeight.bold,
+                              color: getTextColorForBackground(fondo),
                             ),
                           ),
-                        ),
-                      ],
+                          Text(
+                            titulo,
+                            style: TextStyle(
+                              fontSize: sizeTitulo,
+                              fontWeight: FontWeight.bold,
+                              color: textFondo,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            contenido,
+                            style: TextStyle(
+                              fontSize: sizeTexto,
+                              color: textFondo,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: esMovil ? 16 : 24),
+                          Row(
+                            spacing: 16,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                child: _botonDialogo(
+                                  context: context,
+                                  onTap: () => Navigator.of(context).pop(false),
+                                  colorBoton: boton,
+                                  textColor: textBoton,
+                                  iconPath: 'assets/images/boton_volver.png',
+                                  label: "Volver al menú",
+                                  iconSize: sizeIcono,
+                                  textSize: sizeBotonTexto,
+                                  padding: paddingBoton,
+                                ),
+                              ),
+
+                              // ----------------- BOTÓN REINICIAR -----------------
+                              Expanded(
+                                child: _botonDialogo(
+                                  context: context,
+                                  onTap: () => Navigator.of(context).pop(true),
+                                  colorBoton: boton,
+                                  textColor: textBoton,
+                                  iconPath: 'assets/images/de_nuevo2.png',
+                                  label: "Empezar de nuevo",
+                                  iconSize: sizeIcono,
+                                  textSize: sizeBotonTexto,
+                                  padding: paddingBoton,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -303,131 +367,97 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
         child: Scaffold(
           backgroundColor: fondo,
           body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "🥳🥳🥳🥳",
-                      style: TextStyle(
-                        fontSize: 64,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      titulo,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: textFondo,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      contenido,
-                      style: TextStyle(fontSize: 24, color: textFondo),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 60),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // ----------------- BOTÓN SALIR -----------------
-                        Material(
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(20),
-                          color: boton,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(false),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/boton_volver.png',
-                                    width: 120,
-                                    height: 120,
-                                    fit: BoxFit.contain,
-                                    color: textBoton,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    "Volver al menú",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28,
-                                      color: textBoton,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                bool esMovil = constraints.maxWidth < 600;
 
-                        // ----------------- BOTÓN REINICIAR -----------------
-                        Material(
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(20),
-                          color: boton,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(true),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/siguiente.png',
-                                    width: 120,
-                                    height: 120,
-                                    fit: BoxFit.contain,
-                                    color: textBoton,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    "Siguiente",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28,
-                                      color: textBoton,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                double sizeIcono = esMovil ? 60.0 : 120.0;
+                double sizeTitulo = esMovil ? 24.0 : 32.0;
+                double sizeTexto = esMovil ? 18.0 : 24.0;
+                double sizeBotonTexto = esMovil ? 18.0 : 28.0;
+                double paddingBoton = esMovil ? 16.0 : 24.0;
+                double sizeEmoji = esMovil ? 40.0 : 64.0;
+
+                return Center(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize:
+                            MainAxisSize.min, // Importante para el scroll
+                        children: [
+                          Text(
+                            "🥳🥳Ya estás mas cerca🥳🥳",
+                            style: TextStyle(
+                              fontSize: sizeEmoji,
+                              fontWeight: FontWeight.bold,
+                              color: getTextColorForBackground(fondo),
                             ),
                           ),
-                        ),
-                      ],
+                          Text(
+                            titulo,
+                            style: TextStyle(
+                              fontSize: sizeTitulo,
+                              fontWeight: FontWeight.bold,
+                              color: textFondo,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            contenido,
+                            style: TextStyle(
+                              fontSize: sizeTexto,
+                              color: textFondo,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: esMovil ? 16 : 24),
+                          Row(
+                            spacing: 16,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                child: _botonDialogo(
+                                  context: context,
+                                  onTap: () => Navigator.of(context).pop(false),
+                                  colorBoton: boton,
+                                  textColor: textBoton,
+                                  iconPath: 'assets/images/boton_volver.png',
+                                  label: "Volver al menú",
+                                  iconSize: sizeIcono,
+                                  textSize: sizeBotonTexto,
+                                  padding: paddingBoton,
+                                ),
+                              ),
+                              Expanded(
+                                child: _botonDialogo(
+                                  context: context,
+                                  onTap: () => Navigator.of(context).pop(true),
+                                  colorBoton: boton,
+                                  textColor: textBoton,
+                                  iconPath: 'assets/images/siguiente.png',
+                                  label: "Siguiente",
+                                  iconSize: sizeIcono,
+                                  textSize: sizeBotonTexto,
+                                  padding: paddingBoton,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),
       );
     },
   );
-}
-
-bool isTablet(BuildContext context) {
-  final size = MediaQuery.of(context).size;
-  final orientation = MediaQuery.of(context).orientation;
-
-  // Tablet real: ancho grande incluso en vertical
-  if (orientation == Orientation.portrait && size.width >= 600) return true;
-
-  // En horizontal, evitamos confundir móvil rotado con tablet
-  if (orientation == Orientation.landscape && size.height >= 600) return true;
-
-  return false;
 }
 
 void navegar(Widget nuevo, BuildContext context) {
@@ -481,13 +511,18 @@ String obtenerAnoAcademico() {
   final now = DateTime.now();
   final int currentYear = now.year;
   final int currentMonth = now.month;
+  String anoAcademico;
 
   // Consideramos que el curso empieza en Septiembre
   if (currentMonth >= 9) {
-    return "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
+    anoAcademico =
+        "${currentYear.toString().substring(2)}/${(currentYear + 1).toString().substring(2)}";
   } else {
-    return "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
+    anoAcademico =
+        "${(currentYear - 1).toString().substring(2)}/${currentYear.toString().substring(2)}";
   }
+
+  return anoAcademico;
 }
 
 void snackBarError(BuildContext context, String mensaje) {

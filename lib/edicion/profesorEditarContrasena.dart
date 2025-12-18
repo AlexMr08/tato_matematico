@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/datos/profesor.dart';
@@ -15,8 +15,8 @@ import 'package:tato_matematico/datos/profesor.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
+/// * **Última modificación por:** Gonzalo Alganza Luque
+/// * **Fecha de modificación:** 13/12/2025
 /// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
 ///
 
@@ -50,39 +50,35 @@ class _ProfesorEditarContrasenaState extends State<ProfesorEditarContrasena> {
     // Validar que los campos no estén vacíos
     if (password1.isEmpty) {
       snackBarAviso(context, "La contraseña no puede estar vacia");
-      return;
-    }
-
-    if (password1 != password2) {
+    } else if (password1 != password2) {
       snackBarAviso(context, "Las contraseñas no coinciden");
-      return;
-    }
+    } else {
+      // Buscar el profesor en la base de datos por su id
+      var dbref = FirebaseDatabase.instance
+          .ref()
+          .child("tato")
+          .child("profesorado")
+          .child(widget.profesor.id);
+      DatabaseEvent event = await dbref.once();
 
-    // Buscar el profesor en la base de datos por su id
-    var dbref = FirebaseDatabase.instance
-        .ref()
-        .child("tato")
-        .child("profesorado")
-        .child(widget.profesor.id);
-    DatabaseEvent event = await dbref.once();
+      Map data = event.snapshot.value as Map;
 
-    Map data = event.snapshot.value as Map;
+      var hashHex = await _generarHash(data["salt"], password1);
 
-    var hashHex = await _generarHash(data["salt"], password1);
-
-    await dbref
-        .update({"pass": hashHex})
-        .then((_) {
-          setState(() {
-            snackBarExito(context, "Contraseña actualizada correctamente");
-            Navigator.pop(context);
-          });
-        })
-        .catchError((error) {
-          setState(() {
-            snackBarError(context, "Error al actualizar la contraseña: $error");
-          });
+      await dbref
+          .update({"pass": hashHex})
+          .then((_) {
+        setState(() {
+          snackBarExito(context, "Contraseña actualizada correctamente");
+          Navigator.pop(context);
         });
+      })
+          .catchError((error) {
+        setState(() {
+          snackBarError(context, "Error al actualizar la contraseña: $error");
+        });
+      });
+    }
   }
 
   @override

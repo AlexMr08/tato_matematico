@@ -1,34 +1,12 @@
-import 'dart:math';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/juego_1_ajustes_screen.dart';
-
-class Juego1Settings {
-  int numeroOpciones;
-  int numeroMayor;
-  int numeroMenor;
-
-  Juego1Settings({
-    required this.numeroOpciones,
-    required this.numeroMayor,
-    required this.numeroMenor,
-  });
-
-  Map<String, int> toMap() {
-    return {
-      'numeroOpciones': numeroOpciones,
-      'numeroMayor': numeroMayor,
-      'numeroMenor': numeroMenor,
-    };
-  }
-}
+import 'package:tato_matematico/juegos/juego_1/juego1.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
+import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Import correcto widgets
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart'; // Import correcto widgets
 
 class Juego1Screen extends StatefulWidget {
   const Juego1Screen({Key? key}) : super(key: key);
@@ -38,296 +16,271 @@ class Juego1Screen extends StatefulWidget {
 }
 
 class _Juego1ScreenState extends State<Juego1Screen> {
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-  final FlutterTts _flutterTts = FlutterTts();
-  late Alumno _alumno;
-  int _puntuacion = 0;
-
-  late Juego1Settings _settings;
-  late int _numeroAAdivinar;
-  late List<int> _opciones = [];
-  int? _numeroSeleccionado;
-  bool _isLoading = true;
-  bool _mostrarPuntuacion = true;
+  Juego1State? _state;
+  late double size;
+  late bool em; // Es móvil
+  bool notInit = true;
 
   @override
-  void initState() {
-    super.initState();
-    _loadInitialData();
-  }
-
-  Future<void> _setupTts() async {
-    _alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
-    await _flutterTts.setLanguage("es-ES");
-    await _flutterTts.setSpeechRate(_alumno.ttsRateJuego1);
-    await _flutterTts.setVolume(_alumno.ttsVolumeJuego1);
-    await _flutterTts.setPitch(_alumno.ttsPitchJuego1);
-    if (_alumno.vozJuego1 != null) {
-      await _flutterTts.setVoice({"name": _alumno.vozJuego1!});
-    }
-  }
-
-  Future<void> _speak(String text) async {
-    await _flutterTts.speak(text);
-  }
-
-  Future<void> _loadInitialData() async {
-    final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno;
-    if (alumno == null) {
-      if (mounted) Navigator.of(context).pop();
-      return;
-    }
-    _alumno = alumno;
-    _settings = _alumno.juego1Settings;
-    _mostrarPuntuacion = _alumno.mostrarPuntuacionJuego1;
-
-    await _setupTts();
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      _generarNuevoJuego();
-    }
-  }
-
-  void _generarNuevoJuego() {
-    if (_isLoading) return;
-
-    final random = Random();
-    _numeroAAdivinar =
-        _settings.numeroMenor +
-        random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
-
-    final Set<int> opcionesTemporales = {_numeroAAdivinar};
-    while (opcionesTemporales.length <
-        min(
-          _settings.numeroOpciones,
-          (_settings.numeroMayor - _settings.numeroMenor + 1),
-        )) {
-      final nuevaOpcion =
-          _settings.numeroMenor +
-          random.nextInt(_settings.numeroMayor - _settings.numeroMenor + 1);
-      opcionesTemporales.add(nuevaOpcion);
-    }
-
-    setState(() {
-      _opciones = opcionesTemporales.toList()..shuffle();
-      _numeroSeleccionado = null;
-    });
-
-    _speak(_numeroAAdivinar.toString());
-  }
-
-  void _aceptarRespuesta() {
-    if (_numeroSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, selecciona un número.'),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(20, 20, 20, 100),
-        ),
-      );
-      return;
-    }
-
-    bool esCorrecto = _numeroSeleccionado == _numeroAAdivinar;
-
-    if (esCorrecto && _alumno.sonidoAciertoActivadoJuego1) {
-      // TODO: Play sound
-    } else if (!esCorrecto && _alumno.sonidoFalloActivadoJuego1) {
-      // TODO: Play sound
-    }
-
-    if (esCorrecto) {
-      snackBarExito(context, "¡Correcto!");
-    } else {
-      snackBarError(context, "Incorrecto. Prueba de nuevo.");
-    }
-
-    if (esCorrecto) {
-      setState(() {
-        _puntuacion++;
-      });
-    }
-
-    Future.delayed(const Duration(milliseconds: 900), () {
-      if (mounted) {
-        _generarNuevoJuego();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_state == null) {
+      final alumno = context.read<AlumnoHolder>().alumno;
+      final juego = context.read<AlumnoHolder>().listaJuegos["juego1"];
+      if (alumno != null) {
+        _state = Juego1State(alumno, juego as Juego1);
+        _state!.init();
+        _state!.addListener(() {
+          if (mounted) setState(() {});
+        });
       }
-    });
+    }
   }
 
-  void _navegarAjustes() async {
-    final resultado = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Juego1AjustesScreen(
-          initialSettings: _settings,
-          initialMostrarPuntuacion: _mostrarPuntuacion,
-        ),
-      ),
-    );
-
-    if (resultado is Map && mounted) {
-      final newSettings = resultado['settings'] as Juego1Settings?;
-      final newMostrarPuntuacion = resultado['mostrarPuntuacion'] as bool?;
-
-      if (newSettings != null && newMostrarPuntuacion != null) {
-        try {
-          await _dbRef
-              .child('tato/alumnos/${_alumno.id}/juego1Settings')
-              .set(newSettings.toMap());
-          await _dbRef.child('tato/alumnos/${_alumno.id}').update({
-            'mostrarPuntuacionJuego1': newMostrarPuntuacion,
-          });
-
-          setState(() {
-            _settings = newSettings;
-            _mostrarPuntuacion = newMostrarPuntuacion;
-            _puntuacion = 0;
-          });
-          _generarNuevoJuego();
-        } catch (e) {
-          // Handle error
-        }
-      }
-    } else if (resultado == true && mounted) {
-      await _loadInitialData();
-    }
+  @override
+  void dispose() {
+    _state?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color buttonColor =
-        _alumno.colorBotones ?? Theme.of(context).colorScheme.secondary;
-    final Color fondoColor =
-        _alumno.colorFondo ?? Theme.of(context).colorScheme.surface;
-    final Color backgroundTextColor = getTextColorForBackground(fondoColor);
-    final Color buttonTextColor = getTextColorForBackground(buttonColor);
-    final Color selectedButtonBorderColor =
-        _alumno.colorSeleccion ?? Theme.of(context).colorScheme.secondary;
+    // Inicialización de dimensiones (Idéntico a Juego 2)
+    if (notInit) {
+      size = MediaQuery.sizeOf(context).width;
+      em = size < 600;
+      notInit = false;
+    }
 
-    final buttonStyle = ElevatedButton.styleFrom(
-      backgroundColor: buttonColor,
-      foregroundColor: buttonTextColor,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    final alumno = context.watch<AlumnoHolder>().alumno;
+    final juego = context.watch<AlumnoHolder>().listaJuegos["juego1"] as Juego1;
+    print(
+      "Juego usa imagenes? ${juego.usaImagenes} del tipo: ${juego.tipoImagenes}",
+    );
+    if (alumno == null || _state == null) return const SizedBox.shrink();
+
+    final Color colorTexto = getTextColorForBackground(
+      alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
     );
 
-    PosicionBarra posicionBarra = switch (_alumno.posicionBarra) {
-      0 => PosicionBarra.arriba,
-      1 => PosicionBarra.abajo,
-      2 => PosicionBarra.izquierda,
-      3 => PosicionBarra.derecha,
-      _ => PosicionBarra.abajo,
-    };
+    // Tamaños responsivos consistentes con Juego 2
+    double espaciado = em ? 12.0 : 24.0;
+    // Cálculo para que quepan las opciones (3 en móvil, más en tablet)
+    double tamanoFicha = em ? (size - 60) / 3 : (size - 100) / 5;
+    if (tamanoFicha > 140) tamanoFicha = 140; // Límite máximo
+
+    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
 
     return ScaffoldAlumno(
+      alumno: alumno,
+      textoCabecera: "Encuentra el número",
       posicion: posicionBarra,
-      textoCabecera: "Juego 1 - Selecciona el numero correcto",
-      alumno: _alumno,
-      onVolver: Navigator.of(context).pop,
-      onAjustes: _navegarAjustes,
+      hasAjustes: false, // Habilitamos botón ajustes
+      hasEstadisticas: false,
+      onVolver: () {
+        mostrarDialogoSiNoAlumnoV2(
+          context,
+          "Salir",
+          "¿Seguro que quieres salir?",
+        ).then((confirmed) {
+          if (confirmed == true) {
+            _state!.salir();
+            Navigator.pop(context);
+          }
+        });
+      },
+      onAjustes: () {
+        // Navegación a ajustes (implementada más abajo)
+        Navigator.pushNamed(context, '/juego1_ajustes');
+      },
       onEstadisticas: () {},
-      hasAjustes: _alumno.permisoAjustesJuego1,
-      hasEstadisticas: _alumno.permisoEstadisticasJuego1,
-      child: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(buttonColor),
-              ),
-            )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            // --- BARRA DE PROGRESO Y REPRODUCCIÓN ---
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (_mostrarPuntuacion)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Puntuación: $_puntuacion',
-                      style: TextStyle(
-                        color: backgroundTextColor,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                // Botón Escuchar a la izquierda
+                Semantics(
+                  label: "Escuchar número objetivo",
+                  child: ElevatedButton(
+                    onPressed: _state!.speakObjetivo,
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(20), // Más grande
+                      backgroundColor:
+                          alumno.colorBotones ??
+                          Theme.of(context).colorScheme.primaryContainer,
+                      foregroundColor: getTextColorForBackground(
+                        alumno.colorBotones ??
+                            Theme.of(context).colorScheme.primary,
                       ),
                     ),
+                    child: const Icon(Icons.volume_up, size: 40), // Más grande
                   ),
-                SizedBox(height: 8),
-                ElevatedButton.icon(
-                  style: buttonStyle,
-                  onPressed: () => _speak(_numeroAAdivinar.toString()),
-                  icon: const Icon(Icons.volume_up),
-                  label: const Text('Volver a escuchar'),
                 ),
-                SizedBox(height: 8),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200, // Aumenta el tamaño máximo
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 1, // Proporción más ancha
-                          ),
-                      itemCount: _opciones.length,
-                      itemBuilder: (context, index) {
-                        final numero = _opciones[index];
-                        final bool isSelected = numero == _numeroSeleccionado;
-                        final Color cardColor = isSelected
-                            ? Color.alphaBlend(Colors.white, buttonColor)
-                            : buttonColor;
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => _numeroSeleccionado = numero),
-                          child: Card(
-                            color: cardColor,
-                            elevation: isSelected ? 12 : 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? selectedButtonBorderColor
-                                    : Colors.transparent,
-                                width: 3,
-                              ),
+
+                const Spacer(),
+
+                // Contador de repeticiones en el centro
+                Semantics(
+                  label: _state!.getRepeticionesString(), // Accesibilidad
+                  excludeSemantics: true,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "REPETICIONES: ",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorTexto,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ...List.generate(_state!.repeticionesTotales, (index) {
+                        bool completado =
+                            index < _state!.repeticionesCompletadas;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black,
                             ),
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                child: AutoSizeText(
-                                  numero.toString(),
-                                  style: TextStyle(
-                                    fontSize: 48,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected
-                                        ? getTextColorForBackground(cardColor)
-                                        : buttonTextColor,
-                                  ),
-                                  maxLines: 1,
-                                  minFontSize: 8,
-                                ),
-                              ),
+                            child: Icon(
+                              completado ? Icons.emoji_emotions : Icons.circle,
+                              color: Colors.amberAccent,
                             ),
                           ),
                         );
-                      },
-                    ),
+                      }),
+                    ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    style: buttonStyle,
-                    onPressed: _aceptarRespuesta,
-                    child: const Text('Aceptar'),
-                  ),
-                ),
+
+                const Spacer(),
+
+                // Placeholder para centrar el contador.
+                const SizedBox(width: 80),
               ],
             ),
+
+            const SizedBox(height: 20),
+
+            // --- GRID DE OPCIONES ---
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: espaciado,
+                    runSpacing: espaciado,
+                    children: _state!.opciones.map((numero) {
+                      bool isSelected = _state!.numeroSeleccionado == numero;
+
+                      // Si ya acertó y este es el correcto, mostrarlo verde/éxito
+                      bool isCorrectAndFinished =
+                          _state!.finalizado &&
+                          numero == _state!.numeroAAdivinar;
+
+                      Color fondo = isSelected
+                          ? (alumno.colorSeleccion ??
+                                Theme.of(context).colorScheme.tertiaryContainer)
+                          : (alumno.colorBotones ??
+                                Theme.of(context).colorScheme.primaryContainer);
+
+                      if (isCorrectAndFinished) fondo = Colors.green;
+
+                      print("JUEGO USA IMAGENES: ${juego.usaImagenes}");
+
+                      return TarjetaJuego(
+                        key: ValueKey(numero),
+                        tamano: tamanoFicha,
+                        radio: 20,
+                        numero: numero,
+                        label: numero.toString(), // Ocultar si hay imágenes
+                        isButton: true,
+                        // Deshabilitar interacción si ya terminó la ronda
+                        isEnabled: !_state!.finalizado,
+                        colorFondo: fondo,
+                        imagenes: juego.usaImagenes,
+                        tipoImagen: juego.tipoImagenes,
+                        onTap: () => _state!.seleccionarNumero(numero),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+
+            // --- BOTÓN ACEPTAR ---
+            Align(
+              alignment: Alignment.bottomRight,
+              child: BotonSinIconoAlumno(
+                texto: "Aceptar",
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                colorFondo: alumno.colorBotones,
+                // Habilitado solo si hay selección y no ha terminado animación de éxito
+                onPressed:
+                    (_state!.numeroSeleccionado != null && !_state!.finalizado)
+                    ? () async {
+                        bool acertado = await _state!.validarRespuesta();
+
+                        if (acertado) {
+                          // Pequeña pausa para ver el color verde antes del diálogo
+                          await Future.delayed(
+                            const Duration(milliseconds: 800),
+                          );
+
+                          if (!mounted) return;
+
+                          if (_state!.esFinDeJuego()) {
+                            // --- FIN DEL JUEGO COMPLETO ---
+                            mostrarDialogoSalirReiniciarAlumnoV2(
+                              context,
+                              "¡Juego Completado!",
+                              "Has encontrado todos los números. ¿Quieres jugar otra vez?",
+                              alumno.colorFondo ?? Colors.white,
+                              alumno.colorBotones ?? Colors.blue,
+                            ).then((reiniciar) {
+                              if (reiniciar == true) {
+                                _state!.reiniciarJuego();
+                              } else if (reiniciar == false) {
+                                Navigator.pop(context);
+                              }
+                            });
+                          } else {
+                            // --- SIGUIENTE RONDA ---
+                            mostrarDialogoSiguienteAlumnoV2(
+                              context,
+                              "¡Muy bien!",
+                              "¡Correcto! Vamos a por el siguiente.",
+                              alumno.colorFondo ?? Colors.white,
+                              alumno.colorBotones ?? Colors.blue,
+                            ).then((siguiente) {
+                              if (siguiente == true) {
+                                _state!.iniciarRonda();
+                              } else {
+                                Navigator.pop(context);
+                              }
+                            });
+                          }
+                        } else {
+                          // El feedback de error (sonido) ya se maneja en el State.
+                          // Aquí podrías añadir vibración o shake animation si quisieras.
+                        }
+                      }
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

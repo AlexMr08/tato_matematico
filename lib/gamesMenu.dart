@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/configColorAlumno.dart';
+import 'package:tato_matematico/ajustes/ajustes_generales_screen.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/ScaffoldAlumno.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Main.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
+import 'package:tato_matematico/estadisticasAlumno.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Screen.dart';
 import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/juegos/juego3/juego3Screen.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
 
+
 /// **Nombre de la Clase: `GamesMenu**
 ///
-/// **Descripción:** clase que permite cambiar distintos colores de la interfaz de un alumno.
+/// **Descripción:** clase que muestra el menu principal del alumno
 ///
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha cambiado la ruta de los ajustes
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se ha añadido un mapa de juegos
 ///
 
 class GamesMenu extends StatefulWidget {
@@ -27,68 +30,23 @@ class GamesMenu extends StatefulWidget {
   State<GamesMenu> createState() => _GamesMenuState();
 }
 
-/*
-  Se han hecho pruebas unitarias para asegurar que funciona correctamente:
-  - De momento, al pulsar en los juegos no lleva a nada (no estan implementados)
-  - Al pulsar volver, sale la interfaz de confirmar la accion
-  - Si en la interfaz de confirmar salir pulsas que no, no cierra sesion
-  - Si en la interfaz de confirmar salir pulsas que si, cierra sesion
-  - Si se pulsa ajustes, se accede directamente a los ajustes de colores
-   */
-
 class _GamesMenuState extends State<GamesMenu> {
   late Alumno alumno;
-  late final List<Juego> listaJuegos = [
-    Juego(
-      id: 'juego1',
-      nombre: 'Juego 1',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego2(1, 10, 8, true, "", true),
-    Juego(
-      id: 'juego3',
-      nombre: 'Juego 3',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-    Juego(
-      id: 'juego4',
-      nombre: 'Juego 4',
-      min: 10,
-      max: 20,
-      cantidad: 5,
-      usaImagenes: false,
-      tipoImagenes: "",
-    ),
-  ];
+  late Map<String, Juego> listaJuegos;
 
   @override
   Widget build(BuildContext context) {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
 
-    if (alumnoHolder.alumno == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (navigator.canPop()) navigator.pop();
-      });
-      return const SizedBox.shrink();
+    if (alumnoHolder.alumno == null || alumnoHolder.listaJuegos.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    alumno = alumnoHolder.alumno!;
 
-    PosicionBarra posicionBarra = switch (alumno.posicionBarra) {
-      0 => PosicionBarra.arriba,
-      1 => PosicionBarra.abajo,
-      2 => PosicionBarra.izquierda,
-      3 => PosicionBarra.derecha,
-      _ => PosicionBarra.abajo,
-    };
+    alumno = alumnoHolder.alumno!;
+    listaJuegos = alumnoHolder.listaJuegos;
+
+    PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -112,70 +70,83 @@ class _GamesMenuState extends State<GamesMenu> {
         });
       },
       onAjustes: () {
-        navegar(ConfigColorAlumno(alum: alumno), context);
+        navegar(const AjustesGeneralesScreen(), context);
       },
-      onEstadisticas: () {},
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
+      onEstadisticas: () {
+        navegar(EstadisticasAlumno(), context);
+      },
+      child:
+          alumnoHolder.areGamesLoaded &&
+              alumnoHolder.listaJuegos["juego2"] != null
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
                   Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[0],
-                      onTap: () {
-                        navegar(Juego1Screen(), context);
-                      },
-                      color: alumno.colorBotones,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego1"]!,
+                            onTap: () {
+                              navegar(Juego1Screen(), context);
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego2"]!,
+                            onTap: () {
+                              navegar(
+                                Juego2Screen(
+                                  juego: listaJuegos["juego2"]!,
+                                  alumno: alumno,
+                                ),
+                                context,
+                              );
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(height: 16),
                   Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[1],
-                      onTap: () {
-                        navegar(
-                          Juego2Screen(juego: listaJuegos[1], alumno: alumno),
-                          context,
-                        );
-                      },
-                      color: alumno.colorBotones,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego3"]!,
+                            onTap: () {
+                              navegar(
+                                Juego3Screen(
+                                  juego: listaJuegos["juego3"]!,
+                                  alumno: alumno,
+                                ),
+                                context,
+                              );
+                            },
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: JuegoCard(
+                            juego: listaJuegos["juego4"]!,
+                            onTap: null,
+                            color: alumno.colorBotones,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[2],
-                      onTap: () {
-                        navegar(Placeholder(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: JuegoCard(
-                      juego: listaJuegos[3],
-                      onTap: () {
-                        navegar(Placeholder(), context);
-                      },
-                      color: alumno.colorBotones,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

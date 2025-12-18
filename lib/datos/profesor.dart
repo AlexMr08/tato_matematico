@@ -12,7 +12,7 @@ import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 /// ---
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
-/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Gonzalo Alganza Luque
 /// * **Fecha de modificación:** 02/12/2025
 /// * **Último cambio:** Se han eliminado los metodos de los widgets que son dañinos para el rendimiento
 ///
@@ -64,7 +64,7 @@ class Profesor {
   ImageProvider? _cachedImage;
 
   ImageProvider? get cachedImage {
-    if (imagenLocal.isEmpty) return null;
+    if (imagenLocal.isEmpty) _cachedImage = null;
     _cachedImage ??= FileImage(File(imagenLocal));
     return _cachedImage;
   }
@@ -108,45 +108,44 @@ class Profesor {
 
   void actualizarNombre(String nuevoNombre) {
     nombre = nuevoNombre;
-    DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-    _dbRef.child("tato").child("profesorado").child(id).update({
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref();
+    dbRef.child("tato").child("profesorado").child(id).update({
       "nombre": nuevoNombre,
     });
   }
 
-  Future<File?> obtenerImagen(Directory tempDir) async {
-    // A. Si ya está en RAM, devolverla
-    if (foto != null) return foto;
+  void actualizarDirector(bool nuevoAdmin) {
+    director = nuevoAdmin;
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref();
+    dbRef.child("tato").child("profesorado").child(id).update({
+      "director": nuevoAdmin,
+    });
+  }
 
+  Future<File?> obtenerImagen(Directory tempDir) async {
     // B. Si hay ruta local, verificar si existe el archivo
     if (imagenLocal.isNotEmpty) {
       final archivoDisco = File(imagenLocal);
       if (await archivoDisco.exists()) {
         foto = archivoDisco;
-        return foto;
+      }
+    } else {
+      await descargarImagen(tempDir);
+
+      // Verificar si se descargó bien
+      if (imagenLocal.isNotEmpty) {
+        final archivoRecienDescargado = File(imagenLocal);
+        if (await archivoRecienDescargado.exists()) {
+          foto = archivoRecienDescargado;
+        }
       }
     }
-
-    await descargarImagen(tempDir);
-
-    // Verificar si se descargó bien
-    if (imagenLocal.isNotEmpty) {
-      final archivoRecienDescargado = File(imagenLocal);
-      if (await archivoRecienDescargado.exists()) {
-        foto = archivoRecienDescargado;
-        return foto;
-      }
-    }
-    return null;
+    return foto;
   }
 
   @deprecated
   Widget widgetProfesorV2(BuildContext context, VoidCallback navegar) {
-    return ProfesorCard(
-      key: ValueKey(imagen),
-      profesor: this,
-      onTap: navegar,
-    );
+    return ProfesorCard(key: ValueKey(imagen), profesor: this, onTap: navegar);
   }
 }
 
@@ -166,11 +165,7 @@ class ProfesorCard extends StatefulWidget {
   final Profesor profesor;
   final VoidCallback onTap;
 
-  const ProfesorCard({
-    super.key,
-    required this.profesor,
-    required this.onTap,
-  });
+  const ProfesorCard({super.key, required this.profesor, required this.onTap});
 
   @override
   State<ProfesorCard> createState() => _ProfesorCardState();
@@ -184,7 +179,6 @@ class _ProfesorCardState extends State<ProfesorCard> {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        onTap: widget.onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: FotoPerfil(
           key: ValueKey(widget.profesor.imagen),
@@ -197,8 +191,12 @@ class _ProfesorCardState extends State<ProfesorCard> {
           widget.profesor.nombre,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(widget.profesor.director ? "Director" : "Profesor"),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        subtitle: Text(widget.profesor.director ? "Administrador" : "Profesor"),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          tooltip: 'Editar profesor',
+          onPressed: widget.onTap,
+        ),
       ),
     );
   }

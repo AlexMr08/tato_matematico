@@ -3,16 +3,21 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ScaffoldComunV2.dart';
+import 'package:tato_matematico/edicion/ajustesSonidoProfe.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/configColorProfesor.dart';
+import 'package:tato_matematico/ajustes/configColorProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/edicion/configAlfanumerica.dart';
 import 'package:tato_matematico/edicion/configImagenUnica.dart';
 import 'package:tato_matematico/edicion/configSecuencia.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tato_matematico/juegos/juego2/juego2AjustesProfe.dart';
+import 'package:tato_matematico/juegos/juego2/juego2ScreenProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
+import 'package:tato_matematico/juegos/juego3/juego3AjustesProfe.dart';
+import '../juegos/juego3/juego3ScreenProfe.dart';
 
 /// **Nombre de la Clase: `EditarAlumno`**
 ///
@@ -22,8 +27,8 @@ import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 /// **Metadatos de Control:**
 /// * **Autor Original:** Joaquin Salas Castillo / Gonzalo Alganza Luque
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 30/11/2025
-/// * **Último cambio:** Se ha añadido la descripcion y metadatos de control
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Se han añadido los ajustes de color y sonido de una mejor forma
 ///
 
 class EditarAlumno extends StatefulWidget {
@@ -107,29 +112,27 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     final nuevoNombre = _nombreController.text.trim();
     if (nuevoNombre.isEmpty) {
       snackBarAviso(context, 'El nombre no puede estar vacío.');
-      return;
-    }
-    if (nuevoNombre == alumno.nombre) {
+    } else if (nuevoNombre == alumno.nombre) {
       // Si no hay cambios, simplemente salimos del modo edición.
       setState(() => _isEditingName = false);
-      return;
-    }
-    try {
-      // Actualizamos la base de datos
-      await _dbRef.child('tato/alumnos/${alumno.id}').update({
-        'nombre': nuevoNombre,
-      });
+    } else {
+      try {
+        // Actualizamos la base de datos
+        await _dbRef.child('tato/alumnos/${alumno.id}').update({
+          'nombre': nuevoNombre,
+        });
 
-      // Actualizamos el estado local
-      alumno.nombre = nuevoNombre;
-      context.read<AlumnoHolder>().setAlumno(alumno);
+        // Actualizamos el estado local
+        alumno.nombre = nuevoNombre;
+        context.read<AlumnoHolder>().setAlumno(alumno);
 
-      snackBarExito(context, 'Nombre actualizado correctamente.');
-    } catch (e) {
-      snackBarError(context, 'Error al actualizar el nombre: $e');
-    } finally {
-      // Salimos del modo edición
-      setState(() => _isEditingName = false);
+        snackBarExito(context, 'Nombre actualizado correctamente.');
+      } catch (e) {
+        snackBarError(context, 'Error al actualizar el nombre: $e');
+      } finally {
+        // Salimos del modo edición
+        setState(() => _isEditingName = false);
+      }
     }
   }
 
@@ -284,24 +287,163 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     }
   }
 
-  // --- NUEVA FUNCIÓN PARA GUARDAR PERMISOS DEL JUEGO ---
-  void _guardarPermisoJuego1(Alumno alumno, String permiso, bool valor) async {
+  Widget _buildBloqueJuego({
+    required String titulo,
+    required bool permisoValor,
+    required Function(bool) onPermisoChanged,
+    required VoidCallback onConfigurar,
+    required VoidCallback onProbar,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.extension),
+                const SizedBox(width: 8),
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            SwitchListTile(
+              title: const Text('Permitir ajustes'),
+              value: permisoValor,
+              onChanged: onPermisoChanged,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: BotonSinIcono(
+                    texto: "Configurar",
+                    onPressed: onConfigurar,
+                  ),
+                ),
+                Expanded(
+                  child: BotonSinIcono(texto: "Probar", onPressed: onProbar),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBloqueGeneral({
+    required String titulo,
+    required bool permisoSonido,
+    required bool permisoColor,
+    required Function(bool) onColoresChanged,
+    required Function(bool) onSonidosChanged,
+    required VoidCallback onConfigurar,
+    required VoidCallback onProbar,
+    required Alumno alumno,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.settings_accessibility),
+                const SizedBox(width: 8),
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    value: posicionBarra,
+                    items: const [
+                      DropdownMenuItem(value: 0, child: Text("Arriba")),
+                      DropdownMenuItem(value: 1, child: Text("Abajo")),
+                      DropdownMenuItem(value: 2, child: Text("Izquierda")),
+                      DropdownMenuItem(value: 3, child: Text("Derecha")),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => posicionBarra = value!),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: "Posición botones principales",
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BotonIcono(
+                  icono: Icons.save_alt_outlined,
+                  onPressed: () => _guardarBarra(alumno),
+                ),
+              ],
+            ),
+            SwitchListTile(
+              title: const Text('Permitir cambios de color'),
+              value: permisoColor,
+              onChanged: onColoresChanged,
+            ),
+            SwitchListTile(
+              title: const Text('Permitir ajustes de sonido'),
+              value: permisoSonido,
+              onChanged: onSonidosChanged,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: BotonConIcono(
+                    texto: "Colores",
+                    onPressed: onConfigurar,
+                    icono: Icons.palette,
+                  ),
+                ),
+                Expanded(
+                  child: BotonConIcono(
+                    texto: "Sonido",
+                    onPressed: onProbar,
+                    icono: Icons.volume_up,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _guardarPermiso(Alumno alumno, String permiso, bool valor) async {
     try {
       await _dbRef.child('tato/alumnos/${alumno.id}').update({permiso: valor});
-
-      if (mounted) {
-        // Actualizamos el estado local
-        if (permiso == 'permisoAjustesJuego1') {
-          alumno.permisoAjustesJuego1 = valor;
-        } else if (permiso == 'permisoEstadisticasJuego1') {
-          alumno.permisoEstadisticasJuego1 = valor;
-        }
-        context.read<AlumnoHolder>().setAlumno(alumno);
-        snackBarExito(context, "Permiso actualizado.");
-      }
     } catch (e) {
       if (mounted) {
-        snackBarError(context, 'Error al guardar el permiso: $e');
+        snackBarError(context, 'Error al guardar el permiso');
       }
     }
   }
@@ -309,333 +451,391 @@ class _EditarAlumnoState extends State<EditarAlumno> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final alumno = Provider.of<AlumnoHolder>(context).alumno;
+    final listaJuegos = context.read<AlumnoHolder>().listaJuegos;
 
-    return Consumer<AlumnoHolder>(
-      builder: (context, alumnoHolder, child) {
-        final Alumno? alumno = alumnoHolder.alumno;
-        if (alumno == null) {
-          // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.
-          return Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
+    if (alumno == null) {
+      // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-        var onPressed = _isUploadingImage
-            ? null
-            : () => _mostrarMenuOrigen(context, alumno);
+    var onPressed = _isUploadingImage
+        ? null
+        : () => _mostrarMenuOrigen(context, alumno);
 
-        return ScaffoldComunV2(
-          titulo: 'Editar Alumno',
-          subtitulo: alumno.nombre,
-          cuerpo: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    // -------------------------------------------------------------------------
+    // BLOQUE 1: PERFIL (Avatar, Nombre, Botón Imagen)
+    // -------------------------------------------------------------------------
+    Widget bloquePerfil = Column(
+      children: [
+        // AVATAR
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            CircleAvatar(
+              radius: 80,
+              backgroundColor: colorScheme.primaryContainer,
+              backgroundImage: alumno.cachedImage,
+              child: alumno.cachedImage == null
+                  ? Text(
+                      alumno.nombre.isNotEmpty
+                          ? alumno.nombre[0].toUpperCase()
+                          : '?',
+                      style: TextStyle(
+                        fontSize: 64,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                    )
+                  : null,
+            ),
+            if (_isUploadingImage) const CircularProgressIndicator(),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // NOMBRE
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Center(
+                child: _isEditingName
+                    ? TextFormField(
+                        controller: _nombreController,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 4,
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                        onFieldSubmitted: (_) => _guardarNombre(alumno),
+                      )
+                    : Text(
+                        _nombreController.text,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: BotonIcono(
+                  icono: _isEditingName
+                      ? Icons.save_alt_outlined
+                      : Icons.edit_outlined,
+                  onPressed: () {
+                    if (_isEditingName) {
+                      _guardarNombre(alumno);
+                    } else {
+                      setState(() => _isEditingName = true);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        // BOTÓN CAMBIAR IMAGEN
+        BotonConIcono(
+          icono: Icons.cameraswitch_outlined,
+          texto: "Cambiar Imagen",
+          onPressed: onPressed,
+        ),
+      ],
+    );
+
+    Widget bloqueGeneral = _buildBloqueGeneral(
+      titulo: "Ajustes Accesibilidad",
+      permisoSonido: alumno.permisoSonido,
+      permisoColor: alumno.permisoColor,
+      onColoresChanged: (val) => _guardarPermiso(alumno, 'permisoColor', val),
+      onSonidosChanged: (val) => _guardarPermiso(alumno, 'permisoSonido', val),
+      onConfigurar: () => navegar(ConfigColorProfesor(alum: alumno), context),
+      onProbar: () => navegar(AjustesSonidosProfesor(), context),
+      alumno: alumno,
+    );
+
+    Widget bloqueJuego1 = _buildBloqueJuego(
+      titulo: "Juego 1",
+      permisoValor: alumno.permisoAjustesJuego1,
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego1', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onProbar: () => navegar(
+        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        context,
+      ),
+    );
+
+    Widget bloqueJuego2 = _buildBloqueJuego(
+      titulo: "Juego 2",
+      permisoValor: alumno.permisoAjustesJuego2,
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego2', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onProbar: () => navegar(
+        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        context,
+      ),
+    );
+
+    Widget bloqueJuego3 = _buildBloqueJuego(
+      titulo: "Juego 3",
+      permisoValor: alumno.permisoAjustesJuego3,
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego3', val),
+      onConfigurar: () =>
+          navegar(Juego3AjustesProfe(juego: listaJuegos["juego3"]!), context),
+      onProbar: () => navegar(
+        Juego3ScreenProfe(juego: listaJuegos["juego3"]!, alumno: alumno),
+        context,
+      ),
+    );
+
+    Widget bloqueJuego4 = _buildBloqueJuego(
+      titulo: "Juego 4",
+      permisoValor: alumno.permisoAjustesJuego4,
+      onPermisoChanged: (val) =>
+          _guardarPermiso(alumno, 'permisoAjustesJuego4', val),
+      onConfigurar: () =>
+          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onProbar: () => navegar(
+        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        context,
+      ),
+    );
+
+    // -------------------------------------------------------------------------
+    // BLOQUE 2: CONTRASEÑA (Dropdown, Botón Configurar)
+    // -------------------------------------------------------------------------
+    Widget bloquePassword = Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Text(
+          "Tipo de Contraseña",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: DropdownButtonFormField<String>(
+            value: tipoPassword,
+            items: const [
+              DropdownMenuItem(
+                value: "alfanumerica",
+                child: Text("Contraseña Alfanumérica"),
+              ),
+              DropdownMenuItem(
+                value: "seleccion_imagen",
+                child: Text("Selección de imagen"),
+              ),
+              DropdownMenuItem(
+                value: "secuencia_imagen",
+                child: Text("Secuencia de imágenes"),
+              ),
+            ],
+            onChanged: (value) => setState(() => tipoPassword = value!),
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: "Tipo de contraseña",
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: BotonConIcono(
+            icono: Icons.arrow_forward_ios,
+            radio: 16,
+            iconAlignment: IconAlignment.end,
+            fontSize: 18,
+            texto: "Configurar contraseña",
+            onPressed: () => _irAConfiguracion(context, alumno),
+          ),
+        ),
+      ],
+    );
+
+    // -------------------------------------------------------------------------
+    // BLOQUE 3: ACCESIBILIDAD (Barra, Colores, Juego1)
+    // -------------------------------------------------------------------------
+    Widget bloqueAccesibilidad = Column(
+      children: [
+        const Text(
+          "Ajustes Accesibilidad",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+
+        // Selector Posición Barra
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                value: posicionBarra,
+                items: const [
+                  DropdownMenuItem(value: 0, child: Text("Arriba")),
+                  DropdownMenuItem(value: 1, child: Text("Abajo")),
+                  DropdownMenuItem(value: 2, child: Text("Izquierda")),
+                  DropdownMenuItem(value: 3, child: Text("Derecha")),
+                ],
+                onChanged: (value) => setState(() => posicionBarra = value!),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Posición botones principales",
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            BotonIcono(
+              icono: Icons.save_alt_outlined,
+              onPressed: () => _guardarBarra(alumno),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Botón Colores
+        bloqueGeneral,
+        const SizedBox(height: 16),
+
+        // Ajustes Juego 1
+        /*
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.extension),
+                    SizedBox(width: 8),
+                    Text(
+                      "Juego 1",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                SwitchListTile(
+                  title: const Text('Permitir ajustes'),
+                  value: alumno.permisoAjustesJuego1,
+                  onChanged: (bool value) {
+                    _guardarPermisoJuego1(
+                      alumno,
+                      'permisoAjustesJuego1',
+                      value,
+                    );
+                  },
+                ),
+                SwitchListTile(
+                  title: const Text('Permitir estadísticas'),
+                  value: alumno.permisoEstadisticasJuego1,
+                  onChanged: (bool value) {
+                    _guardarPermisoJuego1(
+                      alumno,
+                      'permisoEstadisticasJuego1',
+                      value,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+         */
+      ],
+    );
+
+    // -------------------------------------------------------------------------
+    // LAYOUT RESPONSIVO (LayoutBuilder)
+    // -------------------------------------------------------------------------
+    return ScaffoldComunV2(
+      titulo: 'Editar Alumno',
+      subtitulo: alumno.nombre,
+      cuerpo: LayoutBuilder(
+        builder: (context, constraints) {
+          // Si el ancho es menor a 1000px, diseño vertical (MÓVIL)
+          if (constraints.maxWidth < 1000) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  // ------------------------------
-                  //     BLOQUE IZQUIERDO
-                  // ------------------------------
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      children: [
-                        //AVATAR
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 80,
-                              backgroundColor: colorScheme.primaryContainer,
-                              // Usamos la imagen cacheada que definimos en alumno.dart
-                              backgroundImage: alumno.cachedImage,
-                              child: alumno.cachedImage == null
-                                  ? Text(
-                                      // Lógica para obtener inicial: Si no está vacío, coge la primera letra
-                                      alumno.nombre.isNotEmpty
-                                          ? alumno.nombre[0].toUpperCase()
-                                          : '?',
-                                      style: TextStyle(
-                                        fontSize: 64, // Tamaño grande
-                                        fontWeight: FontWeight.bold,
-                                        color: colorScheme.onPrimaryContainer,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            // Si se está subiendo la foto, mostramos el spinner encima
-                            if (_isUploadingImage)
-                              const CircularProgressIndicator(),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        // NOMBRE
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 40.0,
-                                ),
-                                child: Center(
-                                  child: _isEditingName
-                                      ? TextFormField(
-                                          controller: _nombreController,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                  vertical: 8,
-                                                  horizontal: 4,
-                                                ),
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          onFieldSubmitted: (_) =>
-                                              _guardarNombre(alumno),
-                                        )
-                                      : Text(
-                                          // Usamos el controlador para mostrar el nombre, asegurando consistencia
-                                          _nombreController.text,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: BotonIcono(
-                                  icono: _isEditingName
-                                      ? Icons.save_alt_outlined
-                                      : Icons.edit_outlined,
-                                  onPressed: () {
-                                    if (_isEditingName) {
-                                      _guardarNombre(alumno);
-                                    } else {
-                                      setState(() {
-                                        _isEditingName = true;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // BOTON CAMBIAR IMAGEN
-                        BotonConIcono(
-                          icono: Icons.cameraswitch_outlined,
-                          texto: "Cambiar Imagen",
-                          onPressed: onPressed,
-                        ),
-                      ],
-                    ),
+                  bloquePerfil,
+                  const SizedBox(height: 16),
+                  const Divider(thickness: 2),
+                  const SizedBox(height: 16),
+                  bloquePassword,
+                  const SizedBox(height: 16),
+                  const Divider(thickness: 2),
+                  const SizedBox(height: 16),
+                  bloqueGeneral,
+                  const SizedBox(height: 16),
+                  bloqueJuego1,
+                  const SizedBox(width: 16),
+                  bloqueJuego2,
+                  const SizedBox(width: 16),
+                  bloqueJuego3,
+                  const SizedBox(width: 16),
+                  bloqueJuego4,
+                ],
+              ),
+            );
+          } else {
+            // Diseño horizontal de 3 columnas (ESCRITORIO/TABLET)
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                spacing: 8,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 1, child: bloquePerfil),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 1, child: bloquePassword),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 1, child: bloqueGeneral),
+                    ],
                   ),
-                  SizedBox(width: 16),
-                  // ------------------------------
-                  //       BLOQUE CENTRAL
-                  // ------------------------------
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Tipo de Contraseña",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: DropdownButtonFormField<String>(
-                            initialValue: tipoPassword,
-                            items: const [
-                              DropdownMenuItem(
-                                value: "alfanumerica",
-                                child: Text("Contraseña Alfanumérica"),
-                              ),
-                              DropdownMenuItem(
-                                value: "seleccion_imagen",
-                                child: Text("Selección de imagen"),
-                              ),
-                              DropdownMenuItem(
-                                value: "secuencia_imagen",
-                                child: Text("Secuencia de imágenes"),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              setState(() => tipoPassword = value!);
-                            },
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Tipo de contraseña",
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: BotonConIcono(
-                            icono: Icons.arrow_forward_ios,
-                            radio: 16,
-                            iconAlignment: IconAlignment.end,
-                            fontSize: 18,
-                            texto: "Configurar contraseña",
-                            onPressed: () => _irAConfiguracion(context, alumno),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  // ------------------------------
-                  //     BLOQUE DERECHO
-                  // ------------------------------
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Ajustes Accesibilidad",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: DropdownButtonFormField<int>(
-                                initialValue: posicionBarra,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 0,
-                                    child: Text("Arriba"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 1,
-                                    child: Text("Abajo"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 2,
-                                    child: Text("Izquierda"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 3,
-                                    child: Text("Derecha"),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  setState(() => posicionBarra = value!);
-                                },
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: "Posicion botones principales",
-                                ),
-                              ),
-                            ),
-                            BotonIcono(
-                              icono: Icons.save_alt_outlined,
-                              onPressed: () {
-                                _guardarBarra(alumno);
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        BotonConIcono(
-                          icono: Icons.palette,
-                          radio: 16,
-                          texto: "Colores",
-                          onPressed: () {
-                            navegar(ConfigColorProfesor(alum: alumno), context);
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        // --- NUEVO WIDGET PARA AJUSTES DEL JUEGO 1 ---
-                        Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.extension),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      "Juego 1",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Divider(),
-                                SwitchListTile(
-                                  title: Text('Permitir ajustes'),
-                                  value: alumno.permisoAjustesJuego1,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _guardarPermisoJuego1(
-                                        alumno,
-                                        'permisoAjustesJuego1',
-                                        value,
-                                      );
-                                    });
-                                  },
-                                ),
-                                SwitchListTile(
-                                  title: Text('Permitir estadísticas'),
-                                  value: alumno.permisoEstadisticasJuego1,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _guardarPermisoJuego1(
-                                        alumno,
-                                        'permisoEstadisticasJuego1',
-                                        value,
-                                      );
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  Row(
+                    spacing: 8,
+                    children: [
+                      Expanded(flex: 1, child: bloqueJuego1),
+                      Expanded(flex: 1, child: bloqueJuego2),
+                      Expanded(flex: 1, child: bloqueJuego3),
+                      Expanded(flex: 1, child: bloqueJuego4),
+                    ],
                   ),
                 ],
               ),
-            ),
-          ),
-        );
-      },
+            );
+          }
+        },
+      ),
     );
   }
 }
-
-//// PANTALLAS PARA DISTINTOS TIPOS DE CONTRASEÑAS ////
