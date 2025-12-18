@@ -29,11 +29,9 @@ class Juego1 extends Juego {
     required int rango,
     required int cantidad,
     required String tema,
-    required DatabaseReference dbRef,
-    bool? orden,
+    required DatabaseReference dbRef
   }) async {
     var dbRef2 = dbRef.child("tato/juegos/$idAlumno/$id");
-    dbRef2.update({"ordenDescendente": orden});
     super.guardarAjustes(
       idAlumno: idAlumno,
       rango: rango,

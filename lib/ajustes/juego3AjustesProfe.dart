@@ -56,11 +56,10 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 800; // Punto de corte
 
-    return ScaffoldComunV2(
-      titulo: 'Juego 3 - Ajustes',
-      subtitulo: alum.nombre,
-      iconoLeading: Icons.arrow_back,
-      funcionLeading: () {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) return; // Ya se hizo pop automáticamente, no hacemos nada
         juego3.guardarAjustes(
           idAlumno: alum.id,
           rango: _rangoSeleccionado,
@@ -75,13 +74,33 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
           });
         }
       },
-      cuerpo: Padding(
-        // Menos padding en móvil para aprovechar espacio
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16.0 : 32.0,
-          vertical: isMobile ? 16.0 : 24.0,
+      child: ScaffoldComunV2(
+        titulo: 'Juego 3 - Ajustes',
+        subtitulo: alum.nombre,
+        iconoLeading: Icons.arrow_back,
+        funcionLeading: () {
+          juego3.guardarAjustes(
+            idAlumno: alum.id,
+            rango: _rangoSeleccionado,
+            cantidad: _cantidadPreguntas,
+            tema: _temaSeleccionado,
+            dbRef: FirebaseDatabase.instance.ref(),
+            cantContenedores: _cantContenedores,
+          );
+          if (mounted) {
+            setState(() {
+              Navigator.pop(context);
+            });
+          }
+        },
+        cuerpo: Padding(
+          // Menos padding en móvil para aprovechar espacio
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16.0 : 32.0,
+            vertical: isMobile ? 16.0 : 24.0,
+          ),
+          child: isMobile ? _buildMobileLayout() : _buildTabletLayout(),
         ),
-        child: isMobile ? _buildMobileLayout() : _buildTabletLayout(),
       ),
     );
   }
@@ -513,8 +532,6 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
       ),
     );
   }
-
-  Widget _espacio() => const SizedBox(width: 10);
 
   // Modificado: Acepta 'isMobile' para ajustar tamaños
   Widget _cardBase({

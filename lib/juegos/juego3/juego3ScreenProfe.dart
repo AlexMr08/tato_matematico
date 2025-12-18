@@ -64,9 +64,7 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
     }
     alumno = alumnoHolder.alumno!;
 
-    var colorTexto = alumno.colorFondo != null
-        ? getTextColorForBackground(alumno.colorFondo!)
-        : Theme.of(context).colorScheme.onSurface;
+    var colorTexto = getTextColorForBackground(Theme.of(context).colorScheme.surface);
 
     var imagenes = widget.juego.usaImagenes;
     var tipoImagen = widget.juego.tipoImagenes;
