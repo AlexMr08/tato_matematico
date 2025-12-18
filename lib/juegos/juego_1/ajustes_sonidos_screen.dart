@@ -109,7 +109,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
 
     try {
       await _dbRef.child('tato/alumnos/${_alumno.id}').update(updates);
-      
+
       // Actualiza el objeto Alumno localmente
       _alumno.sonidoEleccion = _sonidoEleccion;
       _alumno.sonidoAcierto = _sonidoVictoria ?? '';
@@ -132,11 +132,8 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
   @override
   Widget build(BuildContext context) {
     final alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
-    final Color appBarColor = alumno.colorBarraNav ?? Theme.of(context).colorScheme.primary;
-    final Color appBarTextColor = getTextColorForBackground(appBarColor);
     final Color textColor = getTextColorForBackground(alumno.colorFondo ?? Theme.of(context).colorScheme.surface);
-    final Color buttonColor = alumno.colorBotones ?? Theme.of(context).colorScheme.primary;
-    final Color selectionColor = alumno.colorTextos ?? Theme.of(context).colorScheme.secondary;
+    final Color selectionColor = alumno.colorSeleccion ?? Theme.of(context).colorScheme.tertiaryContainer;
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -148,7 +145,6 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
       posicion: getPosicionBarra(alumno.posicionBarra),
       onVolver: () {
         _guardarAjustes();
-        Navigator.of(context).pop();
       },
       floatingActionButton: null,
       child: Padding(

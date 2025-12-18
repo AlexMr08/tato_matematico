@@ -9,7 +9,7 @@ class Juego1 extends Juego {
     super.cantidad = 10,
     super.usaImagenes = false,
     super.tipoImagenes = "numeros",
-  }) : super(id: 'juego1', nombre: 'Juego 1', icono: Icons.videogame_asset);
+  }) : super(id: 'juego1', nombre: 'Juego 1', icono: Icons.videogame_asset, imagen: "assets/images/escuchar.png");
 
   @override
   Future<void> guardarAjustes({

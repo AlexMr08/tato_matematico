@@ -73,7 +73,7 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
           setState(() {
             Navigator.pop(context);
           });
-      }
+        }
       },
       cuerpo: Padding(
         // Menos padding en móvil para aprovechar espacio
@@ -123,7 +123,6 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
 
         const SizedBox(height: 12),
 
-
         // 3. CANTIDAD (Stepper)
         _titulo("Número de opciones"),
         const SizedBox(height: 8),
@@ -167,8 +166,7 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                   }
                 },
                 true,
-                isEnabled:
-                    _cantidadPreguntas < 9,
+                isEnabled: _cantidadPreguntas < 9,
               ),
             ],
           ),
@@ -214,14 +212,13 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                 () {
                   if (_cantContenedores < 3) {
                     setState(() => _cantContenedores++);
-                    if(_cantidadPreguntas < _cantContenedores){
+                    if (_cantidadPreguntas < _cantContenedores) {
                       setState(() => _cantidadPreguntas++);
                     }
                   }
                 },
                 true,
-                isEnabled:
-                    _cantContenedores < 3,
+                isEnabled: _cantContenedores < 3,
               ),
             ],
           ),
@@ -363,12 +360,14 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                                   Icons.remove,
                                   "MENOS",
                                   () {
-                                    if (_cantidadPreguntas > _cantContenedores) {
+                                    if (_cantidadPreguntas >
+                                        _cantContenedores) {
                                       setState(() => _cantidadPreguntas--);
                                     }
                                   },
                                   false,
-                                  isEnabled: _cantidadPreguntas > _cantContenedores,
+                                  isEnabled:
+                                      _cantidadPreguntas > _cantContenedores,
                                 ),
                                 const SizedBox(width: 20),
                                 TarjetaJuego(
@@ -393,8 +392,7 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                                     }
                                   },
                                   false,
-                                  isEnabled:
-                                      _cantidadPreguntas < 9,
+                                  isEnabled: _cantidadPreguntas < 9,
                                 ),
                               ],
                             ),
@@ -403,13 +401,13 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
-                  // SECCIÓN CANTIDAD CONTENEDORES
+
+                    // SECCIÓN CANTIDAD CONTENEDORES
                     Expanded(
                       flex: 2, // Le damos más altura a la sección del stepper
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [  
+                        children: [
                           _titulo("Número de Contenedores"),
                           const SizedBox(height: 10),
                           Expanded(
@@ -446,14 +444,14 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                                   () {
                                     if (_cantContenedores < 3) {
                                       setState(() => _cantContenedores++);
-                                      if(_cantidadPreguntas < _cantContenedores){
+                                      if (_cantidadPreguntas <
+                                          _cantContenedores) {
                                         setState(() => _cantidadPreguntas++);
                                       }
                                     }
                                   },
                                   false,
-                                  isEnabled:
-                                      _cantContenedores < 3,
+                                  isEnabled: _cantContenedores < 3,
                                 ),
                               ],
                             ),
@@ -508,7 +506,11 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
   Widget _titulo(String texto) {
     return Text(
       texto,
-      style: const TextStyle(fontSize: 18, color: Colors.black54),
+      style: const TextStyle(
+        fontSize: 18,
+        color: Colors.black54,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 

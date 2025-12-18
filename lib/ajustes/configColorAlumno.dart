@@ -100,7 +100,14 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 16, color: colorTexto)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            color: colorTexto,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         InkWell(
           onTap: () => _showColorPicker(ref, label, color),
           child: Container(
@@ -207,8 +214,8 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
               Text(
                 "Vista previa",
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
                   color: getTextColorForBackground(
                     alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
                   ),

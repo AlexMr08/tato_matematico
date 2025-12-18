@@ -57,7 +57,9 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
     // 1. Detectar tamaño de pantalla
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 800; // Punto de corte
-
+    final colorTexto = getTextColorForBackground(
+      alum.colorFondo ?? Theme.of(context).colorScheme.surface,
+    );
     return ScaffoldAlumno(
       posicion: pos,
       alumno: alum,
@@ -83,18 +85,20 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
           horizontal: isMobile ? 16.0 : 32.0,
           vertical: isMobile ? 16.0 : 24.0,
         ),
-        child: isMobile ? _buildMobileLayout() : _buildTabletLayout(),
+        child: isMobile
+            ? _buildMobileLayout(colorTexto)
+            : _buildTabletLayout(colorTexto),
       ),
     );
   }
 
   // --- LAYOUT MÓVIL (Vertical, Sin Scroll, Compacto) ---
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(Color colorTexto) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // 1. INTERVALOS
-        _titulo("Intervalo de números"),
+        _titulo("Intervalo de números", colorTexto),
         const SizedBox(height: 8),
         Expanded(
           flex: 3, // Peso vertical
@@ -126,7 +130,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
         const SizedBox(height: 12),
 
         // 2. ORDEN
-        _titulo("Orden"),
+        _titulo("Orden", colorTexto),
         Expanded(
           flex: 1,
           child: Row(
@@ -139,7 +143,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
         ),
 
         // 3. CANTIDAD (Stepper)
-        _titulo("Número de opciones"),
+        _titulo("Número de opciones", colorTexto),
         const SizedBox(height: 8),
         SizedBox(
           height: 80, // Altura fija compacta
@@ -191,7 +195,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
         ),
 
         // 4. TEMÁTICA
-        _titulo("Temática del juego"),
+        _titulo("Temática del juego", colorTexto),
         const SizedBox(height: 8),
         Expanded(
           flex: 3,
@@ -230,7 +234,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
   }
 
   // --- LAYOUT TABLET (Original) ---
-  Widget _buildTabletLayout() {
+  Widget _buildTabletLayout(Color colorTexto) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -247,7 +251,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _titulo("Intervalo de números"),
+                    _titulo("Intervalo de números", colorTexto),
                     const SizedBox(height: 10),
                     Expanded(
                       child: Column(
@@ -312,7 +316,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // SECCIÓN ORDEN
-                    _titulo("Orden"),
+                    _titulo("Orden", colorTexto),
                     const SizedBox(height: 10),
                     Expanded(
                       flex: 1,
@@ -343,7 +347,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _titulo("Número de opciones"),
+                          _titulo("Número de opciones", colorTexto),
                           const SizedBox(height: 10),
                           Expanded(
                             child: Row(
@@ -409,7 +413,7 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _titulo("Temática del juego"),
+              _titulo("Temática del juego", colorTexto),
               const SizedBox(height: 10),
               Expanded(
                 child: Row(
@@ -438,11 +442,8 @@ class _Juego2AjustesState extends State<Juego2Ajustes> {
 
   // --- WIDGETS PERSONALIZADOS ---
 
-  Widget _titulo(String texto) {
-    return Text(
-      texto,
-      style: const TextStyle(fontSize: 18, color: Colors.black54),
-    );
+  Widget _titulo(String texto, Color color) {
+    return Text(texto, style: TextStyle(fontSize: 18, color: color, fontWeight: FontWeight.w700));
   }
 
   Widget _espacio() => const SizedBox(width: 10);

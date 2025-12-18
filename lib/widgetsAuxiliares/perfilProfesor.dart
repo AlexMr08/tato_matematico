@@ -100,7 +100,7 @@ class _PerfilProfesorState extends State<PerfilProfesor> {
         const SizedBox(width: 16),
         Row(
           children: [
-            Text("¿Es administrador?"),
+            Text("¿Es Administrador?"),
             const SizedBox(width: 8),
             Switch(
               value: widget.profesor.director,

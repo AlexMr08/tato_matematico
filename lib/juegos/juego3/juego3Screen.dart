@@ -267,6 +267,16 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                                   image: DecorationImage(
                                     image: AssetImage('assets/images/bote.png'),
                                     fit: BoxFit.contain,
+                                    colorFilter: ColorFilter.mode(
+                                      getTextColorForBackground(
+                                        alumno.colorContenedor ??
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.surfaceContainer,
+                                      ),
+                                      BlendMode
+                                          .srcIn, // Este modo aplica el tinte a la forma de la imagen
+                                    ),
                                   ),
                                 ),
                               ),

@@ -100,7 +100,14 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 16, color: colorTexto)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            color: colorTexto,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         InkWell(
           onTap: () => _showColorPicker(ref, label, color),
           child: Container(
@@ -181,8 +188,8 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
               Text(
                 "Vista previa",
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
                   color: getTextColorForBackground(
                     Theme.of(context).colorScheme.surface,
                   ),
@@ -195,7 +202,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
                   Expanded(
                     child: BotonSinIconoAlumno(
                       texto: "Botón activado",
-                      onPressed: (){},
+                      onPressed: () {},
                       colorFondo:
                           alumno.colorBotones ??
                           Theme.of(context).colorScheme.primaryContainer,
@@ -221,7 +228,12 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
                     color:
                         alumno.colorContenedor ??
                         Theme.of(context).colorScheme.surfaceContainer,
-                    border: Border.all(color: getTextColorForBackground(Theme.of(context).colorScheme.surface), width: 2),
+                    border: Border.all(
+                      color: getTextColorForBackground(
+                        Theme.of(context).colorScheme.surface,
+                      ),
+                      width: 2,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(8.0),

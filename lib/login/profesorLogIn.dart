@@ -81,7 +81,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
             snackBarExito(
               context,
               profesorData["director"]
-                  ? "Ha iniciado sesion correctamente, rol: Director"
+                  ? "Ha iniciado sesion correctamente, rol: Administrador"
                   : "Ha iniciado sesion correctamente, rol: Profesor",
             );
             context.read<ProfesorHolder>().setProfesor(

@@ -324,7 +324,6 @@ class BotonSinIconoAlumno extends StatelessWidget {
 
   // Nuevos parámetros
   final Color? colorFondo;
-  final Color? colorTexto;
   final Color? colorDisabled;
 
   const BotonSinIconoAlumno({
@@ -336,7 +335,6 @@ class BotonSinIconoAlumno extends StatelessWidget {
     this.fontWeight,
     this.radio,
     this.colorFondo,
-    this.colorTexto,
     this.colorDisabled,
   });
 
@@ -349,10 +347,9 @@ class BotonSinIconoAlumno extends StatelessWidget {
             colorFondo ?? Theme.of(context).colorScheme.primaryContainer,
 
         foregroundColor:
-            colorTexto ??
-            (colorFondo != null
+            colorFondo != null
                 ? getTextColorForBackground(colorFondo!)
-                : Theme.of(context).colorScheme.onPrimaryContainer),
+                : Theme.of(context).colorScheme.onPrimaryContainer,
 
         disabledForegroundColor: getTextColorForBackground(
           colorDisabled ?? Colors.grey,

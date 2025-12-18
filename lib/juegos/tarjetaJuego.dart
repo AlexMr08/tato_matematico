@@ -62,27 +62,32 @@ class TarjetaJuego extends StatelessWidget {
         enabled: isEnabled,
         excludeSemantics: true,
         child: Card(
-            elevation: 4,
-            clipBehavior: Clip.antiAlias,
-            color: colorFondo,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radio),
-            ),
-            child: InkWell(
-              onTap: isEnabled? onTap : null,
-              borderRadius: BorderRadius.circular(radio),
-              child: Center(
+          elevation: 4,
+          clipBehavior: Clip.antiAlias,
+          color: colorFondo,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radio),
+          ),
+          child: InkWell(
+            onTap: isEnabled ? onTap : null,
+            borderRadius: BorderRadius.circular(radio),
+            child: Center(
               child: numero != null
                   ? Container(
                       padding: const EdgeInsets.all(4.0),
                       child: imagenes
-                          ? Image.asset("assets/images/$numero$tipoImagen.png")
+                          ? Image.asset(
+                              "assets/images/$numero$tipoImagen.png",
+                              color: numero == 0
+                                  ? getTextColorForBackground(colorFondo)
+                                  : null,
+                            )
                           : AutoSizeText(
                               numero.toString(),
                               style: TextStyle(
                                 fontSize: 48,
                                 fontWeight: FontWeight.bold,
-                                color: getTextColorForBackground(colorFondo)
+                                color: getTextColorForBackground(colorFondo),
                               ),
                               maxLines: 1,
                               minFontSize: 8,

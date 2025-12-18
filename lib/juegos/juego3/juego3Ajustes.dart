@@ -57,6 +57,9 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
     // 1. Detectar tamaño de pantalla
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 800; // Punto de corte
+    final Color colorTexto = getTextColorForBackground(
+      alum.colorFondo ?? Theme.of(context).colorScheme.surface,
+    );
 
     return ScaffoldAlumno(
       posicion: pos,
@@ -83,18 +86,20 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
           horizontal: isMobile ? 16.0 : 32.0,
           vertical: isMobile ? 16.0 : 24.0,
         ),
-        child: isMobile ? _buildMobileLayout() : _buildTabletLayout(),
+        child: isMobile
+            ? _buildMobileLayout(colorTexto)
+            : _buildTabletLayout(colorTexto),
       ),
     );
   }
 
   // --- LAYOUT MÓVIL (Vertical, Sin Scroll, Compacto) ---
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(Color colorTexto) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // 1. INTERVALOS
-        _titulo("Intervalo de números"),
+        _titulo("Intervalo de números", colorTexto),
         const SizedBox(height: 8),
         Expanded(
           flex: 3, // Peso vertical
@@ -125,9 +130,8 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
 
         const SizedBox(height: 12),
 
-
         // 3. CANTIDAD (Stepper)
-        _titulo("Número de opciones"),
+        _titulo("Número de opciones", colorTexto),
         const SizedBox(height: 8),
         SizedBox(
           height: 80, // Altura fija compacta
@@ -169,15 +173,14 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                   }
                 },
                 true,
-                isEnabled:
-                    _cantidadPreguntas < 9,
+                isEnabled: _cantidadPreguntas < 9,
               ),
             ],
           ),
         ),
 
         // SECCIÓN CANTIDAD CONTENEDORES
-        _titulo("Número de contenedores"),
+        _titulo("Número de contenedores", colorTexto),
         const SizedBox(height: 8),
         SizedBox(
           height: 80, // Altura fija compacta
@@ -216,21 +219,20 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                 () {
                   if (_cantContenedores < 3) {
                     setState(() => _cantContenedores++);
-                    if(_cantidadPreguntas < _cantContenedores){
+                    if (_cantidadPreguntas < _cantContenedores) {
                       setState(() => _cantidadPreguntas++);
                     }
                   }
                 },
                 true,
-                isEnabled:
-                    _cantContenedores < 3,
+                isEnabled: _cantContenedores < 3,
               ),
             ],
           ),
         ),
 
         // 4. TEMÁTICA
-        _titulo("Temática del juego"),
+        _titulo("Temática del juego", colorTexto),
         const SizedBox(height: 8),
         Expanded(
           flex: 3,
@@ -269,7 +271,7 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
   }
 
   // --- LAYOUT TABLET (Original) ---
-  Widget _buildTabletLayout() {
+  Widget _buildTabletLayout(Color colorTexto) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -286,7 +288,7 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _titulo("Intervalo de números"),
+                    _titulo("Intervalo de números", colorTexto),
                     const SizedBox(height: 10),
                     Expanded(
                       child: Column(
@@ -356,7 +358,7 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _titulo("Número de opciones"),
+                          _titulo("Número de opciones", colorTexto),
                           const SizedBox(height: 10),
                           Expanded(
                             child: Row(
@@ -365,12 +367,14 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                                   Icons.remove,
                                   "MENOS",
                                   () {
-                                    if (_cantidadPreguntas > _cantContenedores) {
+                                    if (_cantidadPreguntas >
+                                        _cantContenedores) {
                                       setState(() => _cantidadPreguntas--);
                                     }
                                   },
                                   false,
-                                  isEnabled: _cantidadPreguntas > _cantContenedores,
+                                  isEnabled:
+                                      _cantidadPreguntas > _cantContenedores,
                                 ),
                                 const SizedBox(width: 20),
                                 TarjetaJuego(
@@ -395,8 +399,7 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                                     }
                                   },
                                   false,
-                                  isEnabled:
-                                      _cantidadPreguntas < 9,
+                                  isEnabled: _cantidadPreguntas < 9,
                                 ),
                               ],
                             ),
@@ -405,14 +408,14 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
-                  // SECCIÓN CANTIDAD CONTENEDORES
+
+                    // SECCIÓN CANTIDAD CONTENEDORES
                     Expanded(
                       flex: 2, // Le damos más altura a la sección del stepper
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [  
-                          _titulo("Número de Contenedores"),
+                        children: [
+                          _titulo("Número de Contenedores", colorTexto),
                           const SizedBox(height: 10),
                           Expanded(
                             child: Row(
@@ -448,14 +451,14 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                                   () {
                                     if (_cantContenedores < 3) {
                                       setState(() => _cantContenedores++);
-                                      if(_cantidadPreguntas < _cantContenedores){
+                                      if (_cantidadPreguntas <
+                                          _cantContenedores) {
                                         setState(() => _cantidadPreguntas++);
                                       }
                                     }
                                   },
                                   false,
-                                  isEnabled:
-                                      _cantContenedores < 3,
+                                  isEnabled: _cantContenedores < 3,
                                 ),
                               ],
                             ),
@@ -478,7 +481,7 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _titulo("Temática del juego"),
+              _titulo("Temática del juego", colorTexto),
               const SizedBox(height: 10),
               Expanded(
                 child: Row(
@@ -507,10 +510,10 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
 
   // --- WIDGETS PERSONALIZADOS ---
 
-  Widget _titulo(String texto) {
+  Widget _titulo(String texto, Color color) {
     return Text(
       texto,
-      style: const TextStyle(fontSize: 18, color: Colors.black54),
+      style: TextStyle(fontSize: 18, color: color, fontWeight: FontWeight.w700),
     );
   }
 

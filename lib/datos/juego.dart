@@ -33,6 +33,7 @@ class Juego {
   String id;
   String nombre;
   IconData? icono;
+  String? imagen;
   int min;
   int max;
   int cantidad;
@@ -47,6 +48,7 @@ class Juego {
     int cantidad = 8,
     bool usaImagenes = false,
     String tipoImagenes = "numeros",
+    this.imagen,
     this.icono = Icons.videogame_asset,
   }) : usaImagenes = max > 10 ? false : usaImagenes,
        cantidad = max - min + 1 < cantidad ? max - min + 1 : cantidad,
@@ -150,8 +152,8 @@ class Juego {
 /// **Metadatos de Control:**
 /// * **Autor Original:** Alejandro Molina Ruiz
 /// * **Última modificación por:** Alejandro Molina Ruiz
-/// * **Fecha de modificación:** 08/12/2025
-/// * **Último cambio:** Se ha cambiado el orden de Card e InkWell para darle mejor aspecto
+/// * **Fecha de modificación:** 18/12/2025
+/// * **Último cambio:** Se ha añadido la imagen representativa del juego
 ///
 
 class JuegoCard extends StatefulWidget {
@@ -192,10 +194,28 @@ class _JuegoCardState extends State<JuegoCard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  widget.juego.icono ?? Icons.videogame_asset,
-                  size: 90, // Icono mucho más grande
-                  color: contentColor,
+                Flexible(
+                  child: widget.juego.imagen != null
+                  // 2. Si hay imagen, la mostramos
+                      ? Image.asset(
+                    widget.juego.imagen!,
+                    // fit: BoxFit.contain asegura que la imagen se vea completa sin deformarse
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Si la imagen no carga, mostramos el icono por defecto
+                      return Icon(
+                        widget.juego.icono ?? Icons.videogame_asset,
+                        size: 90,
+                        color: contentColor,
+                      );
+                    },
+                  )
+                  // 3. Si no hay imagen, mostramos el icono
+                      : Icon(
+                    widget.juego.icono ?? Icons.videogame_asset,
+                    size: 90,
+                    color: contentColor,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(

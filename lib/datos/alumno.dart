@@ -54,9 +54,6 @@ class Alumno {
 
   // --- AJUSTES Y PERMISOS POR JUEGO ---
   bool permisoAjustesJuego1;
-  bool mostrarPuntuacionJuego1;
-  Juego1Settings juego1Settings;
-
   bool permisoAjustesJuego2;
   bool permisoAjustesJuego3;
   bool permisoAjustesJuego4;
@@ -88,16 +85,13 @@ class Alumno {
 
     // Juego 1
     this.permisoAjustesJuego1 = true,
-    this.mostrarPuntuacionJuego1 = true,
     Juego1Settings? juego1Settings,
 
     // Otros juegos
     this.permisoAjustesJuego2 = true,
     this.permisoAjustesJuego3 = true,
     this.permisoAjustesJuego4 = true,
-
-  }) : _imagen = imagen,
-        juego1Settings = juego1Settings ?? Juego1Settings(numeroOpciones: 4, numeroMayor: 10, numeroMenor: 0);
+  }) : _imagen = imagen;
 
   // --- GETTERS Y SETTERS DE IMAGEN (Lógica Source B) ---
   String? get imagen => _imagen;
@@ -162,9 +156,9 @@ class Alumno {
   }
 
   Future<void> descargarImagen(
-      Directory tempDir, {
-        int maxBytes = 10 * 1024 * 1024,
-      }) async {
+    Directory tempDir, {
+    int maxBytes = 10 * 1024 * 1024,
+  }) async {
     if (_imagen == null || _imagen!.isEmpty) {
       imagenLocal = '';
       return;
@@ -222,7 +216,9 @@ class Alumno {
       if (hexString is String && hexString.isNotEmpty) {
         try {
           return Color(int.parse(hexString, radix: 16));
-        } catch (_) { return null; }
+        } catch (_) {
+          return null;
+        }
       }
       return null;
     }
@@ -256,23 +252,33 @@ class Alumno {
       permisoSonido: data['permisoSonido'] ?? true,
 
       permisoAjustesJuego1: data['permisoAjustesJuego1'] ?? true,
-      mostrarPuntuacionJuego1: data['mostrarPuntuacionJuego1'] ?? true,
-
       permisoAjustesJuego2: data['permisoAjustesJuego2'] ?? true,
       permisoAjustesJuego3: data['permisoAjustesJuego3'] ?? true,
       permisoAjustesJuego4: data['permisoAjustesJuego4'] ?? true,
 
       // Mapeo inteligente: Usa el valor global nuevo, si no existe, usa el antiguo de juego1
       sonidoEleccion: data['sonidoEleccion'] ?? data['sonidoEleccionJuego1'],
-      sonidoAcierto: data['sonidoAcierto'] ?? data['sonidoAciertoJuego1'] ?? 'Pim',
-      sonidoAciertoActivado: data['sonidoAciertoActivado'] ?? data['sonidoAciertoActivadoJuego1'] ?? true,
+      sonidoAcierto:
+          data['sonidoAcierto'] ?? data['sonidoAciertoJuego1'] ?? 'Pim',
+      sonidoAciertoActivado:
+          data['sonidoAciertoActivado'] ??
+          data['sonidoAciertoActivadoJuego1'] ??
+          true,
       sonidoFallo: data['sonidoFallo'] ?? data['sonidoFalloJuego1'] ?? 'Pton',
-      sonidoFalloActivado: data['sonidoFalloActivado'] ?? data['sonidoFalloActivadoJuego1'] ?? true,
+      sonidoFalloActivado:
+          data['sonidoFalloActivado'] ??
+          data['sonidoFalloActivadoJuego1'] ??
+          true,
 
       voz: data['voz'] ?? data['vozJuego1'],
-      ttsRate: (data['ttsRate'] as num? ?? data['ttsRateJuego1'] as num? ?? 0.5).toDouble(),
-      ttsVolume: (data['ttsVolume'] as num? ?? data['ttsVolumeJuego1'] as num? ?? 1.0).toDouble(),
-      ttsPitch: (data['ttsPitch'] as num? ?? data['ttsPitchJuego1'] as num? ?? 1.0).toDouble(),
+      ttsRate: (data['ttsRate'] as num? ?? data['ttsRateJuego1'] as num? ?? 0.5)
+          .toDouble(),
+      ttsVolume:
+          (data['ttsVolume'] as num? ?? data['ttsVolumeJuego1'] as num? ?? 1.0)
+              .toDouble(),
+      ttsPitch:
+          (data['ttsPitch'] as num? ?? data['ttsPitchJuego1'] as num? ?? 1.0)
+              .toDouble(),
 
       juego1Settings: juego1Settings,
     );
@@ -295,7 +301,6 @@ class Alumno {
       'permisoSonido': permisoSonido,
 
       'permisoAjustesJuego1': permisoAjustesJuego1,
-      'mostrarPuntuacionJuego1': mostrarPuntuacionJuego1,
 
       'permisoAjustesJuego2': permisoAjustesJuego2,
       'permisoAjustesJuego3': permisoAjustesJuego3,
@@ -310,8 +315,6 @@ class Alumno {
       'ttsRate': ttsRate,
       'ttsVolume': ttsVolume,
       'ttsPitch': ttsPitch,
-
-      'juego1Settings': juego1Settings.toMap(),
     };
   }
 
@@ -444,7 +447,8 @@ class _TeacherViewCardState extends State<TeacherViewCard> {
             IconButton(icon: widget.icono, onPressed: widget.onTap),
           ],
         ),
-        onTap: null, // Si quieres que toda la tarjeta sea cliqueable, asigna widget.onTap aquí
+        onTap:
+            null, // Si quieres que toda la tarjeta sea cliqueable, asigna widget.onTap aquí
       ),
     );
   }

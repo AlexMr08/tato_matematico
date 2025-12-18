@@ -3,7 +3,6 @@ import 'package:tato_matematico/datos/juego.dart';
 import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 
-
 /// **Nombre de la Clase: `Juego3**
 ///
 /// **Descripción:** Clase que representa el tercer juego de la aplicación.
@@ -26,10 +25,11 @@ class Juego3 extends Juego {
     super.tipoImagenes = "numeros",
     this.cantContenedores = 3,
   }) : super(
-        id: 'juego3',
-        nombre: 'Juego 3',
-        icono: Icons.videogame_asset,
-      );
+         id: 'juego3',
+         nombre: 'Juego 3',
+         icono: Icons.videogame_asset,
+         imagen: "assets/images/repartir.png",
+       );
 
   final Random _randomGlobal = Random(DateTime.now().millisecondsSinceEpoch);
   List<List<int>> generarNuevoJuego() {
@@ -104,8 +104,6 @@ class Juego3 extends Juego {
       dbRef: dbRef2,
     );
   }
-
-
 
   factory Juego3.fromMap(Map<dynamic, dynamic> data) {
     return Juego3(

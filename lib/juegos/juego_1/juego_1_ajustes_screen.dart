@@ -55,7 +55,6 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
     final dbRef = FirebaseDatabase.instance.ref();
 
     try {
-
       juego.guardarAjustes(
         idAlumno: alumno.id,
         rango: _rangoMax,
@@ -67,10 +66,6 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
       await dbRef
           .child('tato/alumnos/${alumno.id}/juego1Settings')
           .update(newSettings.toMap());
-
-      // Actualizar localmente al alumno en el Holder
-      alumno.juego1Settings = newSettings;
-      // context.read<AlumnoHolder>().setAlumno(alumno); // Si tu holder tiene este método
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -98,95 +93,87 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
       onVolver: _guardar, // Guardar automáticamente al salir
       onAjustes: () {},
       onEstadisticas: () {},
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // --- SECCIÓN 1: RANGO DE NÚMEROS ---
+            _titulo("Rango de números"),
+            const SizedBox(height: 10),
+            Expanded(
+              flex: 2,
+              child: Row(
                 children: [
-                  // --- SECCIÓN 1: RANGO DE NÚMEROS ---
-                  _titulo("Rango de números"),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        _itemRango(10, "0 - 10", Icons.filter_1, isMobile),
-                        const SizedBox(width: 10),
-                        _itemRango(20, "0 - 20", Icons.filter_2, isMobile),
-                        const SizedBox(width: 10),
-                        _itemRango(100, "0 - 100", Icons.filter_5, isMobile),
-                        const SizedBox(width: 10),
-                        _itemRango(
-                          1000,
-                          "0 - 1000",
-                          Icons.filter_9_plus,
-                          isMobile,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // --- SECCIÓN 2: CANTIDAD DE OPCIONES ---
-                  _titulo("Cantidad de opciones"),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    flex: 3,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Botón Menos (Estilo Stepper)
-                        _botonStepper(
-                          Icons.remove,
-                          "MENOS",
-                          () {
-                            if (_numOpciones > 2) {
-                              setState(() => _numOpciones--);
-                            }
-                          },
-                          isMobile,
-                          isEnabled: _numOpciones > 2,
-                        ),
-
-                        const SizedBox(width: 20),
-
-                        // Visualizador (Usa TarjetaJuego visualmente)
-                        TarjetaJuego(
-                          label: _numOpciones.toString(),
-                          isButton: false,
-                          isEnabled: true,
-                          onTap: () {},
-                          colorFondo: Colors.white,
-                          imagenes: false,
-                          tipoImagen: "",
-                          numero: _numOpciones,
-                          tamano: isMobile ? 80 : 120,
-                          radio: 20,
-                        ),
-
-                        const SizedBox(width: 20),
-
-                        // Botón Más
-                        _botonStepper(
-                          Icons.add,
-                          "MÁS",
-                          () {
-                            if (_numOpciones < 12)
-                              setState(() => _numOpciones++);
-                          },
-                          isMobile,
-                          isEnabled: _numOpciones < 12,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  _itemRango(10, "0 - 10", Icons.filter_1, isMobile),
+                  const SizedBox(width: 10),
+                  _itemRango(20, "0 - 20", Icons.filter_2, isMobile),
+                  const SizedBox(width: 10),
+                  _itemRango(100, "0 - 100", Icons.filter_5, isMobile),
+                  const SizedBox(width: 10),
+                  _itemRango(1000, "0 - 1000", Icons.filter_9_plus, isMobile),
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // --- SECCIÓN 2: CANTIDAD DE OPCIONES ---
+            _titulo("Cantidad de opciones"),
+            const SizedBox(height: 10),
+            Expanded(
+              flex: 3,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Botón Menos (Estilo Stepper)
+                  _botonStepper(
+                    Icons.remove,
+                    "MENOS",
+                    () {
+                      if (_numOpciones > 2) {
+                        setState(() => _numOpciones--);
+                      }
+                    },
+                    isMobile,
+                    isEnabled: _numOpciones > 2,
+                  ),
+
+                  const SizedBox(width: 20),
+
+                  // Visualizador (Usa TarjetaJuego visualmente)
+                  TarjetaJuego(
+                    label: _numOpciones.toString(),
+                    isButton: false,
+                    isEnabled: true,
+                    onTap: () {},
+                    colorFondo: Colors.white,
+                    imagenes: false,
+                    tipoImagen: "",
+                    numero: _numOpciones,
+                    tamano: isMobile ? 80 : 120,
+                    radio: 20,
+                  ),
+
+                  const SizedBox(width: 20),
+
+                  // Botón Más
+                  _botonStepper(
+                    Icons.add,
+                    "MÁS",
+                    () {
+                      if (_numOpciones < 12) setState(() => _numOpciones++);
+                    },
+                    isMobile,
+                    isEnabled: _numOpciones < 12,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
     );
   }
 

@@ -439,7 +439,11 @@ class _Juego2AjustesProfeState extends State<Juego2AjustesProfe> {
   Widget _titulo(String texto) {
     return Text(
       texto,
-      style: const TextStyle(fontSize: 18, color: Colors.black54),
+      style: const TextStyle(
+        fontSize: 18,
+        color: Colors.black54,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 

@@ -193,7 +193,7 @@ class _AgregarProfesorState extends State<AgregarProfesor> {
                   value: _esDirector,
                   onChanged: (v) => setState(() => _esDirector = v ?? false),
                 ),
-                const Text("¿Es Director?", style: TextStyle(fontSize: 16)),
+                const Text("¿Es Administrador?", style: TextStyle(fontSize: 16)),
               ],
             ),
             const SizedBox(height: 100),
