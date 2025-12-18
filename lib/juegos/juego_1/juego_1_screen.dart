@@ -28,11 +28,6 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     if (_state == null) {
       final alumno = context.read<AlumnoHolder>().alumno;
       final juego = context.read<AlumnoHolder>().listaJuegos["juego1"];
-      if(juego is Juego1){
-        print("PUTISIMA VIDA");
-      }else{
-        print("HAHAHAHA");
-      }
       if (alumno != null) {
         _state = Juego1State(alumno, juego as Juego1);
         _state!.init();

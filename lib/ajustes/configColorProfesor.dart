@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/datos/alumno.dart';
+import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
+import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-import '../datos/juego.dart';
-import '../juegos/juego2/juego2Ajustes.dart';
 import '../juegos/tarjetaJuego.dart';
-import '../widgetsAuxiliares/ScaffoldComunV2.dart';
 
 /// **Nombre de la Clase: `ConfigColorProfesor`**
 ///
@@ -195,14 +195,7 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
                   Expanded(
                     child: BotonSinIconoAlumno(
                       texto: "Botón activado",
-                      onPressed: (alumno.permisoAjustesJuego2
-                          ? () {
-                              navegar(
-                                Juego2Ajustes(juego: listaJuegos["juego2"]!),
-                                context,
-                              );
-                            }
-                          : null),
+                      onPressed: (){},
                       colorFondo:
                           alumno.colorBotones ??
                           Theme.of(context).colorScheme.primaryContainer,

@@ -12,7 +12,7 @@ import 'package:tato_matematico/juegos/juego3/juego3Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 
 class AjustesGeneralesScreen extends StatelessWidget {
-  const AjustesGeneralesScreen({Key? key}) : super(key: key);
+  const AjustesGeneralesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

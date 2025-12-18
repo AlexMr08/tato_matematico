@@ -4,11 +4,8 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
-import 'package:tato_matematico/juegos/juego3/juego3Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 import '../juegos/tarjetaJuego.dart';
@@ -125,7 +122,6 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
     Alumno alumno;
     alumnoHolder = context.watch<AlumnoHolder>();
     alumno = alumnoHolder.alumno!;
-    Map<String, Juego> listaJuegos = alumnoHolder.listaJuegos;
 
     PosicionBarra posBarra = switch (alumno.posicionBarra) {
       0 => PosicionBarra.arriba,
@@ -225,14 +221,7 @@ class ConfigColorAlumnoState extends State<ConfigColorAlumno> {
                   Expanded(
                     child: BotonSinIconoAlumno(
                       texto: "Botón activado",
-                      onPressed: (alumno.permisoAjustesJuego2
-                          ? () {
-                              navegar(
-                                Juego2Ajustes(juego: listaJuegos["juego2"]!),
-                                context,
-                              );
-                            }
-                          : null),
+                      onPressed: () {},
                       colorFondo:
                           alumno.colorBotones ??
                           Theme.of(context).colorScheme.primaryContainer,

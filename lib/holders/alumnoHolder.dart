@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/estadistica.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1.dart';
 
 import '../datos/alumno.dart';
 import '../datos/juego.dart';
@@ -42,12 +43,10 @@ class AlumnoHolder extends ChangeNotifier {
   }) {
     alumno = newAlumno;
     if (initJuegos) {
-      print("Cargando juegos...");
       cargarJuegos();
       _escucharCambiosJuegos(newAlumno.id);
     }
     if (initStats) {
-      print("Cargando estadisticas...");
       cargarEstaditicas();
       _escucharCambiosEstadisticas(newAlumno.id);
     }
@@ -56,12 +55,7 @@ class AlumnoHolder extends ChangeNotifier {
   }
 
   Future<void> cargarJuegos() async {
-    listaJuegos = {
-      "juego1": Juego(id: "juego1", nombre: "Juego 1"),
-      "juego2": Juego2(),
-      "juego3": Juego3(),
-      "juego4": Juego(id: "juego4", nombre: "Juego 4"),
-    };
+    listaJuegos = {"juego4": Juego(id: "juego4", nombre: "Juego 4")};
     if (alumno != null) {
       // Apuntamos específicamente al nodo del juego 2
       var dbRef = FirebaseDatabase.instance.ref().child(
@@ -70,17 +64,17 @@ class AlumnoHolder extends ChangeNotifier {
 
       try {
         final snapshot = await dbRef.get();
-        print("SNAPSHOT: ${snapshot.value}");
         if (snapshot.exists && snapshot.value != null) {
           for (var child in snapshot.children) {
             final data = Map<String, dynamic>.from(child.value as Map);
 
             // Fábrica dinámica:
             // Si tienes clases específicas (Juego2) úsalas, si no, la genérica.
-            if (child.key == "juego2") {
+            if (child.key == "juego1") {
+              listaJuegos[child.key!] = Juego1.fromMap(data);
+            } else if (child.key == "juego2") {
               listaJuegos[child.key!] = Juego2.fromMap(data);
             } else if (child.key == "juego3") {
-              print("Creando instancia de Juego3 para ${child.key}");
               listaJuegos[child.key!] = Juego3.fromMap(data);
             } else {
               listaJuegos[child.key!] = Juego.fromMap(data);
@@ -104,11 +98,13 @@ class AlumnoHolder extends ChangeNotifier {
         final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
         data.forEach((key, value) {
           final juegoData = Map<dynamic, dynamic>.from(value as Map);
-          if (key == 'juego2') {
+          if (key == "juego1") {
+            listaJuegos[key] = Juego1.fromMap(juegoData);
+          } else if (key == 'juego2') {
             listaJuegos[key] = Juego2.fromMap(juegoData);
-          }else if(key == 'juego3'){
+          } else if (key == 'juego3') {
             listaJuegos[key] = Juego3.fromMap(juegoData);
-          }else {
+          } else {
             listaJuegos[key] = Juego.fromMap(juegoData);
           }
         });

@@ -453,7 +453,6 @@ class _EditarAlumnoState extends State<EditarAlumno> {
     final colorScheme = Theme.of(context).colorScheme;
     final alumno = Provider.of<AlumnoHolder>(context).alumno;
     final listaJuegos = context.read<AlumnoHolder>().listaJuegos;
-    final juego2 = listaJuegos["juego2"];
 
     if (alumno == null) {
       // Si el alumno es nulo, mostramos un loader o un mensaje y evitamos errores.

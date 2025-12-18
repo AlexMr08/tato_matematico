@@ -39,7 +39,7 @@ class _GamesMenuState extends State<GamesMenu> {
     final alumnoHolder = context.watch<AlumnoHolder>();
     final navigator = Navigator.of(context);
 
-    if (alumnoHolder.alumno == null || !alumnoHolder.areGamesLoaded) {
+    if (alumnoHolder.alumno == null || alumnoHolder.listaJuegos.isEmpty) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
