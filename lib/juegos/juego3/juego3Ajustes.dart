@@ -214,13 +214,16 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                 Icons.add,
                 "MAS",
                 () {
-                  if (_cantContenedores < 4) {
+                  if (_cantContenedores < 3) {
                     setState(() => _cantContenedores++);
+                    if(_cantidadPreguntas < _cantContenedores){
+                      setState(() => _cantidadPreguntas++);
+                    }
                   }
                 },
                 true,
                 isEnabled:
-                    _cantContenedores < 4,
+                    _cantContenedores < 3,
               ),
             ],
           ),
@@ -443,14 +446,16 @@ class _Juego3AjustesState extends State<Juego3Ajustes> {
                                   Icons.add,
                                   "MAS",
                                   () {
-                                    if (_cantContenedores < 4) {
+                                    if (_cantContenedores < 3) {
                                       setState(() => _cantContenedores++);
-                                      setState(() => _cantidadPreguntas++);
+                                      if(_cantidadPreguntas < _cantContenedores){
+                                        setState(() => _cantidadPreguntas++);
+                                      }
                                     }
                                   },
                                   false,
                                   isEnabled:
-                                      _cantContenedores < 4,
+                                      _cantContenedores < 3,
                                 ),
                               ],
                             ),
