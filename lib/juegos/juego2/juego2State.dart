@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
@@ -16,6 +17,7 @@ import 'package:tato_matematico/juegos/juego2/juego2.dart';
 class Juego2State with ChangeNotifier {
   final Juego2 juego;
   final Alumno alumno;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   late List<int> numeros;
   late List<int?> numerosAbajo;
@@ -33,6 +35,22 @@ class Juego2State with ChangeNotifier {
 
   Juego2State(this.juego, this.alumno);
 
+  Future<void> _playSound(String? soundName) async {
+    if (soundName == null || soundName.isEmpty) return;
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource('sounds/$soundName.mp3'));
+    } catch (e) {
+      debugPrint("Error audio: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
   bool estaNumeroBienPosicionado(int num) {
     bool res = false;
     res = numerosOrdenados.indexOf(num) == numerosAbajo.indexOf(num);
@@ -43,6 +61,7 @@ class Juego2State with ChangeNotifier {
     if (!falloActual) {
       int indiceVacio = numerosAbajo.indexOf(null);
       if (indiceVacio != -1) {
+        _playSound(alumno.sonidoEleccion);
         numerosAbajo[indiceVacio] = numero;
         numeros.remove(numero);
 
@@ -51,6 +70,7 @@ class Juego2State with ChangeNotifier {
           if (!fallo) {
             fallo = true;
             errores += 1;
+            _playSound(alumno.sonidoFallo);
           }
         } else {
           falloActual = false;
@@ -64,6 +84,7 @@ class Juego2State with ChangeNotifier {
   void devolverNumero(int index) {
     int? numero = numerosAbajo[index];
     if (numero != null && numerosAbajo[index] != numerosOrdenados[index]) {
+      _playSound(alumno.sonidoEleccion);
       numerosAbajo[index] = null;
       numeros.add(numero);
       falloActual = false;
@@ -82,6 +103,9 @@ class Juego2State with ChangeNotifier {
         }
       }
       finalizado = correcto;
+      if (finalizado) {
+        _playSound(alumno.sonidoAcierto);
+      }
     }
   }
 

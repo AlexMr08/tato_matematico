@@ -5,8 +5,8 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego_1/juego1.dart';
 import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart'; // Import correcto widgets
-import 'package:tato_matematico/widgetsAuxiliares/botones.dart'; // Import correcto widgets
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
+import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 class Juego1Screen extends StatefulWidget {
   const Juego1Screen({Key? key}) : super(key: key);
@@ -45,7 +45,6 @@ class _Juego1ScreenState extends State<Juego1Screen> {
 
   @override
   Widget build(BuildContext context) {
-    // Inicialización de dimensiones (Idéntico a Juego 2)
     if (notInit) {
       size = MediaQuery.sizeOf(context).width;
       em = size < 600;
@@ -53,21 +52,18 @@ class _Juego1ScreenState extends State<Juego1Screen> {
     }
 
     final alumno = context.watch<AlumnoHolder>().alumno;
+    // Usamos watch aquí para que si settings cambia el juego, se redibuje
     final juego = context.watch<AlumnoHolder>().listaJuegos["juego1"] as Juego1;
-    print(
-      "Juego usa imagenes? ${juego.usaImagenes} del tipo: ${juego.tipoImagenes}",
-    );
+
     if (alumno == null || _state == null) return const SizedBox.shrink();
 
     final Color colorTexto = getTextColorForBackground(
       alumno.colorFondo ?? Theme.of(context).colorScheme.surface,
     );
 
-    // Tamaños responsivos consistentes con Juego 2
     double espaciado = em ? 12.0 : 24.0;
-    // Cálculo para que quepan las opciones (3 en móvil, más en tablet)
     double tamanoFicha = em ? (size - 60) / 3 : (size - 100) / 5;
-    if (tamanoFicha > 140) tamanoFicha = 140; // Límite máximo
+    if (tamanoFicha > 140) tamanoFicha = 140;
 
     PosicionBarra posicionBarra = getPosicionBarra(alumno.posicionBarra);
 
@@ -75,7 +71,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
       alumno: alumno,
       textoCabecera: "Encuentra el número",
       posicion: posicionBarra,
-      hasAjustes: false, // Habilitamos botón ajustes
+      hasAjustes: false,
       hasEstadisticas: false,
       onVolver: () {
         mostrarDialogoSiNoAlumnoV2(
@@ -90,57 +86,55 @@ class _Juego1ScreenState extends State<Juego1Screen> {
         });
       },
       onAjustes: () {
-        // Navegación a ajustes (implementada más abajo)
-        Navigator.pushNamed(context, '/juego1_ajustes');
+        Navigator.pushNamed(context, '/juego1_ajustes').then((_) {
+          // Al volver de ajustes, reiniciamos la ronda para aplicar cambios de rango/imagen
+          _state!.reiniciarJuego();
+        });
       },
       onEstadisticas: () {},
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // --- BARRA DE PROGRESO Y REPRODUCCIÓN ---
+            // --- BARRA SUPERIOR ---
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Botón Escuchar a la izquierda
                 Semantics(
                   label: "Escuchar número objetivo",
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _state!.speakObjetivo,
                     style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(20), // Más grande
                       backgroundColor:
-                          alumno.colorBotones ??
+                      alumno.colorBotones ??
                           Theme.of(context).colorScheme.primaryContainer,
                       foregroundColor: getTextColorForBackground(
                         alumno.colorBotones ??
                             Theme.of(context).colorScheme.primary,
                       ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
-                    child: const Icon(Icons.volume_up, size: 40), // Más grande
+                    icon: const Icon(Icons.volume_up, size: 30),
+                    label: const Text("Repetir Número"),
                   ),
                 ),
-
                 const Spacer(),
-
-                // Contador de repeticiones en el centro
                 Semantics(
-                  label: _state!.getRepeticionesString(), // Accesibilidad
+                  label: _state!.getRepeticionesString(),
                   excludeSemantics: true,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         "REPETICIONES: ",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: em ? 18 : 30, // Ajuste responsive
                           fontWeight: FontWeight.bold,
                           color: colorTexto,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       ...List.generate(_state!.repeticionesTotales, (index) {
                         bool completado =
                             index < _state!.repeticionesCompletadas;
@@ -161,11 +155,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                     ],
                   ),
                 ),
-
                 const Spacer(),
-
-                // Placeholder para centrar el contador.
-                const SizedBox(width: 80),
               ],
             ),
 
@@ -181,32 +171,28 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                     runSpacing: espaciado,
                     children: _state!.opciones.map((numero) {
                       bool isSelected = _state!.numeroSeleccionado == numero;
-
-                      // Si ya acertó y este es el correcto, mostrarlo verde/éxito
                       bool isCorrectAndFinished =
                           _state!.finalizado &&
-                          numero == _state!.numeroAAdivinar;
+                              numero == _state!.numeroAAdivinar;
 
                       Color fondo = isSelected
                           ? (alumno.colorSeleccion ??
-                                Theme.of(context).colorScheme.tertiaryContainer)
+                          Theme.of(context).colorScheme.tertiaryContainer)
                           : (alumno.colorBotones ??
-                                Theme.of(context).colorScheme.primaryContainer);
+                          Theme.of(context).colorScheme.primaryContainer);
 
                       if (isCorrectAndFinished) fondo = Colors.green;
-
-                      print("JUEGO USA IMAGENES: ${juego.usaImagenes}");
 
                       return TarjetaJuego(
                         key: ValueKey(numero),
                         tamano: tamanoFicha,
                         radio: 20,
                         numero: numero,
-                        label: numero.toString(), // Ocultar si hay imágenes
+                        label: numero.toString(),
                         isButton: true,
-                        // Deshabilitar interacción si ya terminó la ronda
                         isEnabled: !_state!.finalizado,
                         colorFondo: fondo,
+                        // Aquí es donde se aplican los cambios de ajustes
                         imagenes: juego.usaImagenes,
                         tipoImagen: juego.tipoImagenes,
                         onTap: () => _state!.seleccionarNumero(numero),
@@ -225,56 +211,45 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 colorFondo: alumno.colorBotones,
-                // Habilitado solo si hay selección y no ha terminado animación de éxito
                 onPressed:
-                    (_state!.numeroSeleccionado != null && !_state!.finalizado)
+                (_state!.numeroSeleccionado != null && !_state!.finalizado)
                     ? () async {
-                        bool acertado = await _state!.validarRespuesta();
+                  bool acertado = await _state!.validarRespuesta();
+                  if (acertado) {
+                    await Future.delayed(const Duration(milliseconds: 800));
+                    if (!mounted) return;
 
-                        if (acertado) {
-                          // Pequeña pausa para ver el color verde antes del diálogo
-                          await Future.delayed(
-                            const Duration(milliseconds: 800),
-                          );
-
-                          if (!mounted) return;
-
-                          if (_state!.esFinDeJuego()) {
-                            // --- FIN DEL JUEGO COMPLETO ---
-                            mostrarDialogoSalirReiniciarAlumnoV2(
-                              context,
-                              "¡Juego Completado!",
-                              "Has encontrado todos los números. ¿Quieres jugar otra vez?",
-                              alumno.colorFondo ?? Colors.white,
-                              alumno.colorBotones ?? Colors.blue,
-                            ).then((reiniciar) {
-                              if (reiniciar == true) {
-                                _state!.reiniciarJuego();
-                              } else if (reiniciar == false) {
-                                Navigator.pop(context);
-                              }
-                            });
-                          } else {
-                            // --- SIGUIENTE RONDA ---
-                            mostrarDialogoSiguienteAlumnoV2(
-                              context,
-                              "¡Muy bien!",
-                              "¡Correcto! Vamos a por el siguiente.",
-                              alumno.colorFondo ?? Colors.white,
-                              alumno.colorBotones ?? Colors.blue,
-                            ).then((siguiente) {
-                              if (siguiente == true) {
-                                _state!.iniciarRonda();
-                              } else {
-                                Navigator.pop(context);
-                              }
-                            });
-                          }
-                        } else {
-                          // El feedback de error (sonido) ya se maneja en el State.
-                          // Aquí podrías añadir vibración o shake animation si quisieras.
+                    if (_state!.esFinDeJuego()) {
+                      mostrarDialogoSalirReiniciarAlumnoV2(
+                        context,
+                        "¡Juego Completado!",
+                        "Has encontrado todos los números. ¿Quieres jugar otra vez?",
+                        alumno.colorFondo ?? Colors.white,
+                        alumno.colorBotones ?? Colors.blue,
+                      ).then((reiniciar) {
+                        if (reiniciar == true) {
+                          _state!.reiniciarJuego();
+                        } else if (reiniciar == false) {
+                          Navigator.pop(context);
                         }
-                      }
+                      });
+                    } else {
+                      mostrarDialogoSiguienteAlumnoV2(
+                        context,
+                        "¡Muy bien!",
+                        "¡Correcto! Vamos a por el siguiente.",
+                        alumno.colorFondo ?? Colors.white,
+                        alumno.colorBotones ?? Colors.blue,
+                      ).then((siguiente) {
+                        if (siguiente == true) {
+                          _state!.iniciarRonda();
+                        } else {
+                          Navigator.pop(context);
+                        }
+                      });
+                    }
+                  }
+                }
                     : null,
               ),
             ),

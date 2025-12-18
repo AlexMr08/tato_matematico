@@ -1,6 +1,8 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/juegos/juego3/juego3.dart';
+
 /// **Nombre de la Clase: `Juego3State**
 ///
 /// **Descripción:** Clase que representa el estado de la partida actual del juego 3
@@ -15,6 +17,7 @@ import 'package:tato_matematico/juegos/juego3/juego3.dart';
 class Juego3State with ChangeNotifier {
   final Juego3 juego;
   final Alumno alumno;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   late List<int> numeros;
   late List<List<int?>> contenedores;
@@ -33,7 +36,24 @@ class Juego3State with ChangeNotifier {
 
   Juego3State(this.juego, this.alumno);
 
+  Future<void> _playSound(String? soundName) async {
+    if (soundName == null || soundName.isEmpty) return;
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource('sounds/$soundName.mp3'));
+    } catch (e) {
+      debugPrint("Error audio: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
   void moverNumero(List<int>? numero, int contenedorIndex, int slotIndex) {
+    _playSound(alumno.sonidoEleccion);
     contenedores[contenedorIndex][slotIndex] = numero![0];
     numeros.removeAt(numero[1]);
     notifyListeners();
@@ -42,14 +62,15 @@ class Juego3State with ChangeNotifier {
   void devolverNumero(int numIndex, int contenedorIndex) {
     int? numero = contenedores[contenedorIndex][numIndex];
     if (numero != null) {
+      _playSound(alumno.sonidoEleccion);
       contenedores[contenedorIndex][numIndex] = null;
       numeros.add(numero);
       notifyListeners();
     }
   }
 
- bool verificarSolucion(List<List<int?>> contenedores, List<List<int>> soluciones) {
-      // Normalizar soluciones (ordenadas)
+  bool verificarSolucion(List<List<int?>> contenedores, List<List<int>> soluciones) {
+    // Normalizar soluciones (ordenadas)
     List<List<int>> solucionesNorm =
         soluciones.map((c) => List<int>.from(c)..sort()).toList();
 
@@ -71,14 +92,21 @@ class Juego3State with ChangeNotifier {
 
       final key = valores.join(',');
 
-      if (disponibles.containsKey(key) &&
-          disponibles[key]! > 0) {
+      if (disponibles.containsKey(key) && disponibles[key]! > 0) {
         disponibles[key] = disponibles[key]! - 1;
       } else {
         incorrectos.add(i);
       }
     }
     contenedoresIncorrectos = incorrectos;
+
+    if (incorrectos.isEmpty) {
+      _playSound(alumno.sonidoAcierto);
+      finalizado = true;
+    } else {
+      _playSound(alumno.sonidoFallo);
+    }
+
     return incorrectos.isEmpty;
   }
 
@@ -109,12 +137,11 @@ class Juego3State with ChangeNotifier {
       aciertos += 1;
       repeticionesCompletadas += 1;
       juegoTerminado = todasLasRepeticionesHechas();
-    }
-     else {
-      if(errores < 1){
+    } else {
+      if (errores < 1) {
         errores += 1;
       }
-     }
+    }
     if (juegoTerminado) {
       juego.subirEstadisticas(
         aciertos: aciertos,

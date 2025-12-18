@@ -19,11 +19,11 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
   late Alumno _alumno;
 
-  // State for global sounds
-  String? _sonidoEleccion;
-  String? _sonidoVictoria;
-  String? _sonidoFallo;
-  
+  // State for global sounds - Ahora no son nulos
+  String _sonidoEleccion = 'ninguno';
+  String _sonidoVictoria = 'ninguno';
+  String _sonidoFallo = 'ninguno';
+
   // State for global TTS
   double _ttsRate = 0.5;
   double _ttsVolume = 1.0;
@@ -33,6 +33,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
   final FlutterTts _flutterTts = FlutterTts();
 
   final List<Map<String, String>> availableSounds = [
+    {'name': 'ninguno', 'asset': 'assets/images/silencio.png'},
     {'name': 'campana', 'asset': 'assets/images/campana.png'},
     {'name': 'electricidad', 'asset': 'assets/images/electricidad.png'},
     {'name': 'gota', 'asset': 'assets/images/gota.png'},
@@ -78,10 +79,11 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
 
   void _initializeSettings() {
     _alumno = Provider.of<AlumnoHolder>(context, listen: false).alumno!;
-    // Usar nuevos campos globales
-    _sonidoEleccion = _alumno.sonidoEleccion;
-    _sonidoVictoria = _alumno.sonidoAciertoActivado ? _alumno.sonidoAcierto : null;
-    _sonidoFallo = _alumno.sonidoFalloActivado ? _alumno.sonidoFallo : null;
+
+    _sonidoEleccion = (_alumno.sonidoEleccion?.isNotEmpty ?? false) ? _alumno.sonidoEleccion! : 'ninguno';
+    _sonidoVictoria = _alumno.sonidoAciertoActivado && _alumno.sonidoAcierto.isNotEmpty ? _alumno.sonidoAcierto : 'ninguno';
+    _sonidoFallo = _alumno.sonidoFalloActivado && _alumno.sonidoFallo.isNotEmpty ? _alumno.sonidoFallo : 'ninguno';
+
     _ttsRate = _alumno.ttsRate;
     _ttsVolume = _alumno.ttsVolume;
     _ttsPitch = _alumno.ttsPitch;
@@ -95,13 +97,16 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
   }
 
   void _guardarAjustes() async {
+    final isVictoriaNone = _sonidoVictoria == 'ninguno';
+    final isFalloNone = _sonidoFallo == 'ninguno';
+    final isEleccionNone = _sonidoEleccion == 'ninguno';
+
     final updates = {
-      // Guardar en nuevos campos globales
-      'sonidoEleccion': _sonidoEleccion,
-      'sonidoAcierto': _sonidoVictoria,
-      'sonidoAciertoActivado': _sonidoVictoria != null,
-      'sonidoFallo': _sonidoFallo,
-      'sonidoFalloActivado': _sonidoFallo != null,
+      'sonidoEleccion': isEleccionNone ? null : _sonidoEleccion,
+      'sonidoAcierto': isVictoriaNone ? '' : _sonidoVictoria,
+      'sonidoAciertoActivado': !isVictoriaNone,
+      'sonidoFallo': isFalloNone ? '' : _sonidoFallo,
+      'sonidoFalloActivado': !isFalloNone,
       'ttsRate': _ttsRate,
       'ttsVolume': _ttsVolume,
       'ttsPitch': _ttsPitch,
@@ -110,17 +115,16 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     try {
       await _dbRef.child('tato/alumnos/${_alumno.id}').update(updates);
 
-      // Actualiza el objeto Alumno localmente
-      _alumno.sonidoEleccion = _sonidoEleccion;
-      _alumno.sonidoAcierto = _sonidoVictoria ?? '';
-      _alumno.sonidoAciertoActivado = _sonidoVictoria != null;
-      _alumno.sonidoFallo = _sonidoFallo ?? '';
-      _alumno.sonidoFalloActivado = _sonidoFallo != null;
+      _alumno.sonidoEleccion = isEleccionNone ? null : _sonidoEleccion;
+      _alumno.sonidoAcierto = isVictoriaNone ? '' : _sonidoVictoria;
+      _alumno.sonidoAciertoActivado = !isVictoriaNone;
+      _alumno.sonidoFallo = isFalloNone ? '' : _sonidoFallo;
+      _alumno.sonidoFalloActivado = !isFalloNone;
       _alumno.ttsRate = _ttsRate;
       _alumno.ttsVolume = _ttsVolume;
       _alumno.ttsPitch = _ttsPitch;
       context.read<AlumnoHolder>().setAlumno(_alumno);
-      
+
       Navigator.of(context).pop(true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -193,7 +197,7 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     );
   }
 
-  Widget _buildSoundEffectSelector({ required String title, required IconData icon, required String? selectedSound, required Function(String? sound) onSoundSelected, required Color textColor, required Color selectionColor}) {
+  Widget _buildSoundEffectSelector({ required String title, required IconData icon, required String selectedSound, required Function(String sound) onSoundSelected, required Color textColor, required Color selectionColor}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -204,14 +208,14 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
           runSpacing: 12,
           alignment: WrapAlignment.center,
           children: availableSounds.map((sound) {
-            final isSelected = selectedSound == sound['name'];
+            final soundName = sound['name']!;
+            final isSelected = selectedSound == soundName;
             return GestureDetector(
               onTap: () async {
-                final newSoundName = isSelected ? null : sound['name'];
-                onSoundSelected(newSoundName);
-                if (newSoundName != null) {
+                onSoundSelected(soundName);
+                if (soundName != 'ninguno') {
                   try {
-                    await _audioPlayer.play(AssetSource('sounds/${sound['name']!}.mp3'));
+                    await _audioPlayer.play(AssetSource('sounds/$soundName.mp3'));
                   } catch (e) {
                     print('Error al reproducir el sonido: $e');
                   }

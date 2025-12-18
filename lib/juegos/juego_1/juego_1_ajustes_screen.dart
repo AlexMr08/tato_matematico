@@ -1,17 +1,13 @@
-import 'dart:math';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/auxFunc.dart'; // Import raíz
+import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
+import 'package:tato_matematico/juegos/juego_1/juego1.dart';
 import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
 import 'package:tato_matematico/juegos/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
-
-import 'juego1.dart'; // Import widgets
 
 class Juego1AjustesScreen extends StatefulWidget {
   const Juego1AjustesScreen({Key? key}) : super(key: key);
@@ -26,8 +22,9 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
 
   // Estado local de ajustes
   late int _numOpciones;
-  late int _rangoMax; // Presets para UX: 10, 20, 50, 100
+  late int _rangoMax;
   late int _rangoMin;
+  late String _temaSeleccionado; // Nuevo estado para el tema
 
   bool _isLoading = false;
 
@@ -36,36 +33,50 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
     super.initState();
     final tempAlumno = context.read<AlumnoHolder>().alumno!;
     final tempJuego1 =
-        context.read<AlumnoHolder>().listaJuegos["juego1"] as Juego1;
+    context.read<AlumnoHolder>().listaJuegos["juego1"] as Juego1;
     _numOpciones = tempJuego1.cantidad;
     _rangoMax = tempJuego1.max;
     _rangoMin = tempJuego1.min;
+    // Inicializamos con el valor actual del juego o por defecto "numeros"
+    _temaSeleccionado = tempJuego1.tipoImagenes;
   }
 
   Future<void> _guardar() async {
     setState(() => _isLoading = true);
 
+    // Determinar si usa imágenes basado en el tema
+    bool usaImagenes = _temaSeleccionado != "numeros";
+
     final newSettings = Juego1Settings(
       numeroOpciones: _numOpciones,
       numeroMayor: _rangoMax,
       numeroMenor: _rangoMin,
+      usarImagenes: usaImagenes, // Guardamos flag
+      tipoImagen: _temaSeleccionado, // Guardamos string del tema
     );
 
-    // Actualizar Firebase
     final dbRef = FirebaseDatabase.instance.ref();
 
     try {
+      // 1. Guardar usando el método de la clase base Juego
       juego.guardarAjustes(
         idAlumno: alumno.id,
         rango: _rangoMax,
         cantidad: _numOpciones,
-        tema: "numeros",
-        dbRef: FirebaseDatabase.instance.ref(),
+        tema: _temaSeleccionado,
+        dbRef: dbRef,
       );
 
+      // 2. Guardar ajustes específicos en settings (redundancia útil)
       await dbRef
           .child('tato/alumnos/${alumno.id}/juego1Settings')
           .update(newSettings.toMap());
+
+      // 3. Actualizar objeto localmente para que se vea al volver sin recargar
+      juego.tipoImagenes = _temaSeleccionado;
+      juego.usaImagenes = usaImagenes;
+      juego.max = _rangoMax;
+      juego.cantidad = _numOpciones;
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -83,6 +94,8 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
 
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 600;
+    final Color colorTexto = getTextColorForBackground(
+        alumno.colorFondo ?? Theme.of(context).colorScheme.surface);
 
     return ScaffoldAlumno(
       alumno: alumno,
@@ -90,7 +103,7 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
       posicion: posicionBarra,
       hasAjustes: false,
       hasEstadisticas: false,
-      onVolver: _guardar, // Guardar automáticamente al salir
+      onVolver: _guardar,
       onAjustes: () {},
       onEstadisticas: () {},
       child: Padding(
@@ -99,7 +112,7 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // --- SECCIÓN 1: RANGO DE NÚMEROS ---
-            _titulo("Rango de números"),
+            _titulo("Rango de números", colorTexto),
             const SizedBox(height: 10),
             Expanded(
               flex: 2,
@@ -116,21 +129,20 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             // --- SECCIÓN 2: CANTIDAD DE OPCIONES ---
-            _titulo("Cantidad de opciones"),
+            _titulo("Cantidad de opciones", colorTexto),
             const SizedBox(height: 10),
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Botón Menos (Estilo Stepper)
                   _botonStepper(
                     Icons.remove,
                     "MENOS",
-                    () {
+                        () {
                       if (_numOpciones > 2) {
                         setState(() => _numOpciones--);
                       }
@@ -138,84 +150,193 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
                     isMobile,
                     isEnabled: _numOpciones > 2,
                   ),
-
                   const SizedBox(width: 20),
-
-                  // Visualizador (Usa TarjetaJuego visualmente)
                   TarjetaJuego(
                     label: _numOpciones.toString(),
                     isButton: false,
                     isEnabled: true,
                     onTap: () {},
                     colorFondo: Colors.white,
-                    imagenes: false,
-                    tipoImagen: "",
+                    // Mostramos la imagen seleccionada en el preview si no son números
+                    imagenes: _temaSeleccionado != "numeros",
+                    tipoImagen: _temaSeleccionado,
                     numero: _numOpciones,
-                    tamano: isMobile ? 80 : 120,
+                    tamano: isMobile ? 80 : 100,
                     radio: 20,
                   ),
-
                   const SizedBox(width: 20),
-
-                  // Botón Más
                   _botonStepper(
                     Icons.add,
                     "MÁS",
-                    () {
-                      if (_numOpciones < 12) setState(() => _numOpciones++);
+                        () {
+                      // No permitir más opciones que el rango disponible
+                      if (_numOpciones < 12 && _numOpciones < _rangoMax) {
+                        setState(() => _numOpciones++);
+                      }
                     },
                     isMobile,
-                    isEnabled: _numOpciones < 12,
+                    isEnabled: _numOpciones < 12 && _numOpciones < _rangoMax,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 10),
+
+            // --- SECCIÓN 3: TEMÁTICA (NUEVO) ---
+            _titulo("Temática del juego", colorTexto),
+            const SizedBox(height: 10),
+            Expanded(
+              flex: 3,
+              child: Column(
+                children: [
+                  // Fila 1
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _itemTema("numeros", "Números", Icons.onetwothree, isMobile),
+                        const SizedBox(width: 8),
+                        _itemTema("apple", "Manzana", Icons.apple, isMobile),
+                        const SizedBox(width: 8),
+                        _itemTema("ball", "Balón", Icons.sports_soccer, isMobile),
+                        const SizedBox(width: 8),
+                        _itemTema("turtle", "Tortuga", Icons.bug_report, isMobile),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Fila 2
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _itemTema("car", "Coche", Icons.directions_car, isMobile),
+                        const SizedBox(width: 8),
+                        _itemTema("flower", "Flor", Icons.circle, isMobile),
+                        const SizedBox(width: 8),
+                        // Espaciadores para mantener alineación si faltan items
+                        const Spacer(),
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _titulo(String texto) {
+  // --- WIDGETS AUXILIARES ---
+
+  Widget _titulo(String texto, Color color) {
     return Text(
       texto,
-      style: const TextStyle(
-        fontSize: 20,
+      style: TextStyle(
+        fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.black54,
+        color: color,
       ),
     );
   }
 
   Widget _itemRango(int maxVal, String label, IconData icon, bool isMobile) {
+    // Si hay tema seleccionado (imagenes), solo permitimos rango 10
+    bool isEnabled = maxVal == 10 || _temaSeleccionado == 'numeros';
     bool selected = _rangoMax == maxVal;
+
+    return _cardBase(
+      selected: selected,
+      onTap: () => setState(() => _rangoMax = maxVal),
+      icon: icon,
+      label: label,
+      colorSelected: const Color(0xFFD1FAE5),
+      isMobile: isMobile,
+      isEnabled: isEnabled,
+    );
+  }
+
+  Widget _itemTema(String valor, String label, IconData icon, bool isMobile) {
+    String? imagePath;
+    if (valor != 'numeros') {
+      // Usamos el '1' como ejemplo para el icono
+      imagePath = "assets/images/1$valor.png";
+    }
+
+    return _cardBase(
+      selected: _temaSeleccionado == valor,
+      onTap: () => setState(() {
+        _temaSeleccionado = valor;
+        // Si elige imágenes, forzamos rango a 10 y ajustamos cantidad si es necesario
+        if (_temaSeleccionado != "numeros") {
+          _rangoMax = 10;
+          if (_numOpciones > 10) _numOpciones = 10;
+        }
+      }),
+      icon: icon,
+      imagePath: imagePath,
+      label: label,
+      colorSelected: const Color(0xFFFCE7F3),
+      isMobile: isMobile,
+    );
+  }
+
+  Widget _cardBase({
+    required bool selected,
+    required VoidCallback onTap,
+    IconData? icon,
+    String? imagePath,
+    required String label,
+    Color? colorSelected,
+    required bool isMobile,
+    bool isEnabled = true,
+  }) {
     return Expanded(
       child: InkWell(
-        onTap: () => setState(() => _rangoMax = maxVal),
-        child: Container(
-          decoration: BoxDecoration(
-            color: selected ? const Color(0xFFD1FAE5) : const Color(0xFFF3F4F6),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: selected ? Colors.green : Colors.transparent,
-              width: 3,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: isMobile ? 24 : 40, color: Colors.black54),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: isMobile ? 12 : 16,
-                ),
+        onTap: isEnabled ? onTap : null,
+        child: Opacity(
+          opacity: isEnabled ? 1.0 : 0.3,
+          child: Container(
+            decoration: BoxDecoration(
+              color: selected
+                  ? (colorSelected ?? const Color(0xFFE0E7FF))
+                  : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? Colors.black : Colors.transparent,
+                width: 2,
               ),
-            ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (imagePath != null)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.error, size: isMobile ? 24 : 30),
+                      ),
+                    ),
+                  )
+                else
+                  Icon(icon, size: isMobile ? 24 : 32, color: Colors.black54),
+
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 12 : 14,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -223,19 +344,19 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
   }
 
   Widget _botonStepper(
-    IconData icon,
-    String label,
-    VoidCallback onTap,
-    bool isMobile, {
-    bool isEnabled = true,
-  }) {
+      IconData icon,
+      String label,
+      VoidCallback onTap,
+      bool isMobile, {
+        bool isEnabled = true,
+      }) {
     return InkWell(
       onTap: isEnabled ? onTap : null,
       child: Opacity(
         opacity: isEnabled ? 1.0 : 0.3,
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 16 : 32,
+            horizontal: isMobile ? 16 : 24,
             vertical: 16,
           ),
           decoration: BoxDecoration(
@@ -246,12 +367,12 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: isMobile ? 30 : 50),
+              Icon(icon, size: isMobile ? 24 : 30),
               Text(
                 label,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: isMobile ? 12 : 18,
+                  fontSize: isMobile ? 12 : 14,
                 ),
               ),
             ],
