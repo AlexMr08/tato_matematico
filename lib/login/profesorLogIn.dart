@@ -125,7 +125,7 @@ class _ProfesorLogInState extends State<ProfesorLogIn> {
                     width: 350,
                     decoration: const BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage("assets/images/logo.webp"),
+                        image: AssetImage("assets/images/logo2.png"),
                         fit: BoxFit.contain,
                       ),
                     ),

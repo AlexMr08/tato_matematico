@@ -4,11 +4,11 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 // Importamos las pantallas de ajustes con los nombres correctos según tu estructura
-import 'package:tato_matematico/juegos/juego_1/juego_1_ajustes_screen.dart';
-import 'package:tato_matematico/juegos/juego_1/ajustes_sonidos_screen.dart';
 import 'package:tato_matematico/ajustes/configColorAlumno.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
-import 'package:tato_matematico/juegos/juego3/juego3Ajustes.dart';
+import 'package:tato_matematico/ajustes/ajustesSonidosScreen.dart';
+import 'package:tato_matematico/ajustes/juego1AjustesScreen.dart';
+import 'package:tato_matematico/ajustes/juego2Ajustes.dart';
+import 'package:tato_matematico/ajustes/juego3Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 
 class AjustesGeneralesScreen extends StatelessWidget {

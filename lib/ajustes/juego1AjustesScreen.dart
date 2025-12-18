@@ -4,11 +4,21 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/juegos/juego1/juego1.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 
+/// **Nombre de la Clase: `Juego1AjustesScreen**
+///
+/// **Descripción:** Clase usada para la configuracion del juego 1 en el alumno
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Rubi Rodríguez Anguita
+/// * **Última modificación por:** Rubi Rodríguez Anguita
+/// * **Fecha de modificación:** 18/12/2025
+/// * **Último cambio:** Correccion de cosas dichas en clase
+///
 class Juego1AjustesScreen extends StatefulWidget {
   const Juego1AjustesScreen({Key? key}) : super(key: key);
 
@@ -47,14 +57,6 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
     // Determinar si usa imágenes basado en el tema
     bool usaImagenes = _temaSeleccionado != "numeros";
 
-    final newSettings = Juego1Settings(
-      numeroOpciones: _numOpciones,
-      numeroMayor: _rangoMax,
-      numeroMenor: _rangoMin,
-      usarImagenes: usaImagenes, // Guardamos flag
-      tipoImagen: _temaSeleccionado, // Guardamos string del tema
-    );
-
     final dbRef = FirebaseDatabase.instance.ref();
 
     try {
@@ -67,12 +69,7 @@ class _Juego1AjustesScreenState extends State<Juego1AjustesScreen> {
         dbRef: dbRef,
       );
 
-      // 2. Guardar ajustes específicos en settings (redundancia útil)
-      await dbRef
-          .child('tato/alumnos/${alumno.id}/juego1Settings')
-          .update(newSettings.toMap());
-
-      // 3. Actualizar objeto localmente para que se vea al volver sin recargar
+      // 2. Actualizar objeto localmente para que se vea al volver sin recargar
       juego.tipoImagenes = _temaSeleccionado;
       juego.usaImagenes = usaImagenes;
       juego.max = _rangoMax;

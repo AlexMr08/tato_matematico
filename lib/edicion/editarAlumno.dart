@@ -3,7 +3,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/edicion/ajustesSonidoProfe.dart';
+import 'package:tato_matematico/ajustes/ajustesSonidosProfe.dart';
+import 'package:tato_matematico/ajustes/juego1AjustesProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/ajustes/configColorProfesor.dart';
@@ -13,10 +14,11 @@ import 'package:tato_matematico/edicion/configAlfanumerica.dart';
 import 'package:tato_matematico/edicion/configImagenUnica.dart';
 import 'package:tato_matematico/edicion/configSecuencia.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tato_matematico/juegos/juego2/juego2AjustesProfe.dart';
+import 'package:tato_matematico/ajustes/juego2AjustesProfe.dart';
 import 'package:tato_matematico/juegos/juego2/juego2ScreenProfe.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
-import 'package:tato_matematico/juegos/juego3/juego3AjustesProfe.dart';
+import 'package:tato_matematico/ajustes/juego3AjustesProfe.dart';
+import '../juegos/juego1/juego1ScreenProfe.dart';
 import '../juegos/juego3/juego3ScreenProfe.dart';
 
 /// **Nombre de la Clase: `EditarAlumno`**
@@ -562,7 +564,7 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       onColoresChanged: (val) => _guardarPermiso(alumno, 'permisoColor', val),
       onSonidosChanged: (val) => _guardarPermiso(alumno, 'permisoSonido', val),
       onConfigurar: () => navegar(ConfigColorProfesor(alum: alumno), context),
-      onProbar: () => navegar(AjustesSonidosProfesor(), context),
+      onProbar: () => navegar(AjustesSonidosProfe(), context),
       alumno: alumno,
     );
 
@@ -571,10 +573,9 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       permisoValor: alumno.permisoAjustesJuego1,
       onPermisoChanged: (val) =>
           _guardarPermiso(alumno, 'permisoAjustesJuego1', val),
-      onConfigurar: () =>
-          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
+      onConfigurar: () => navegar(Juego1AjustesProfe(), context),
       onProbar: () => navegar(
-        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
+        Juego1ScreenProfe(),
         context,
       ),
     );
@@ -610,12 +611,8 @@ class _EditarAlumnoState extends State<EditarAlumno> {
       permisoValor: alumno.permisoAjustesJuego4,
       onPermisoChanged: (val) =>
           _guardarPermiso(alumno, 'permisoAjustesJuego4', val),
-      onConfigurar: () =>
-          navegar(Juego2AjustesProfe(juego: listaJuegos["juego2"]!), context),
-      onProbar: () => navegar(
-        Juego2ScreenProfe(juego: listaJuegos["juego2"]!, alumno: alumno),
-        context,
-      ),
+      onConfigurar: () {},
+      onProbar: () {},
     );
 
     // -------------------------------------------------------------------------

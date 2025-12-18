@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/ajustes/ajustes_generales_screen.dart';
+import 'package:tato_matematico/ajustes/ajustesGeneralesScreen.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
-import 'package:tato_matematico/estadisticasAlumno.dart';
+import 'package:tato_matematico/estadisticas/estadisticasAlumno.dart';
 import 'package:tato_matematico/juegos/juego2/juego2Screen.dart';
-import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
+import 'package:tato_matematico/juegos/juego1/juego1Screen.dart';
 import 'package:tato_matematico/juegos/juego3/juego3Screen.dart';
 import 'holders/alumnoHolder.dart';
 import 'auxFunc.dart';
 import 'datos/juego.dart';
-
 
 /// **Nombre de la Clase: `GamesMenu**
 ///

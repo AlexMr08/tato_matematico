@@ -1,3 +1,14 @@
+/// **Nombre de la Clase: `Juego1Settings**
+///
+/// **Descripción:** Clase usada para los ajustes del juego 1, proximamente deprecated
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Rubi Rodríguez Anguita
+/// * **Última modificación por:** Rubi Rodríguez Anguita
+/// * **Fecha de modificación:** 14/12/2025
+/// * **Último cambio:** Creacion de la clase
+
 class Juego1Settings {
   int numeroOpciones;
   int numeroMayor;

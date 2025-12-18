@@ -7,7 +7,7 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
 import 'package:tato_matematico/juegos/juego2/juego2State.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 /// **Nombre de la Clase: `Juego2Screen**

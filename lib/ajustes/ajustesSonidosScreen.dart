@@ -8,6 +8,17 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 
+/// **Nombre de la Clase: `AjustesSonidosScreen**
+///
+/// **Descripción:** Clase usada para los ajustes de sonido en el alumno
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Rubi Rodríguez Anguita
+/// * **Última modificación por:** Rubi Rodríguez Anguita
+/// * **Fecha de modificación:** 18/12/2025
+/// * **Último cambio:** Correccion del layout
+
 class AjustesSonidosScreen extends StatefulWidget {
   const AjustesSonidosScreen({Key? key}) : super(key: key);
 

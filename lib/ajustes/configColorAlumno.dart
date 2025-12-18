@@ -8,7 +8,7 @@ import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-import '../juegos/tarjetaJuego.dart';
+import '../widgetsAuxiliares/tarjetaJuego.dart';
 
 /// **Nombre de la Clase: `ConfigColorAlumno**
 ///

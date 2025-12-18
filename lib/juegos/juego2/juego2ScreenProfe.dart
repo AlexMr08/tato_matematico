@@ -7,7 +7,7 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/juegos/juego2/juego2.dart';
 import 'package:tato_matematico/juegos/juego2/juego2State.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
 /// **Nombre de la Clase: `Juego2Screen**
@@ -72,9 +72,7 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
     }
     alumno = alumnoHolder.alumno!;
 
-    var colorTexto = alumno.colorFondo != null
-        ? getTextColorForBackground(alumno.colorFondo!)
-        : Theme.of(context).colorScheme.onSurface;
+    var colorTexto = Theme.of(context).colorScheme.onSurface;
 
     var imagenes = widget.juego.usaImagenes;
     var tipoImagen = widget.juego.tipoImagenes;
@@ -114,10 +112,11 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "REPETICIONES: ",
+                    "REPETICIONES DEL JUEGO: ",
                     style: TextStyle(
                       fontSize: fontSize,
                       fontWeight: FontWeight.bold,
+                      color: colorTexto,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -185,15 +184,21 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
 
             Text(
               "Ordenados",
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+                color: colorTexto,
+              ),
             ),
 
             // --- ZONA DE RESULTADO ---
             Container(
               decoration: BoxDecoration(
-                color: alumno.colorBotones,
+                color:
+                    alumno.colorContenedor ??
+                    Theme.of(context).colorScheme.surfaceContainer,
                 border: Border.all(color: colorTexto, width: 2),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.all(8.0),
               child: Wrap(
@@ -228,7 +233,7 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
                               )
                             : null,
                         colorFondo:
-                            alumno.colorSeleccion ??
+                            alumno.colorBotones ??
                             Theme.of(context).colorScheme.primaryContainer,
                         imagenes: imagenes,
                         tipoImagen: tipoImagen,
@@ -240,9 +245,10 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
                                   ? Icons.check_circle
                                   : Icons.cancel
                             : null,
-                        color:
-                            alumno.colorSeleccion ??
-                            Theme.of(context).colorScheme.onSurface,
+                        color: getTextColorForBackground(
+                          alumno.colorContenedor ??
+                              Theme.of(context).colorScheme.surfaceContainer,
+                        ),
                       ),
                     ],
                   );
@@ -252,7 +258,7 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
             // --- BOTÓN ACEPTAR ---
             Align(
               alignment: Alignment.bottomRight,
-              child: BotonSinIcono(
+              child: BotonSinIconoAlumno(
                 texto: "Aceptar",
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,
@@ -264,7 +270,7 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
                           mostrarDialogoSalirReiniciarAlumnoV2(
                             context,
                             "¿Quieres volver a jugar?",
-                            "Si quieres volver a jugar pulsa en reiniciar, si no, pulsa en salir.",
+                            "¿Quieres volver a jugar?, Si quieres volver a jugar pulsa en empezar de nuevo, si no, pulsa en volver al menú.",
                             alumno.colorFondo ??
                                 Theme.of(context).colorScheme.surface,
                             alumno.colorBotones ??
@@ -281,7 +287,7 @@ class _Juego2ScreenProfeState extends State<Juego2ScreenProfe> {
                         } else {
                           mostrarDialogoSiguienteAlumnoV2(
                             context,
-                            "Lo has hecho increible!!!",
+                            "Lo has hecho increíble!!!",
                             "Si quieres seguir jugando pulsa en siguiente",
                             alumno.colorFondo ??
                                 Theme.of(context).colorScheme.surface,

@@ -4,48 +4,48 @@ import 'package:provider/provider.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego3/juego3.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/juegos/juego2/juego2.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 
-import '../../datos/juego.dart';
+import '../datos/juego.dart';
 
-/// **Nombre de la Clase: `Juego3Ajustes**
+/// **Nombre de la Clase: `Juego2AjustesProfe**
 ///
-/// **Descripción:** Clase con el widget de ajustes del juego 3
+/// **Descripción:** Clase con el widget de ajustes del juego 2 para el profesor
 ///
 /// ---
 /// **Metadatos de Control:**
-/// * **Autor Original:** Andrés Mardones Domcke
-/// * **Última modificación por:** Andrés Mardones Domcke
-/// * **Fecha de modificación:** 15/12/2025
-/// * **Último cambio:** Se ha creado la interfaz de ajustes del juego 3
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 13/12/2025
+/// * **Último cambio:** Se creado la clase
 ///
 
-class Juego3AjustesProfe extends StatefulWidget {
+class Juego2AjustesProfe extends StatefulWidget {
   final Juego juego;
-  const Juego3AjustesProfe({super.key, required this.juego});
+  const Juego2AjustesProfe({super.key, required this.juego});
 
   @override
-  State<Juego3AjustesProfe> createState() => _Juego3AjustesProfeState();
+  State<Juego2AjustesProfe> createState() => _Juego2AjustesProfeState();
 }
 
-class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
+class _Juego2AjustesProfeState extends State<Juego2AjustesProfe> {
   // Estados
   late int _rangoSeleccionado;
+  late bool _ordenSeleccionado;
   late int _cantidadPreguntas;
-  late int _cantContenedores;
   late String _temaSeleccionado;
   late Alumno alum;
-  late Juego3 juego3;
+  late Juego2 juego2;
 
   @override
   void initState() {
     super.initState();
-    juego3 = widget.juego as Juego3;
-    _rangoSeleccionado = juego3.max;
-    _cantidadPreguntas = juego3.cantidad;
-    _temaSeleccionado = juego3.tipoImagenes;
-    _cantContenedores = juego3.cantContenedores;
+    juego2 = widget.juego as Juego2;
+    _rangoSeleccionado = juego2.max;
+    _ordenSeleccionado = juego2.ordenDescendente;
+    _cantidadPreguntas = juego2.cantidad;
+    _temaSeleccionado = juego2.tipoImagenes;
   }
 
   @override
@@ -57,17 +57,17 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
     final bool isMobile = size.width < 800; // Punto de corte
 
     return ScaffoldComunV2(
-      titulo: 'Juego 3 - Ajustes',
+      titulo: "Juego 2 - Ajustes",
       subtitulo: alum.nombre,
       iconoLeading: Icons.arrow_back,
       funcionLeading: () {
-        juego3.guardarAjustes(
+        juego2.guardarAjustes(
           idAlumno: alum.id,
           rango: _rangoSeleccionado,
           cantidad: _cantidadPreguntas,
           tema: _temaSeleccionado,
           dbRef: FirebaseDatabase.instance.ref(),
-          cantContenedores: _cantContenedores,
+          orden: _ordenSeleccionado,
         );
         if (mounted) {
           setState(() {
@@ -101,9 +101,9 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
               Expanded(
                 child: Row(
                   children: [
-                    _itemIntervalo(10, "1-10", Icons.filter_1, true),
+                    _itemIntervalo(10, "0-10", Icons.filter_1, true),
                     const SizedBox(width: 10),
-                    _itemIntervalo(20, "1-20", Icons.filter_2, true),
+                    _itemIntervalo(20, "0-20", Icons.filter_2, true),
                   ],
                 ),
               ),
@@ -111,9 +111,9 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
               Expanded(
                 child: Row(
                   children: [
-                    _itemIntervalo(100, "1-100", Icons.filter_9_plus, true),
+                    _itemIntervalo(100, "0-100", Icons.filter_9_plus, true),
                     const SizedBox(width: 10),
-                    _itemIntervalo(1000, "1-1000", Icons.all_inclusive, true),
+                    _itemIntervalo(1000, "0-1000", Icons.all_inclusive, true),
                   ],
                 ),
               ),
@@ -122,6 +122,19 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
         ),
 
         const SizedBox(height: 12),
+
+        // 2. ORDEN
+        _titulo("Orden"),
+        Expanded(
+          flex: 1,
+          child: Row(
+            children: [
+              _itemOrden(false, "Menor a mayor", Icons.trending_down, true),
+              const SizedBox(width: 10),
+              _itemOrden(true, "Mayor a menor", Icons.trending_up, true),
+            ],
+          ),
+        ),
 
         // 3. CANTIDAD (Stepper)
         _titulo("Número de opciones"),
@@ -134,12 +147,12 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                 Icons.remove,
                 "MENOS",
                 () {
-                  if (_cantidadPreguntas > _cantContenedores) {
+                  if (_cantidadPreguntas > 2) {
                     setState(() => _cantidadPreguntas--);
                   }
                 },
                 true,
-                isEnabled: _cantidadPreguntas > _cantContenedores,
+                isEnabled: _cantidadPreguntas > 2,
               ),
               const SizedBox(width: 16),
 
@@ -161,64 +174,15 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                 Icons.add,
                 "MAS",
                 () {
-                  if (_cantidadPreguntas < 9) {
+                  if (_cantidadPreguntas < _rangoSeleccionado &&
+                      _cantidadPreguntas < 12) {
                     setState(() => _cantidadPreguntas++);
                   }
                 },
                 true,
-                isEnabled: _cantidadPreguntas < 9,
-              ),
-            ],
-          ),
-        ),
-
-        // SECCIÓN CANTIDAD CONTENEDORES
-        _titulo("Número de contenedores"),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 80, // Altura fija compacta
-          child: Row(
-            children: [
-              _botonStepper(
-                Icons.remove,
-                "MENOS",
-                () {
-                  if (_cantContenedores > 2) {
-                    setState(() => _cantContenedores--);
-                  }
-                },
-                true,
-                isEnabled: _cantContenedores > 2,
-              ),
-              const SizedBox(width: 16),
-
-              TarjetaJuego(
-                label: _cantContenedores.toString(),
-                isButton: false,
-                isEnabled: true,
-                onTap: () {},
-                colorFondo: Colors.white,
-                imagenes: true,
-                tipoImagen: "bote",
-                numero: _cantContenedores,
-                tamano: 120,
-                radio: 20,
-              ),
-
-              const SizedBox(width: 16),
-              _botonStepper(
-                Icons.add,
-                "MAS",
-                () {
-                  if (_cantContenedores < 3) {
-                    setState(() => _cantContenedores++);
-                    if (_cantidadPreguntas < _cantContenedores) {
-                      setState(() => _cantidadPreguntas++);
-                    }
-                  }
-                },
-                true,
-                isEnabled: _cantContenedores < 3,
+                isEnabled:
+                    _cantidadPreguntas < _rangoSeleccionado &&
+                    _cantidadPreguntas < 12,
               ),
             ],
           ),
@@ -292,14 +256,14 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                               children: [
                                 _itemIntervalo(
                                   10,
-                                  "1-10",
+                                  "0-10",
                                   Icons.filter_1,
                                   false,
                                 ),
                                 const SizedBox(width: 10), // Espacio horizontal
                                 _itemIntervalo(
                                   20,
-                                  "1-20",
+                                  "0-20",
                                   Icons.filter_2,
                                   false,
                                 ),
@@ -316,14 +280,14 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                               children: [
                                 _itemIntervalo(
                                   100,
-                                  "1-100",
+                                  "0-100",
                                   Icons.filter_9_plus,
                                   false,
                                 ),
                                 const SizedBox(width: 10), // Espacio horizontal
                                 _itemIntervalo(
                                   1000,
-                                  "1-1000",
+                                  "0-1000",
                                   Icons.all_inclusive,
                                   false,
                                 ),
@@ -345,7 +309,33 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // SECCIÓN CANTIDAD OPCIONES
+                    // SECCIÓN ORDEN
+                    _titulo("Orden"),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        children: [
+                          _itemOrden(
+                            false,
+                            "Menor a mayor",
+                            Icons.trending_down,
+                            false,
+                          ),
+                          const SizedBox(width: 10),
+                          _itemOrden(
+                            true,
+                            "Mayor a menor",
+                            Icons.trending_up,
+                            false,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // SECCIÓN CANTIDAD
                     Expanded(
                       flex: 2, // Le damos más altura a la sección del stepper
                       child: Column(
@@ -360,14 +350,12 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                                   Icons.remove,
                                   "MENOS",
                                   () {
-                                    if (_cantidadPreguntas >
-                                        _cantContenedores) {
+                                    if (_cantidadPreguntas > 2) {
                                       setState(() => _cantidadPreguntas--);
                                     }
                                   },
                                   false,
-                                  isEnabled:
-                                      _cantidadPreguntas > _cantContenedores,
+                                  isEnabled: _cantidadPreguntas > 2,
                                 ),
                                 const SizedBox(width: 20),
                                 TarjetaJuego(
@@ -387,71 +375,16 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
                                   Icons.add,
                                   "MAS",
                                   () {
-                                    if (_cantidadPreguntas < 9) {
+                                    if (_cantidadPreguntas <
+                                            _rangoSeleccionado &&
+                                        _cantidadPreguntas < 12) {
                                       setState(() => _cantidadPreguntas++);
                                     }
                                   },
                                   false,
-                                  isEnabled: _cantidadPreguntas < 9,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // SECCIÓN CANTIDAD CONTENEDORES
-                    Expanded(
-                      flex: 2, // Le damos más altura a la sección del stepper
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _titulo("Número de Contenedores"),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: Row(
-                              children: [
-                                _botonStepper(
-                                  Icons.remove,
-                                  "MENOS",
-                                  () {
-                                    if (_cantContenedores > 2) {
-                                      setState(() => _cantContenedores--);
-                                    }
-                                  },
-                                  false,
-                                  isEnabled: _cantContenedores > 2,
-                                ),
-                                const SizedBox(width: 20),
-                                TarjetaJuego(
-                                  label: _cantContenedores.toString(),
-                                  isButton: false,
-                                  isEnabled: true,
-                                  onTap: () {},
-                                  colorFondo: Colors.white,
-                                  imagenes: true,
-                                  tipoImagen: "bote",
-                                  numero: _cantContenedores,
-                                  tamano: 120,
-                                  radio: 20,
-                                ),
-                                const SizedBox(width: 20),
-                                _botonStepper(
-                                  Icons.add,
-                                  "MAS",
-                                  () {
-                                    if (_cantContenedores < 3) {
-                                      setState(() => _cantContenedores++);
-                                      if (_cantidadPreguntas <
-                                          _cantContenedores) {
-                                        setState(() => _cantidadPreguntas++);
-                                      }
-                                    }
-                                  },
-                                  false,
-                                  isEnabled: _cantContenedores < 3,
+                                  isEnabled:
+                                      _cantidadPreguntas < _rangoSeleccionado &&
+                                      _cantidadPreguntas < 12,
                                 ),
                               ],
                             ),
@@ -587,6 +520,19 @@ class _Juego3AjustesProfeState extends State<Juego3AjustesProfe> {
       colorSelected: const Color(0xFFD1FAE5),
       isMobile: isMobile,
       isEnabled: isEnabled,
+    );
+  }
+
+  Widget _itemOrden(bool valor, String label, IconData icon, bool isMobile) {
+    return _cardBase(
+      selected: _ordenSeleccionado == valor,
+      onTap: () => setState(() {
+        _ordenSeleccionado = valor;
+      }),
+      icon: icon,
+      label: label,
+      colorSelected: const Color(0xFFE0E7FF),
+      isMobile: isMobile,
     );
   }
 

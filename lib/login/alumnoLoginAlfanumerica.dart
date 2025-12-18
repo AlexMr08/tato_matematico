@@ -90,15 +90,6 @@ class _AlumnoLoginAlfanumericaState extends State<AlumnoLoginAlfanumerica> {
     String comprobarcontrasena = digest.toString();
 
     if (passData["hash"] == comprobarcontrasena) {
-      print("Ha iniciado sesion correctamente");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Ha iniciado sesion correctamente ${alumnoData['nombre']}",
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => GamesMenu()),

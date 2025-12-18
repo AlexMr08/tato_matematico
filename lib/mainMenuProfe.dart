@@ -6,7 +6,7 @@ import 'package:tato_matematico/agregar/agregarProfesor.dart';
 import 'package:tato_matematico/edicion/editarAlumno.dart';
 import 'package:tato_matematico/edicion/editarClase.dart';
 import 'package:tato_matematico/edicion/editarProfesor.dart';
-import 'package:tato_matematico/estadisticasProfesor.dart';
+import 'package:tato_matematico/estadisticas/estadisticasProfesor.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnosHolder.dart';

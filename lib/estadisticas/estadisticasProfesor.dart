@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/datos/estadistica.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/widgetsAuxiliares/graficoResultados.dart';
-import 'auxFunc.dart';
-import 'datos/alumno.dart';
+import '../widgetsAuxiliares/ScaffoldComunV2.dart';
+import '../datos/alumno.dart';
 
-/// **Nombre de la Clase: `EstadisticasAlumno`**
+/// **Nombre de la Clase: `EstadisticasProfesor`**
 ///
-/// **Descripción:** Clase que genera la vista de las estadisticas en la aplicacion para los alumnos.
+/// **Descripción:** Clase que genera la vista de las estadisticas en la aplicacion para los profesores.
 ///
 /// ---
 /// **Metadatos de Control:**
@@ -20,17 +19,35 @@ import 'datos/alumno.dart';
 /// * **Último cambio:** Se ha mejorado la interfaz de usuario
 ///
 
-class EstadisticasAlumno extends StatefulWidget {
-  const EstadisticasAlumno({super.key});
+class EstadisticasProfesor extends StatefulWidget {
+  const EstadisticasProfesor({super.key});
 
   @override
-  State<EstadisticasAlumno> createState() => _EstadisticasAlumnoState();
+  State<EstadisticasProfesor> createState() => _EstadisticasProfesorState();
 }
 
-class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
+class _EstadisticasProfesorState extends State<EstadisticasProfesor> {
   late EstadisticaJuego estadistica;
   int semanaSeleccionada = 0;
   int juegoSeleccionado = 1;
+
+  late AlumnoHolder _alumnoHolder;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _alumnoHolder = context.read<AlumnoHolder>();
+  }
+
+  @override
+  void dispose() {
+    print("Limpiando AlumnoHolder al salir de EstadisticasProfesor");
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _alumnoHolder.clear();
+    });
+
+    super.dispose();
+  }
 
   void semanaAnterior() {
     if (semanaSeleccionada < estadistica.estadisticasSemanales.length - 1) {
@@ -52,7 +69,6 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
     if (juegoSeleccionado > 1) {
       setState(() {
         juegoSeleccionado--;
-        semanaSeleccionada = 0;
       });
     }
   }
@@ -61,7 +77,6 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
     if (juegoSeleccionado < 4) {
       setState(() {
         juegoSeleccionado++;
-        semanaSeleccionada = 0;
       });
     }
   }
@@ -69,6 +84,8 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
   String _obtenerRangoSemana(DateTime fechaLunes) {
     // La fecha guardada es el Lunes. Calculamos el Domingo sumando 6 días.
     DateTime fechaDomingo = fechaLunes.add(const Duration(days: 6));
+
+    // Formato simple: "8 - 14"
     String f(int n) => n.toString().padLeft(2, '0');
     return "${f(fechaLunes.day)} - ${f(fechaDomingo.day)}";
   }
@@ -112,18 +129,10 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
     int omisiones = stats?.omisiones ?? 0;
     int errores = stats?.errores ?? 0;
 
-    return ScaffoldAlumno(
-      alumno: alum,
-      posicion: getPosicionBarra(alum.posicionBarra),
-      textoCabecera: "Estadísticas",
-      hasAjustes: false,
-      hasEstadisticas: false,
-      onVolver: () {
-        Navigator.of(context).pop();
-      },
-      onAjustes: () {},
-      onEstadisticas: () {},
-      child: Padding(
+    return ScaffoldComunV2(
+      titulo: "Estadísticas del Alumno",
+      subtitulo: alum.nombre,
+      cuerpo: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
@@ -134,13 +143,9 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                 spacing: 16,
                 children: [
                   Expanded(
-                    child: BotonConIconoAlumno(
+                    child: BotonConIcono(
                       icono: Icons.arrow_back,
                       texto: "Semana anterior",
-                      colorFondo: alum.colorBotones,
-                      colorTexto: alum.colorBotones != null
-                          ? getTextColorForBackground(alum.colorBotones!)
-                          : null,
                       onPressed:
                           (estadistica.estadisticasSemanales.isNotEmpty &&
                               semanaSeleccionada <
@@ -158,7 +163,9 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                       color: Theme.of(context).colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.onTertiaryContainer,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onTertiaryContainer,
                       ),
                     ),
                     child: Column(
@@ -192,15 +199,10 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                     ),
                   ),
                   Expanded(
-                    flex: 1,
-                    child: BotonConIconoAlumno(
+                    child: BotonConIcono(
                       iconAlignment: IconAlignment.end,
                       icono: Icons.arrow_forward,
                       texto: "Semana siguiente",
-                      colorFondo: alum.colorBotones,
-                      colorTexto: alum.colorBotones != null
-                          ? getTextColorForBackground(alum.colorBotones!)
-                          : null,
                       onPressed: (semanaSeleccionada > 0)
                           ? () => semanaSiguiente()
                           : null,
@@ -214,7 +216,7 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                         aciertos: aciertos,
                         omisiones: omisiones,
                         errores: errores,
-                        modoAlumno: true,
+                        modoAlumno: false,
                       )
                     : Card(
                         elevation: 4,
@@ -247,13 +249,9 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                 spacing: 16,
                 children: [
                   Expanded(
-                    child: BotonConIconoAlumno(
+                    child: BotonConIcono(
                       icono: Icons.arrow_back,
                       texto: "Juego anterior",
-                      colorFondo: alum.colorBotones,
-                      colorTexto: alum.colorBotones != null
-                          ? getTextColorForBackground(alum.colorBotones!)
-                          : null,
                       onPressed: (juegoSeleccionado > 1)
                           ? () => juegoAnterior()
                           : null,
@@ -290,13 +288,9 @@ class _EstadisticasAlumnoState extends State<EstadisticasAlumno> {
                     ),
                   ),
                   Expanded(
-                    child: BotonConIconoAlumno(
+                    child: BotonConIcono(
                       iconAlignment: IconAlignment.end,
                       icono: Icons.arrow_forward,
-                      colorFondo: alum.colorBotones,
-                      colorTexto: alum.colorBotones != null
-                          ? getTextColorForBackground(alum.colorBotones!)
-                          : null,
                       texto: "Juego siguiente",
                       onPressed: (juegoSeleccionado < 4)
                           ? () => juegoSiguiente()

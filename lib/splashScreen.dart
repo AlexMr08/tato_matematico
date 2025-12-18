@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Tu logo
-            Image.asset('assets/images/logo.webp', width: 200, height: 200),
+            Image.asset('assets/images/logo2.png', width: 200, height: 200),
             const SizedBox(height: 30),
             // Indicador de carga
             const CircularProgressIndicator(),

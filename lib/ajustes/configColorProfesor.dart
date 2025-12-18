@@ -6,11 +6,11 @@ import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/datos/juego.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
-import 'package:tato_matematico/juegos/juego2/juego2Ajustes.dart';
+import 'package:tato_matematico/ajustes/juego2Ajustes.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 
-import '../juegos/tarjetaJuego.dart';
+import '../widgetsAuxiliares/tarjetaJuego.dart';
 
 /// **Nombre de la Clase: `ConfigColorProfesor`**
 ///
@@ -129,7 +129,6 @@ class ConfigColorProfesorState extends State<ConfigColorProfesor> {
     Alumno alumno;
     alumnoHolder = context.watch<AlumnoHolder>();
     alumno = alumnoHolder.alumno!;
-    Map<String, Juego> listaJuegos = alumnoHolder.listaJuegos;
 
     MediaQueryData mediaQuery = MediaQuery.of(context);
     var esMovil = mediaQuery.size.width < 600;

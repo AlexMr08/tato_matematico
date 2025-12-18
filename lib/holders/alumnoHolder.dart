@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/estadistica.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1.dart';
+import 'package:tato_matematico/juegos/juego1/juego1.dart';
 
 import '../datos/alumno.dart';
 import '../datos/juego.dart';

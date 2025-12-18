@@ -2,11 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1State.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/juegos/juego1/juego1.dart';
+import 'package:tato_matematico/juegos/juego1/juego1State.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
+
+/// **Nombre de la Clase: `Juego1Screen**
+///
+/// **Descripción:** Clase usada para la vista del juego 1 en el alumno
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Rubi Rodríguez Anguita
+/// * **Última modificación por:** Rubi Rodríguez Anguita
+/// * **Fecha de modificación:** 18/12/2025
+/// * **Último cambio:** Correccion del layout
 
 class Juego1Screen extends StatefulWidget {
   const Juego1Screen({Key? key}) : super(key: key);
@@ -106,13 +117,16 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                     onPressed: _state!.speakObjetivo,
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                      alumno.colorBotones ??
+                          alumno.colorBotones ??
                           Theme.of(context).colorScheme.primaryContainer,
                       foregroundColor: getTextColorForBackground(
                         alumno.colorBotones ??
                             Theme.of(context).colorScheme.primary,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -173,13 +187,13 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                       bool isSelected = _state!.numeroSeleccionado == numero;
                       bool isCorrectAndFinished =
                           _state!.finalizado &&
-                              numero == _state!.numeroAAdivinar;
+                          numero == _state!.numeroAAdivinar;
 
                       Color fondo = isSelected
                           ? (alumno.colorSeleccion ??
-                          Theme.of(context).colorScheme.tertiaryContainer)
+                                Theme.of(context).colorScheme.tertiaryContainer)
                           : (alumno.colorBotones ??
-                          Theme.of(context).colorScheme.primaryContainer);
+                                Theme.of(context).colorScheme.primaryContainer);
 
                       if (isCorrectAndFinished) fondo = Colors.green;
 
@@ -212,44 +226,47 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                 fontWeight: FontWeight.bold,
                 colorFondo: alumno.colorBotones,
                 onPressed:
-                (_state!.numeroSeleccionado != null && !_state!.finalizado)
+                    (_state!.numeroSeleccionado != null && !_state!.finalizado)
                     ? () async {
-                  bool acertado = await _state!.validarRespuesta();
-                  if (acertado) {
-                    await Future.delayed(const Duration(milliseconds: 800));
-                    if (!mounted) return;
+                        bool acertado = await _state!.validarRespuesta();
+                        if (acertado) {
+                          await Future.delayed(
+                            const Duration(milliseconds: 800),
+                          );
+                          if (!mounted) return;
 
-                    if (_state!.esFinDeJuego()) {
-                      mostrarDialogoSalirReiniciarAlumnoV2(
-                        context,
-                        "¡Juego Completado!",
-                        "Has encontrado todos los números. ¿Quieres jugar otra vez?",
-                        alumno.colorFondo ?? Colors.white,
-                        alumno.colorBotones ?? Colors.blue,
-                      ).then((reiniciar) {
-                        if (reiniciar == true) {
-                          _state!.reiniciarJuego();
-                        } else if (reiniciar == false) {
-                          Navigator.pop(context);
+                          if (_state!.esFinDeJuego()) {
+                            mostrarDialogoSalirReiniciarAlumnoV2(
+                              context,
+                              "¡Juego Completado!",
+                              "Has encontrado todos los números. ¿Quieres jugar otra vez?",
+                              alumno.colorFondo ?? Colors.white,
+                              alumno.colorBotones ?? Colors.blue,
+                            ).then((reiniciar) {
+                              if (reiniciar == true) {
+                                _state!.reiniciarJuego();
+                              } else if (reiniciar == false) {
+                                Navigator.pop(context);
+                              }
+                            });
+                          } else {
+                            mostrarDialogoSiguienteAlumnoV2(
+                              context,
+                              "¡Muy bien!",
+                              "¡Correcto! Vamos a por el siguiente.",
+                              alumno.colorFondo ?? Colors.white,
+                              alumno.colorBotones ?? Colors.blue,
+                            ).then((siguiente) {
+                              if (siguiente == true) {
+                                _state!.iniciarRonda();
+                              } else {
+                                _state?.salir();
+                                Navigator.pop(context);
+                              }
+                            });
+                          }
                         }
-                      });
-                    } else {
-                      mostrarDialogoSiguienteAlumnoV2(
-                        context,
-                        "¡Muy bien!",
-                        "¡Correcto! Vamos a por el siguiente.",
-                        alumno.colorFondo ?? Colors.white,
-                        alumno.colorBotones ?? Colors.blue,
-                      ).then((siguiente) {
-                        if (siguiente == true) {
-                          _state!.iniciarRonda();
-                        } else {
-                          Navigator.pop(context);
-                        }
-                      });
-                    }
-                  }
-                }
+                      }
                     : null,
               ),
             ),

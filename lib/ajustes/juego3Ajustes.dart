@@ -6,9 +6,9 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/juegos/juego3/juego3.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 
-import '../../datos/juego.dart';
+import '../datos/juego.dart';
 
 /// **Nombre de la Clase: `Juego3Ajustes**
 ///

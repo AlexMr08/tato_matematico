@@ -2,10 +2,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:tato_matematico/juegos/juego_1/juego_1_screen.dart';
 import 'package:tato_matematico/widgetsAuxiliares/fotoPerfil.dart';
 
-import '../juegos/juego_1/juego1_settings.dart';
 
 /// **Nombre de la Clase: `Alumno`**
 ///
@@ -85,7 +83,6 @@ class Alumno {
 
     // Juego 1
     this.permisoAjustesJuego1 = true,
-    Juego1Settings? juego1Settings,
 
     // Otros juegos
     this.permisoAjustesJuego2 = true,
@@ -223,16 +220,6 @@ class Alumno {
       return null;
     }
 
-    Juego1Settings? juego1Settings;
-    if (data['juego1Settings'] != null) {
-      final settingsMap = data['juego1Settings'] as Map<dynamic, dynamic>;
-      juego1Settings = Juego1Settings(
-        numeroOpciones: settingsMap['numeroOpciones'] ?? 4,
-        numeroMayor: settingsMap['numeroMayor'] ?? 10,
-        numeroMenor: settingsMap['numeroMenor'] ?? 0,
-      );
-    }
-
     // Retorna Alumno con lógica de fallback (si no existe global, busca el antiguo Juego1)
     return Alumno(
       id: id,
@@ -280,7 +267,6 @@ class Alumno {
           (data['ttsPitch'] as num? ?? data['ttsPitchJuego1'] as num? ?? 1.0)
               .toDouble(),
 
-      juego1Settings: juego1Settings,
     );
   }
 

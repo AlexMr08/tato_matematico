@@ -2,6 +2,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:tato_matematico/datos/juego.dart';
 
+/// **Nombre de la Clase: `Juego1**
+///
+/// **Descripción:** Clase de datos para el juego 1
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Alejandro Molina Ruiz
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 15/12/2025
+/// * **Último cambio:** Creacion de la clase e implementacion
+
+
 class Juego1 extends Juego {
   Juego1({
     super.min = 0,

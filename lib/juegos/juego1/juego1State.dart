@@ -3,8 +3,19 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1.dart';
-import 'package:tato_matematico/juegos/juego_1/juego1_settings.dart';
+import 'package:tato_matematico/juegos/juego1/juego1.dart';
+import 'package:tato_matematico/juegos/juego1/juego1Settings.dart';
+
+/// **Nombre de la Clase: `Juego1State**
+///
+/// **Descripción:** Clase usada para el estado de la partida en el juego 1
+///
+/// ---
+/// **Metadatos de Control:**
+/// * **Autor Original:** Rubi Rodríguez Anguita
+/// * **Última modificación por:** Alejandro Molina Ruiz
+/// * **Fecha de modificación:** 18/12/2025
+/// * **Último cambio:** Correccion de estadisticas
 
 class Juego1State with ChangeNotifier {
   final Alumno alumno;
@@ -92,7 +103,7 @@ class Juego1State with ChangeNotifier {
   }
 
   /// Retorna true si ha acertado, false si ha fallado
-  Future<bool> validarRespuesta() async {
+  Future<bool> validarRespuesta({bool profe = false}) async {
     if (numeroSeleccionado == null) return false;
 
     bool esCorrecto = numeroSeleccionado == numeroAAdivinar;
@@ -105,6 +116,15 @@ class Juego1State with ChangeNotifier {
 
       if (alumno.sonidoAciertoActivado) {
         await _playSound(alumno.sonidoAcierto);
+      }
+
+      if (repeticionesCompletadas == repeticionesTotales && !profe) {
+        juego.subirEstadisticas(
+          alumno: alumno,
+          aciertos: aciertos,
+          omisiones: repeticionesTotales - repeticionesCompletadas,
+          errores: errores,
+        );
       }
 
       notifyListeners();
@@ -155,7 +175,12 @@ class Juego1State with ChangeNotifier {
   /// Método para guardar estadísticas (similar a Juego 2)
   void salir() {
     // Aquí iría la llamada a subirEstadisticas si fuera necesario
-    // juego.subirEstadisticas(...)
+    juego.subirEstadisticas(
+      alumno: alumno,
+      aciertos: aciertos,
+      omisiones: repeticionesTotales - repeticionesCompletadas,
+      errores: errores,
+    );
   }
 
   @override

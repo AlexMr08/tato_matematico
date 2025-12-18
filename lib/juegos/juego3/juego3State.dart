@@ -131,7 +131,7 @@ class Juego3State with ChangeNotifier {
     iniciarJuego();
   }
 
-  bool finalizarJuego(bool esCorrecto) {
+  bool finalizarJuego(bool esCorrecto, {bool profe = false}) {
     bool juegoTerminado = false;
     if (esCorrecto) {
       aciertos += 1;
@@ -142,7 +142,7 @@ class Juego3State with ChangeNotifier {
         errores += 1;
       }
     }
-    if (juegoTerminado) {
+    if (juegoTerminado && !profe) {
       juego.subirEstadisticas(
         aciertos: aciertos,
         errores: errores,

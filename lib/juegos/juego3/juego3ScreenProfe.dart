@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tato_matematico/datos/alumno.dart';
-import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/juego.dart';
-import 'package:tato_matematico/juegos/tarjetaJuego.dart';
+import 'package:tato_matematico/widgetsAuxiliares/tarjetaJuego.dart';
 import 'package:tato_matematico/widgetsAuxiliares/ScaffoldComunV2.dart';
 import 'package:tato_matematico/widgetsAuxiliares/botones.dart';
 import 'package:tato_matematico/juegos/juego3/juego3State.dart';
@@ -137,66 +136,66 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
             Expanded(
               child: j3s.numeros.isNotEmpty
                   ? Wrap(
-                      alignment: WrapAlignment.center,
-                      runAlignment: WrapAlignment.start,
-                      spacing: 16,
-                      runSpacing: 24,
-                      children: j3s.numeros
-                          .asMap()
-                          .map(
-                            (index, numero) => MapEntry(
-                              index,
-                              TarjetaJuego(
-                                tamano: 110,
-                                label: "Mover $numero",
-                                isButton: true,
-                                isEnabled: true,
-                                radio: 16,
-                                onTap: () {
-                                  if (numeroSeleccionado != null &&
-                                      numeroSeleccionado![1] == index) {
-                                    setState(() {
-                                      numeroSeleccionado = null;
-                                    });
-                                    return;
-                                  }
-                                  setState(() {
-                                    numeroSeleccionado = [numero, index];
-                                  });
-                                },
-                                colorFondo: numeroSeleccionado != null
-                                    ? (numeroSeleccionado![1] == index
-                                          ? alumno.colorSeleccion ??
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.tertiaryContainer
-                                          : alumno.colorBotones ??
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.primaryContainer)
-                                    : alumno.colorBotones ??
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.primaryContainer,
-                                imagenes: imagenes,
-                                tipoImagen: tipoImagen,
-                                numero: numero,
-                              ),
-                            ),
-                          )
-                          .values
-                          .toList(),
-                    )
-                  : Center(
-                      child: Text(
-                        "No quedan números",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: colorTexto,
-                        ),
-                      ),
+                alignment: WrapAlignment.center,
+                runAlignment: WrapAlignment.start,
+                spacing: 16,
+                runSpacing: 24,
+                children: j3s.numeros
+                    .asMap()
+                    .map(
+                      (index, numero) => MapEntry(
+                    index,
+                    TarjetaJuego(
+                      tamano: 110,
+                      label: "Mover $numero",
+                      isButton: true,
+                      isEnabled: true,
+                      radio: 16,
+                      onTap: () {
+                        if (numeroSeleccionado != null &&
+                            numeroSeleccionado![1] == index) {
+                          setState(() {
+                            numeroSeleccionado = null;
+                          });
+                          return;
+                        }
+                        setState(() {
+                          numeroSeleccionado = [numero, index];
+                        });
+                      },
+                      colorFondo: numeroSeleccionado != null
+                          ? (numeroSeleccionado![1] == index
+                          ? alumno.colorSeleccion ??
+                          Theme.of(
+                            context,
+                          ).colorScheme.tertiaryContainer
+                          : alumno.colorBotones ??
+                          Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer)
+                          : alumno.colorBotones ??
+                          Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer,
+                      imagenes: imagenes,
+                      tipoImagen: tipoImagen,
+                      numero: numero,
                     ),
+                  ),
+                )
+                    .values
+                    .toList(),
+              )
+                  : Center(
+                child: Text(
+                  "No quedan números",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: colorTexto,
+                  ),
+                ),
+              ),
             ),
 
             // --- ZONA DE RESULTADO ---
@@ -211,7 +210,7 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
                   children: [
                     Semantics(
                       label:
-                          "Contenedor ${indexContenedor + 1}, con números ${contenedor.whereType<int>().join(', ')}",
+                      "Contenedor ${indexContenedor + 1}, con números ${contenedor.whereType<int>().join(', ')}",
                       button: true,
                       enabled: true,
                       excludeSemantics: true,
@@ -231,7 +230,7 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
                         child: Container(
                           decoration: BoxDecoration(
                             color:
-                                alumno.colorContenedor ??
+                            alumno.colorContenedor ??
                                 Theme.of(context).colorScheme.surfaceContainer,
                             border: Border.all(color: colorTexto, width: 2),
                             borderRadius: BorderRadius.circular(20),
@@ -248,6 +247,16 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
                                   image: DecorationImage(
                                     image: AssetImage('assets/images/bote.png'),
                                     fit: BoxFit.contain,
+                                    colorFilter: ColorFilter.mode(
+                                      getTextColorForBackground(
+                                        alumno.colorContenedor ??
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.surfaceContainer,
+                                      ),
+                                      BlendMode
+                                          .srcIn, // Este modo aplica el tinte a la forma de la imagen
+                                    ),
                                   ),
                                 ),
                               ),
@@ -257,14 +266,14 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
                                 top: paddingInterior + 40,
                                 child: SizedBox(
                                   width:
-                                      anchoInterior, // límite interior del bote
+                                  anchoInterior, // límite interior del bote
                                   child: Wrap(
                                     alignment: WrapAlignment.center,
                                     spacing: espacio,
                                     runSpacing: espacio,
                                     children: contenedor.asMap().entries.map((
-                                      entry,
-                                    ) {
+                                        entry,
+                                        ) {
                                       final indexSlot =
                                           entry.key; // índice REAL del slot
                                       final numero =
@@ -272,56 +281,56 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
 
                                       return numero != null
                                           ? TarjetaJuego(
-                                              tamano: tamanoTarjeta,
-                                              label:
-                                                  "$numero en contenedor ${indexContenedor + 1}",
-                                              isButton: true,
-                                              isEnabled: true,
-                                              radio: 8,
-                                              onTap: () {
-                                                // Cambiar una carta por otra
-                                                if (numeroSeleccionado !=
-                                                    null) {
-                                                  j3s.devolverNumero(
-                                                    indexSlot,
-                                                    indexContenedor,
-                                                  );
-                                                  j3s.moverNumero(
-                                                    numeroSeleccionado,
-                                                    indexContenedor,
-                                                    indexSlot,
-                                                  );
-                                                  setState(() {
-                                                    numeroSeleccionado = null;
-                                                  });
-                                                }
-                                                // Devolver carta al área de números
-                                                else {
-                                                  j3s.devolverNumero(
-                                                    indexSlot,
-                                                    indexContenedor,
-                                                  );
-                                                  if (mostrarIncorrectos) {
-                                                    setState(() {
-                                                      mostrarIncorrectos =
-                                                          false;
-                                                    });
-                                                  }
-                                                }
-                                              },
-                                              colorFondo:
-                                                  alumno.colorBotones ??
-                                                  Theme.of(context)
-                                                      .colorScheme
-                                                      .primaryContainer,
-                                              imagenes: imagenes,
-                                              tipoImagen: tipoImagen,
-                                              numero: numero,
-                                            )
-                                          : SizedBox(
-                                              width: tamanoTarjeta,
-                                              height: tamanoTarjeta,
+                                        tamano: tamanoTarjeta,
+                                        label:
+                                        "$numero en contenedor ${indexContenedor + 1}",
+                                        isButton: true,
+                                        isEnabled: true,
+                                        radio: 8,
+                                        onTap: () {
+                                          // Cambiar una carta por otra
+                                          if (numeroSeleccionado !=
+                                              null) {
+                                            j3s.devolverNumero(
+                                              indexSlot,
+                                              indexContenedor,
                                             );
+                                            j3s.moverNumero(
+                                              numeroSeleccionado,
+                                              indexContenedor,
+                                              indexSlot,
+                                            );
+                                            setState(() {
+                                              numeroSeleccionado = null;
+                                            });
+                                          }
+                                          // Devolver carta al área de números
+                                          else {
+                                            j3s.devolverNumero(
+                                              indexSlot,
+                                              indexContenedor,
+                                            );
+                                            if (mostrarIncorrectos) {
+                                              setState(() {
+                                                mostrarIncorrectos =
+                                                false;
+                                              });
+                                            }
+                                          }
+                                        },
+                                        colorFondo:
+                                        alumno.colorBotones ??
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .primaryContainer,
+                                        imagenes: imagenes,
+                                        tipoImagen: tipoImagen,
+                                        numero: numero,
+                                      )
+                                          : SizedBox(
+                                        width: tamanoTarjeta,
+                                        height: tamanoTarjeta,
+                                      );
                                     }).toList(),
                                   ),
                                 ),
@@ -334,20 +343,22 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
                     // Indicador de incorrecto
                     mostrarIncorrectos
                         ? j3s.contenedoresIncorrectos.contains(indexContenedor)
-                              ? Icon(
-                                  Icons.cancel,
-                                  size: 50,
-                                  color:
-                                      alumno.colorSeleccion ??
-                                      Theme.of(context).colorScheme.onSurface,
-                                )
-                              : Icon(
-                                  Icons.check_circle,
-                                  size: 50,
-                                  color:
-                                      alumno.colorSeleccion ??
-                                      Theme.of(context).colorScheme.onSurface,
-                                )
+                        ? Icon(
+                      Icons.cancel,
+                      size: 50,
+                      color: getTextColorForBackground(
+                        alumno.colorFondo ??
+                            Theme.of(context).colorScheme.surface,
+                      ),
+                    )
+                        : Icon(
+                      Icons.check_circle,
+                      size: 50,
+                      color: getTextColorForBackground(
+                        alumno.colorFondo ??
+                            Theme.of(context).colorScheme.surface,
+                      ),
+                    )
                         : SizedBox(height: 1),
                   ],
                 );
@@ -356,60 +367,59 @@ class _Juego3ScreenProfeState extends State<Juego3ScreenProfe> {
             // --- BOTÓN ACEPTAR ---
             Align(
               alignment: Alignment.bottomRight,
-              child: BotonSinIcono(
+              child: BotonSinIconoAlumno(
                 texto: "Aceptar",
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 colorFondo: alumno.colorBotones,
                 onPressed: j3s.numeros.isEmpty
                     ? () {
-                        bool esCorrecto = j3s.verificarSolucion(
-                          j3s.contenedores,
-                          j3s.soluciones,
-                        );
-                        bool juegoTerminado = j3s.finalizarJuego(esCorrecto);
-                        if (!esCorrecto) {
-                          mostrarIncorrectos = true;
-                        } else if (juegoTerminado) {
-                          mostrarDialogoSalirReiniciarAlumnoV2(
-                            context,
-                            "Lo has hecho increible!!!",
-                            "¿Quieres volver a jugar?, Si quieres volver a jugar pulsa en empezar de nuevo, si no, pulsa en volver al menú.",
-                            alumno.colorFondo ??
-                                Theme.of(context).colorScheme.surface,
-                            alumno.colorBotones ??
-                                Theme.of(context).colorScheme.primaryContainer,
-                          ).then((onValue) {
-                            if (onValue != null) {
-                              if (onValue) {
-                                j3s.reiniciarJuego();
-                              } else {
-                                j3s.salir();
-                                navigator.pop();
-                              }
-                            }
-                          });
+                  bool esCorrecto = j3s.verificarSolucion(
+                    j3s.contenedores,
+                    j3s.soluciones,
+                  );
+                  bool juegoTerminado = j3s.finalizarJuego(esCorrecto, profe: true);
+                  if (!esCorrecto) {
+                    mostrarIncorrectos = true;
+                  } else if (juegoTerminado) {
+                    // -- DIÁLOGOS FINALIZACIÓN --
+                    mostrarDialogoSalirReiniciarAlumnoV2(
+                      context,
+                      "Lo has hecho increíble!!!",
+                      "¿Quieres volver a jugar?, Si quieres volver a jugar pulsa en empezar de nuevo, si no, pulsa en volver al menú.",
+                      alumno.colorFondo ??
+                          Theme.of(context).colorScheme.surface,
+                      alumno.colorBotones ??
+                          Theme.of(context).colorScheme.primaryContainer,
+                    ).then((onValue) {
+                      if (onValue != null) {
+                        if (onValue) {
+                          j3s.reiniciarJuego();
                         } else {
-                          mostrarDialogoSiguienteAlumnoV2(
-                            context,
-                            "Lo has hecho increible!!!",
-                            "Si quieres seguir jugando pulsa en siguiente",
-                            alumno.colorFondo ??
-                                Theme.of(context).colorScheme.surface,
-                            alumno.colorBotones ??
-                                Theme.of(context).colorScheme.primaryContainer,
-                          ).then((onValue) {
-                            if (onValue != null) {
-                              if (onValue) {
-                                j3s.iniciarJuego();
-                              } else {
-                                j3s.salir();
-                                navigator.pop();
-                              }
-                            }
-                          });
+                          navigator.pop();
                         }
                       }
+                    });
+                  } else {
+                    mostrarDialogoSiguienteAlumnoV2(
+                      context,
+                      "Lo has hecho increible!!!",
+                      "Si quieres seguir jugando pulsa en siguiente",
+                      alumno.colorFondo ??
+                          Theme.of(context).colorScheme.surface,
+                      alumno.colorBotones ??
+                          Theme.of(context).colorScheme.primaryContainer,
+                    ).then((onValue) {
+                      if (onValue != null) {
+                        if (onValue) {
+                          j3s.iniciarJuego();
+                        } else {
+                          navigator.pop();
+                        }
+                      }
+                    });
+                  }
+                }
                     : null,
               ),
             ),
