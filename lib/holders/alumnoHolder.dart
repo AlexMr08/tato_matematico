@@ -85,9 +85,9 @@ class AlumnoHolder extends ChangeNotifier {
             }
           }
           notifyListeners();
-          areGamesLoaded = true;
           _escucharCambiosJuegos(alumno!.id);
         }
+        areGamesLoaded = true;
       } catch (e) {
         print("Error cargando configuración del Juego 2: $e");
       }

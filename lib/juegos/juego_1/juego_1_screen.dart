@@ -106,7 +106,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                     style: ElevatedButton.styleFrom(
                       shape: const CircleBorder(),
                       padding: const EdgeInsets.all(20), // Más grande
-                      backgroundColor: alumno.colorBotones,
+                      backgroundColor: alumno.colorBotones ?? Theme.of(context).colorScheme.primaryContainer,
                       foregroundColor: getTextColorForBackground(
                           alumno.colorBotones ?? Theme.of(context).colorScheme.primary),
                     ),
@@ -177,8 +177,8 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                       bool isCorrectAndFinished = _state!.finalizado && numero == _state!.numeroAAdivinar;
 
                       Color fondo = isSelected
-                          ? (alumno.colorSeleccion ?? Colors.blueAccent)
-                          : (alumno.colorBotones ?? Colors.blue);
+                          ? (alumno.colorSeleccion ?? Theme.of(context).colorScheme.tertiaryContainer)
+                          : (alumno.colorBotones ?? Theme.of(context).colorScheme.primaryContainer);
 
                       if (isCorrectAndFinished) fondo = Colors.green;
 
