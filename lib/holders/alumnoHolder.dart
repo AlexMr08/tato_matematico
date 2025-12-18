@@ -55,7 +55,11 @@ class AlumnoHolder extends ChangeNotifier {
   }
 
   Future<void> cargarJuegos() async {
-    listaJuegos = {"juego4": Juego(id: "juego4", nombre: "Juego 4")};
+    listaJuegos = {
+      "juego1": Juego1(cantidad: 3, max: 10, min: 0),
+      "juego2": Juego2(cantidad: 3, max: 10, min: 0, ordenDescendente: false),
+      "juego3": Juego3(cantidad: 3, max: 10, min: 0, cantContenedores: 2),
+      "juego4": Juego(id: "juego4", nombre: "Juego 4")};
     if (alumno != null) {
       // Apuntamos específicamente al nodo del juego 2
       var dbRef = FirebaseDatabase.instance.ref().child(
