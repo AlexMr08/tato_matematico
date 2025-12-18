@@ -143,7 +143,7 @@ class _Juego1ScreenState extends State<Juego1Screen> {
                               color: Colors.black,
                             ),
                             child: Icon(
-                              completado ? Icons.star : Icons.circle,
+                              completado ? Icons.emoji_emotions : Icons.circle,
                               color: Colors.amberAccent,
                             ),
                           ),

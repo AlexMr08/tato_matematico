@@ -6,6 +6,7 @@ import 'package:tato_matematico/auxFunc.dart';
 import 'package:tato_matematico/datos/alumno.dart';
 import 'package:tato_matematico/holders/alumnoHolder.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tato_matematico/widgetsAuxiliares/ScaffoldAlumno.dart';
 
 class AjustesSonidosScreen extends StatefulWidget {
   const AjustesSonidosScreen({Key? key}) : super(key: key);
@@ -137,34 +138,30 @@ class _AjustesSonidosScreenState extends State<AjustesSonidosScreen> {
     final Color buttonColor = alumno.colorBotones ?? Theme.of(context).colorScheme.primary;
     final Color selectionColor = alumno.colorTextos ?? Theme.of(context).colorScheme.secondary;
 
-    return Scaffold(
-      backgroundColor: alumno.colorFondo,
-      appBar: AppBar(
-        title: Text('Ajustes de Sonido', style: TextStyle(color: appBarTextColor)),
-        backgroundColor: appBarColor,
-        iconTheme: IconThemeData(color: appBarTextColor),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+    return ScaffoldAlumno(
+      alumno: alumno,
+      textoCabecera: "Ajustes de sonido",
+      hasAjustes: false,
+      hasEstadisticas: false,
+      onAjustes: (){},
+      onEstadisticas: (){},
+      posicion: getPosicionBarra(alumno.posicionBarra),
+      onVolver: () {
+        _guardarAjustes();
+        Navigator.of(context).pop();
+      },
+      floatingActionButton: null,
+      child: Padding(
+        padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _buildTtsColumn(context, textColor, selectionColor)),
+                Expanded(flex: 1, child: _buildTtsColumn(context, textColor, selectionColor)),
                 const SizedBox(width: 20),
-                Expanded(child: _buildSoundsColumn(context, textColor, selectionColor)),
+                Expanded(flex: 2, child: _buildSoundsColumn(context, textColor, selectionColor)),
               ],
-            ),
-            const SizedBox(height: 50),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  foregroundColor: getTextColorForBackground(buttonColor),
-                  padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 28),
-                  textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              onPressed: _guardarAjustes,
-              child: const Text('Guardar'),
             ),
           ],
         ),

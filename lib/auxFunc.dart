@@ -256,7 +256,6 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 bool esMovil = constraints.maxWidth < 600;
-
                 double sizeIcono = esMovil ? 60.0 : 120.0;
                 double sizeTitulo = esMovil ? 24.0 : 32.0;
                 double sizeTexto = esMovil ? 18.0 : 24.0;
@@ -277,6 +276,7 @@ Future<bool?> mostrarDialogoSalirReiniciarAlumnoV2(
                             style: TextStyle(
                               fontSize: sizeEmoji,
                               fontWeight: FontWeight.bold,
+                              color: getTextColorForBackground(fondo),
                             ),
                           ),
                           Text(
@@ -392,6 +392,7 @@ Future<bool?> mostrarDialogoSiguienteAlumnoV2(
                             style: TextStyle(
                               fontSize: sizeEmoji,
                               fontWeight: FontWeight.bold,
+                              color: getTextColorForBackground(fondo),
                             ),
                           ),
                           Text(

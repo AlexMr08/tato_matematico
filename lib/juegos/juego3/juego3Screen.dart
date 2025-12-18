@@ -392,7 +392,7 @@ class _Juego3ScreenState extends State<Juego3Screen> {
                         } else if (juegoTerminado) {
                           mostrarDialogoSalirReiniciarAlumnoV2(
                             context,
-                            "Lo has hecho increible!!!",
+                            "Lo has hecho increíble!!!",
                             "¿Quieres volver a jugar?, Si quieres volver a jugar pulsa en empezar de nuevo, si no, pulsa en volver al menú.",
                             alumno.colorFondo ??
                                 Theme.of(context).colorScheme.surface,

@@ -308,7 +308,7 @@ class _Juego2ScreenState extends State<Juego2Screen> {
                         } else {
                           mostrarDialogoSiguienteAlumnoV2(
                             context,
-                            "Lo has hecho increible!!!",
+                            "Lo has hecho increíble!!!",
                             "Si quieres seguir jugando pulsa en siguiente",
                             alumno.colorFondo ??
                                 Theme.of(context).colorScheme.surface,
